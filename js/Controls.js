@@ -1,10 +1,15 @@
 export class Controls {
 
-	constructor() {
+	constructor( options = {} ) {
 
 		this.keys = {};
 		this.x = 0;
 		this.z = 0;
+		this.target = options.target || window;
+		this.container = options.container || document.body;
+		this._listeners = [];
+		this.touchContainer = null;
+		this.touchStyle = null;
 
 		// Touch state
 		this.touchActive = false;
@@ -14,10 +19,17 @@ export class Controls {
 		this.steerStartX = 0;
 		this.steerStartY = 0;
 
-		window.addEventListener( 'keydown', ( e ) => this.keys[ e.code ] = true );
-		window.addEventListener( 'keyup', ( e ) => this.keys[ e.code ] = false );
+		this.addListener( this.target, 'keydown', ( e ) => this.keys[ e.code ] = true );
+		this.addListener( this.target, 'keyup', ( e ) => this.keys[ e.code ] = false );
 
 		this.setupTouchUI();
+
+	}
+
+	addListener( target, type, listener, options ) {
+
+		target.addEventListener( type, listener, options );
+		this._listeners.push( [ target, type, listener, options ] );
 
 	}
 
@@ -26,6 +38,7 @@ export class Controls {
 		if ( ! ( 'ontouchstart' in window ) ) return;
 
 		const css = document.createElement( 'style' );
+		this.touchStyle = css;
 		css.textContent = `
 			.touch-controls { position: absolute; bottom: 0; left: 0; right: 0; height: 50%; pointer-events: none; z-index: 10; }
 			.steer-zone { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; pointer-events: auto; touch-action: none; }
@@ -36,6 +49,7 @@ export class Controls {
 
 		const container = document.createElement( 'div' );
 		container.className = 'touch-controls';
+		this.touchContainer = container;
 
 		const steerZone = document.createElement( 'div' );
 		steerZone.className = 'steer-zone';
@@ -48,11 +62,11 @@ export class Controls {
 		steerZone.appendChild( base );
 
 		container.appendChild( steerZone );
-		document.body.appendChild( container );
+		this.container.appendChild( container );
 
 		const steerRange = 40;
 
-		steerZone.addEventListener( 'pointerdown', ( e ) => {
+		this.addListener( steerZone, 'pointerdown', ( e ) => {
 
 			if ( this.steerPointerId !== null ) return;
 			steerZone.setPointerCapture( e.pointerId );
@@ -65,7 +79,7 @@ export class Controls {
 
 		} );
 
-		steerZone.addEventListener( 'pointermove', ( e ) => {
+		this.addListener( steerZone, 'pointermove', ( e ) => {
 
 			if ( e.pointerId !== this.steerPointerId ) return;
 			let dx = ( e.clientX - this.steerStartX ) / steerRange;
@@ -96,8 +110,8 @@ export class Controls {
 
 		};
 
-		steerZone.addEventListener( 'pointerup', endSteer );
-		steerZone.addEventListener( 'pointercancel', endSteer );
+		this.addListener( steerZone, 'pointerup', endSteer );
+		this.addListener( steerZone, 'pointercancel', endSteer );
 
 	}
 
@@ -153,6 +167,22 @@ export class Controls {
 		this.z = z;
 
 		return { x, z, touchActive: this.touchActive };
+
+	}
+
+	dispose() {
+
+		for ( const [ target, type, listener, options ] of this._listeners ) {
+
+			target.removeEventListener( type, listener, options );
+
+		}
+
+		this._listeners.length = 0;
+		this.touchContainer?.remove();
+		this.touchContainer = null;
+		this.touchStyle?.remove();
+		this.touchStyle = null;
 
 	}
 

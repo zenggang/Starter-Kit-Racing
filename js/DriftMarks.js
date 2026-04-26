@@ -70,6 +70,7 @@ export class DriftMarks {
 		this.geometry = geometry;
 		this.segmentIndex = 0;
 		this.drawCount = 0;
+		this.material = material;
 
 		this.states = [
 			{ prev: new THREE.Vector3(), active: false },
@@ -160,6 +161,14 @@ export class DriftMarks {
 			this.geometry.setDrawRange( 0, this.drawCount );
 
 		}
+
+	}
+
+	dispose() {
+
+		this.mesh.removeFromParent();
+		this.geometry.dispose();
+		this.material.dispose();
 
 	}
 

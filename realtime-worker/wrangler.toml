@@ -1,0 +1,11 @@
+name = "starter-kit-racing-realtime"
+main = "src/index.ts"
+compatibility_date = "2026-04-26"
+
+[[durable_objects.bindings]]
+name = "ROOM_COORDINATOR"
+class_name = "RoomCoordinatorDurableObject"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RoomCoordinatorDurableObject"]

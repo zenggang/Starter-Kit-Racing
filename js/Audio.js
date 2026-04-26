@@ -37,11 +37,15 @@ export class GameAudio {
 		this.rpm = 0;
 		this.gear = 0;
 		this.shiftCooldown = 0;
+		this.unlockTarget = window;
+		this.unlock = null;
 
 	}
 
-	init( camera ) {
+	init( camera, options = {} ) {
 
+		const assetBaseUrl = options.assetBaseUrl || '';
+		this.unlockTarget = options.target || window;
 		this.listener = new THREE.AudioListener();
 		camera.add( this.listener );
 
@@ -58,7 +62,7 @@ export class GameAudio {
 
 		this.skidSound = new THREE.Audio( this.listener );
 
-		loader.load( 'audio/engine.ogg', ( buffer ) => {
+		loader.load( `${ assetBaseUrl }audio/engine.ogg`, ( buffer ) => {
 
 			this.engineSound.setBuffer( buffer );
 			this.engineSound.setLoop( true );
@@ -72,7 +76,7 @@ export class GameAudio {
 
 		} );
 
-		loader.load( 'audio/skid.ogg', ( buffer ) => {
+		loader.load( `${ assetBaseUrl }audio/skid.ogg`, ( buffer ) => {
 
 			this.skidSound.setBuffer( buffer );
 			this.skidSound.setLoop( true );
@@ -81,7 +85,7 @@ export class GameAudio {
 
 		} );
 
-		loader.load( 'audio/impact.ogg', ( buffer ) => {
+		loader.load( `${ assetBaseUrl }audio/impact.ogg`, ( buffer ) => {
 
 			this.impactBuffer = buffer;
 
@@ -110,15 +114,16 @@ export class GameAudio {
 
 			this.startSounds();
 
-			window.removeEventListener( 'keydown', unlock );
-			window.removeEventListener( 'click', unlock );
-			window.removeEventListener( 'touchstart', unlock );
+			this.unlockTarget.removeEventListener( 'keydown', unlock );
+			this.unlockTarget.removeEventListener( 'click', unlock );
+			this.unlockTarget.removeEventListener( 'touchstart', unlock );
 
 		};
 
-		window.addEventListener( 'keydown', unlock );
-		window.addEventListener( 'click', unlock );
-		window.addEventListener( 'touchstart', unlock );
+		this.unlock = unlock;
+		this.unlockTarget.addEventListener( 'keydown', unlock );
+		this.unlockTarget.addEventListener( 'click', unlock );
+		this.unlockTarget.addEventListener( 'touchstart', unlock );
 
 	}
 
@@ -237,6 +242,27 @@ export class GameAudio {
 		const volume = THREE.MathUtils.clamp( remap( impactVelocity, 0, 6, 0.01, 1.0 ), 0.01, 1.0 );
 		sound.setVolume( volume );
 		sound.play();
+
+	}
+
+	dispose() {
+
+		if ( this.unlock ) {
+
+			this.unlockTarget.removeEventListener( 'keydown', this.unlock );
+			this.unlockTarget.removeEventListener( 'click', this.unlock );
+			this.unlockTarget.removeEventListener( 'touchstart', this.unlock );
+			this.unlock = null;
+
+		}
+
+		for ( const sound of [ this.engineSound, this.engineLayerSound, this.skidSound, ...this.impactPool ] ) {
+
+			if ( sound?.isPlaying ) sound.stop();
+
+		}
+
+		this.listener?.removeFromParent();
 
 	}
 

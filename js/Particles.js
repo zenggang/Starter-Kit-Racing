@@ -12,7 +12,9 @@ const _brPos = new THREE.Vector3();
 
 export class SmokeTrails {
 
-	constructor( scene ) {
+	constructor( scene, options = {} ) {
+
+		const assetBaseUrl = options.assetBaseUrl || '';
 
 		const positions = new Float32Array( POOL_SIZE * 3 );
 		const opacities = new Float32Array( POOL_SIZE );
@@ -32,7 +34,7 @@ export class SmokeTrails {
 		sizeAttr.setUsage( THREE.DynamicDrawUsage );
 		geometry.setAttribute( 'aSize', sizeAttr );
 
-		const map = new THREE.TextureLoader().load( 'sprites/smoke.png' );
+		const map = new THREE.TextureLoader().load( `${ assetBaseUrl }sprites/smoke.png` );
 
 		const material = new THREE.PointsMaterial( {
 			map,
@@ -89,6 +91,10 @@ export class SmokeTrails {
 		}
 
 		this.emitIndex = 0;
+		this.points = points;
+		this.geometry = geometry;
+		this.material = material;
+		this.map = map;
 
 	}
 
@@ -176,6 +182,15 @@ export class SmokeTrails {
 		);
 
 		p.life = MAX_LIFE;
+
+	}
+
+	dispose() {
+
+		this.points.removeFromParent();
+		this.geometry.dispose();
+		this.material.dispose();
+		this.map.dispose();
 
 	}
 

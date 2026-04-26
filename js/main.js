@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { LightProbeGrid } from 'three/addons/lighting/LightProbeGrid.js';
-import { LightProbeGridHelper } from 'three/addons/helpers/LightProbeGridHelper.js';
 import { createWorldSettings, createWorld, addBroadphaseLayer, addObjectLayer, enableCollision, registerAll, updateWorld, rigidBody, box, MotionType } from 'crashcat';
 import { Vehicle, MAX_SPEED } from './Vehicle.js';
 import { Camera } from './Camera.js';
@@ -13,111 +12,75 @@ import { SmokeTrails } from './Particles.js';
 import { DriftMarks } from './DriftMarks.js';
 import { GameAudio } from './Audio.js';
 
-
-const renderer = new THREE.WebGLRenderer( { antialias: true, outputBufferType: THREE.HalfFloatType } );
-renderer.setSize( window.innerWidth, window.innerHeight );
-renderer.setPixelRatio( window.devicePixelRatio );
-renderer.shadowMap.enabled = true;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
-
-const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ) );
-bloomPass.strength = 0.02;
-bloomPass.radius = 0.02;
-bloomPass.threshold = 0.5;
-
-renderer.setEffects( [ bloomPass ] );
-
-document.body.appendChild( renderer.domElement );
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color( 0xadb2ba );
-scene.fog = new THREE.Fog( 0xadb2ba, 30, 55 );
-
-const dirLight = new THREE.DirectionalLight( 0xffffff, 3 );
-dirLight.position.set( 11.4, 15, -5.3 );
-dirLight.castShadow = true;
-dirLight.shadow.mapSize.setScalar( 4096 );
-dirLight.shadow.camera.near = 0.5;
-dirLight.shadow.camera.far = 60;
-dirLight.shadow.radius = 4;
-scene.add( dirLight );
-
-const hemiLight = new THREE.HemisphereLight( 0xc8d8e8, 0x7a8a5a, 2 );
-hemiLight.position.copy( dirLight.position )
-scene.add( hemiLight );
-
-
-window.addEventListener( 'resize', () => {
-
-	renderer.setSize( window.innerWidth, window.innerHeight );
-
-} );
-
-const loader = new GLTFLoader();
 const modelNames = [
 	'vehicle-truck-yellow', 'vehicle-truck-green', 'vehicle-truck-purple', 'vehicle-truck-red',
 	'track-straight', 'track-corner', 'track-bump', 'track-finish',
 	'decoration-empty', 'decoration-forest', 'decoration-tents',
 ];
 
-const models = {};
+/**
+ * Mounts the legacy Three.js racing runtime into a caller-owned container. The
+ * coordinator-backed React shell controls when this runtime exists; the runtime
+ * still owns local vehicle physics, camera, particles, audio and touch input.
+ */
+export async function mountRacingRuntime( container, options = {} ) {
 
-async function loadModels() {
-
-	const promises = modelNames.map( ( name ) =>
-		new Promise( ( resolve, reject ) => {
-
-			loader.load( `models/${ name }.glb`, ( gltf ) => {
-
-				const meshes = [];
-				gltf.scene.traverse( ( child ) => {
-
-					if ( child.isMesh ) {
-
-						child.material.side = THREE.FrontSide;
-						meshes.push( child );
-
-					}
-
-				} );
-
-				// Godot imports vehicle models at root_scale=0.5
-				if ( name.startsWith( 'vehicle-' ) ) {
-
-					gltf.scene.scale.setScalar( 0.5 );
-
-				}
-
-				if ( meshes.length === 1 ) {
-
-					const mesh = meshes[ 0 ];
-					mesh.removeFromParent();
-					models[ name ] = mesh;
-
-				} else {
-
-					models[ name ] = gltf.scene;
-
-				}
-
-				resolve();
-
-			}, undefined, reject );
-
-		} )
-	);
-
-	await Promise.all( promises );
-
-}
-
-async function init() {
+	const assetBaseUrl = options.assetBaseUrl || '';
+	const mapParam = options.map ?? ( options.useQueryMap ? new URLSearchParams( window.location.search ).get( 'map' ) : null );
+	const vehicleColor = options.vehicleColor || 'yellow';
+	const width = container.clientWidth || window.innerWidth;
+	const height = container.clientHeight || window.innerHeight;
+	let animationFrame = 0;
+	let destroyed = false;
 
 	registerAll();
-	await loadModels();
 
-	const mapParam = new URLSearchParams( window.location.search ).get( 'map' );
+	const renderer = new THREE.WebGLRenderer( { antialias: true, outputBufferType: THREE.HalfFloatType } );
+	renderer.setSize( width, height );
+	renderer.setPixelRatio( window.devicePixelRatio );
+	renderer.shadowMap.enabled = true;
+	renderer.toneMapping = THREE.ACESFilmicToneMapping;
+	renderer.toneMappingExposure = 1.0;
+
+	const bloomPass = new UnrealBloomPass( new THREE.Vector2( width, height ) );
+	bloomPass.strength = 0.02;
+	bloomPass.radius = 0.02;
+	bloomPass.threshold = 0.5;
+
+	if ( typeof renderer.setEffects === 'function' ) {
+
+		renderer.setEffects( [ bloomPass ] );
+
+	}
+
+	container.appendChild( renderer.domElement );
+
+	const scene = new THREE.Scene();
+	scene.background = new THREE.Color( 0xadb2ba );
+	scene.fog = new THREE.Fog( 0xadb2ba, 30, 55 );
+
+	const dirLight = new THREE.DirectionalLight( 0xffffff, 3 );
+	dirLight.position.set( 11.4, 15, -5.3 );
+	dirLight.castShadow = true;
+	dirLight.shadow.mapSize.setScalar( 4096 );
+	dirLight.shadow.camera.near = 0.5;
+	dirLight.shadow.camera.far = 60;
+	dirLight.shadow.radius = 4;
+	scene.add( dirLight );
+
+	const hemiLight = new THREE.HemisphereLight( 0xc8d8e8, 0x7a8a5a, 2 );
+	hemiLight.position.copy( dirLight.position );
+	scene.add( hemiLight );
+
+	const models = await loadModels( assetBaseUrl );
+
+	if ( destroyed ) {
+
+		renderer.dispose();
+		return { destroy() {} };
+
+	}
+
 	let customCells = null;
 	let spawn = null;
 
@@ -136,7 +99,6 @@ async function init() {
 
 	}
 
-	// Compute track bounds and size physics/shadows to fit
 	const bounds = computeTrackBounds( customCells );
 	const hw = bounds.halfWidth;
 	const hd = bounds.halfDepth;
@@ -154,8 +116,6 @@ async function init() {
 
 	buildTrack( scene, models, customCells );
 
-	// Probes
-
 	const probeHeight = 6;
 	const probes = new LightProbeGrid(
 		hw * 2, probeHeight, hd * 2,
@@ -166,10 +126,6 @@ async function init() {
 	probes.position.set( bounds.centerX, probeHeight / 2, bounds.centerZ );
 	probes.bake( renderer, scene, { cubemapSize: 32, near: 0.1, far: groundSize } );
 	scene.add( probes );
-
-	// scene.add( new LightProbeGridHelper( probes, 0.5 ) );
-
-	//
 
 	const worldSettings = createWorldSettings();
 	worldSettings.gravity = [ 0, - 9.81, 0 ];
@@ -213,25 +169,24 @@ async function init() {
 
 	}
 
-	const vehicleGroup = vehicle.init( models[ 'vehicle-truck-yellow' ] );
+	const vehicleModelName = `vehicle-truck-${ vehicleColor }`;
+	const vehicleGroup = vehicle.init( models[ vehicleModelName ] || models[ 'vehicle-truck-yellow' ] );
 	scene.add( vehicleGroup );
 
 	dirLight.target = vehicleGroup;
 
-	const cam = new Camera();
+	const cam = new Camera( { width, height } );
 	scene.add( cam.debug );
 	cam.smoothedDesired.copy( vehicle.spherePos );
 
-	const controls = new Controls();
-
-	const particles = new SmokeTrails( scene );
+	const controls = new Controls( { container } );
+	const particles = new SmokeTrails( scene, { assetBaseUrl } );
 	const driftMarks = new DriftMarks( scene );
 
 	const audio = new GameAudio();
-	audio.init( cam.camera );
+	audio.init( cam.camera, { assetBaseUrl, target: window } );
 
 	const _forward = new THREE.Vector3();
-
 	const contactListener = {
 		onContactAdded( bodyA, bodyB ) {
 
@@ -247,19 +202,31 @@ async function init() {
 		}
 	};
 
+	const onResize = () => {
+
+		const nextWidth = container.clientWidth || window.innerWidth;
+		const nextHeight = container.clientHeight || window.innerHeight;
+		renderer.setSize( nextWidth, nextHeight );
+		bloomPass.setSize( nextWidth, nextHeight );
+		cam.resize( nextWidth, nextHeight );
+
+	};
+
+	window.addEventListener( 'resize', onResize );
+
 	const timer = new THREE.Timer();
 
 	function animate() {
 
-		requestAnimationFrame( animate );
+		if ( destroyed ) return;
+
+		animationFrame = requestAnimationFrame( animate );
 
 		timer.update();
 		const dt = Math.min( timer.getDelta(), 1 / 30 );
-
 		const input = controls.update();
 
 		updateWorld( world, contactListener, dt );
-
 		vehicle.update( dt, input );
 
 		dirLight.position.set(
@@ -279,6 +246,72 @@ async function init() {
 
 	animate();
 
+	return {
+		destroy() {
+
+			destroyed = true;
+			cancelAnimationFrame( animationFrame );
+			window.removeEventListener( 'resize', onResize );
+			controls.dispose();
+			particles.dispose();
+			driftMarks.dispose();
+			audio.dispose();
+			renderer.domElement.remove();
+			renderer.dispose();
+
+		}
+	};
+
 }
 
-init();
+async function loadModels( assetBaseUrl ) {
+
+	const loader = new GLTFLoader();
+	const models = {};
+	const promises = modelNames.map( ( name ) =>
+		new Promise( ( resolve, reject ) => {
+
+			loader.load( `${ assetBaseUrl }models/${ name }.glb`, ( gltf ) => {
+
+				const meshes = [];
+				gltf.scene.traverse( ( child ) => {
+
+					if ( child.isMesh ) {
+
+						child.material.side = THREE.FrontSide;
+						meshes.push( child );
+
+					}
+
+				} );
+
+				if ( name.startsWith( 'vehicle-' ) ) {
+
+					gltf.scene.scale.setScalar( 0.5 );
+
+				}
+
+				if ( meshes.length === 1 ) {
+
+					const mesh = meshes[ 0 ];
+					mesh.removeFromParent();
+					models[ name ] = mesh;
+
+				} else {
+
+					models[ name ] = gltf.scene;
+
+				}
+
+				resolve();
+
+			}, undefined, reject );
+
+		} )
+	);
+
+	await Promise.all( promises );
+
+	return models;
+
+}

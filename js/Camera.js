@@ -6,9 +6,12 @@ const _lookPoint = new THREE.Vector3();
 
 export class Camera {
 
-	constructor() {
+	constructor( options = {} ) {
 
-		this.camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 0.1, 60 );
+		const width = options.width || window.innerWidth;
+		const height = options.height || window.innerHeight;
+
+		this.camera = new THREE.PerspectiveCamera( 40, width / height, 0.1, 60 );
 
 		// Matches Godot View: 45° azimuth, 35° elevation, distance 16
 		this.offset = new THREE.Vector3( 9.27, 9.18, 9.27 );
@@ -45,12 +48,12 @@ export class Camera {
 			new THREE.Matrix4().makeBasis( this.camRightXZ, new THREE.Vector3( 0, 1, 0 ), this.camForwardXZ )
 		);
 
-		window.addEventListener( 'resize', () => {
+	}
 
-			this.camera.aspect = window.innerWidth / window.innerHeight;
-			this.camera.updateProjectionMatrix();
+	resize( width, height ) {
 
-		} );
+		this.camera.aspect = width / height;
+		this.camera.updateProjectionMatrix();
 
 	}
 
