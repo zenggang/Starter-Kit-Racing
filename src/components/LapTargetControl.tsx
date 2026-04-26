@@ -11,11 +11,11 @@ export function LapTargetControl({
 }) {
   return (
     <div className="row row-wrap">
-      <button type="button" disabled={disabled || value <= 1} onClick={() => onChange(value - 1)} aria-label="Decrease lap target">
+      <button type="button" className="step-button" disabled={disabled || value <= 1} onClick={() => onChange(value - 1)} aria-label="减少圈数">
         -
       </button>
-      <strong>{value} laps</strong>
-      <button type="button" disabled={disabled || value >= 10} onClick={() => onChange(value + 1)} aria-label="Increase lap target">
+      <strong className="lap-readout">{value} 圈</strong>
+      <button type="button" className="step-button" disabled={disabled || value >= 10} onClick={() => onChange(value + 1)} aria-label="增加圈数">
         +
       </button>
     </div>

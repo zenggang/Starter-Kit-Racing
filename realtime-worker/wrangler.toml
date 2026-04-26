@@ -1,6 +1,7 @@
 name = "starter-kit-racing-realtime"
 main = "src/index.ts"
 compatibility_date = "2026-04-26"
+account_id = "362b5ea02172bd1102c33182b36be019"
 
 [[durable_objects.bindings]]
 name = "ROOM_COORDINATOR"

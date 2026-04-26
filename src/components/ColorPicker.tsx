@@ -9,6 +9,13 @@ const COLOR_HEX: Record<PlayerColor, string> = {
   red: '#ef5350'
 };
 
+const COLOR_LABELS: Record<PlayerColor, string> = {
+  yellow: '黄色赛车',
+  green: '绿色赛车',
+  purple: '紫色赛车',
+  red: '红色赛车'
+};
+
 export function ColorPicker({
   selected,
   taken,
@@ -21,18 +28,20 @@ export function ColorPicker({
   onSelect(color: PlayerColor): void;
 }) {
   return (
-    <div className="color-grid" aria-label="Vehicle color">
+    <div className="color-grid" aria-label="赛车颜色">
       {PLAYER_COLORS.map((color) => (
         <button
           key={color}
           type="button"
           className="color-swatch"
-          aria-label={color}
+          aria-label={COLOR_LABELS[color]}
           aria-pressed={selected === color}
           disabled={disabled || (taken.includes(color) && selected !== color)}
           onClick={() => onSelect(color)}
           style={{ background: COLOR_HEX[color] }}
-        />
+        >
+          <span>{COLOR_LABELS[color]}</span>
+        </button>
       ))}
     </div>
   );

@@ -123,16 +123,19 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     const coordinator = createCoordinator();
 
     await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
+    await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
+    await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
+    const singlePlayerStart = await coordinator.execute(command('room.start', 'host-1', {}));
+
     await coordinator.execute(command('room.join', 'player-2', { nickname: 'Guest' }));
 
     const nonHostStart = await coordinator.execute(command('room.start', 'player-2', {}));
-    await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
-    await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
     const missingGuestReadyAndColor = await coordinator.execute(command('room.start', 'host-1', {}));
     await coordinator.execute(command('room.chooseColor', 'player-2', { color: 'green' }));
     await coordinator.execute(command('room.ready', 'player-2', { ready: true }));
     const started = await coordinator.execute(command('room.start', 'host-1', {}));
 
+    expect(singlePlayerStart).toMatchObject({ ok: false, errorCode: 'MIN_PLAYERS_REQUIRED' });
     expect(nonHostStart).toMatchObject({ ok: false, errorCode: 'ONLY_HOST_CAN_START' });
     expect(missingGuestReadyAndColor).toMatchObject({ ok: false, errorCode: 'NOT_ALL_PLAYERS_READY' });
     expect(started.ok).toBe(true);

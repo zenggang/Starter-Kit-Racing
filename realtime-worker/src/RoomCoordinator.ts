@@ -204,6 +204,10 @@ export class RoomCoordinator {
       return commandError(command.commandId, room.seq, 'ONLY_HOST_CAN_START');
     }
 
+    if (room.players.length < 2) {
+      return commandError(command.commandId, room.seq, 'MIN_PLAYERS_REQUIRED');
+    }
+
     const everyoneReadyWithColor = room.players.length > 0 && room.players.every((player) => player.ready && player.color);
     if (!everyoneReadyWithColor) {
       return commandError(command.commandId, room.seq, 'NOT_ALL_PLAYERS_READY');

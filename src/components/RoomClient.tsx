@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { RoomLobbyPanel } from './RoomLobbyPanel';
 import { useRoomSession } from '@/realtime/useRoomSession';
+import { formatRacingError } from '@/realtime/errorMessages';
 import { createCommand } from '@/realtime/sessionReducer';
 import { usePlayerSession } from '@/session/usePlayerSession';
 
@@ -27,12 +28,13 @@ export function RoomClient({ code }: { code: string }) {
   }, [router, snapshot]);
 
   return (
-    <section className="stack">
-      <div>
-        <h1>Room {code}</h1>
-        <p className="muted">Connection: {connectionState}</p>
+    <section className="race-layout">
+      <div className="race-page-head">
+        <p className="eyebrow">发车格</p>
+        <h1>房间 {code}</h1>
+        <p className="muted">连接状态：{connectionState === 'connected' ? '已连接' : '连接中'}</p>
       </div>
-      {lastErrorCode ? <p className="error">{lastErrorCode}</p> : null}
+      {lastErrorCode ? <p className="error-banner">{formatRacingError(lastErrorCode)}</p> : null}
       <RoomLobbyPanel room={snapshot} player={session} disabled={connectionState !== 'connected'} onCommand={sendCommand} />
     </section>
   );

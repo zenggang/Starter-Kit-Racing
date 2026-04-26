@@ -8,6 +8,7 @@ import { JoinRoomForm } from './JoinRoomForm';
 import { requestCoordinatorTicket, sendBridgeCommand } from '@/realtime/sessionClient';
 import type { HallRoomSummary } from '@/server/rooms';
 import { createCommand } from '@/realtime/sessionReducer';
+import { formatRacingError } from '@/realtime/errorMessages';
 import { usePlayerSession } from '@/session/usePlayerSession';
 
 export function HallClient() {
@@ -46,14 +47,17 @@ export function HallClient() {
   }
 
   return (
-    <section className="stack">
-      <div>
-        <h1>Hall</h1>
-        <p className="muted">Create or join a room from a phone-friendly lobby.</p>
+    <section className="race-layout">
+      <div className="race-page-head">
+        <p className="eyebrow">维修区</p>
+        <h1>赛车大厅</h1>
+        <p className="muted">创建房间、输入房间码，或加入正在等候的比赛。</p>
       </div>
-      {errorCode ? <p className="error">{errorCode}</p> : null}
-      <CreateRoomForm player={session} disabled={busy} onCreate={(command) => sendHallCommand('new', command)} />
-      <JoinRoomForm player={session} disabled={busy} onJoin={sendHallCommand} />
+      {errorCode ? <p className="error-banner">{formatRacingError(errorCode)}</p> : null}
+      <div className="hall-grid">
+        <CreateRoomForm player={session} disabled={busy} onCreate={(command) => sendHallCommand('new', command)} />
+        <JoinRoomForm player={session} disabled={busy} onJoin={sendHallCommand} />
+      </div>
       <HallRoomList rooms={rooms} onJoin={(code) => session && sendHallCommand(code, createCommand('room.join', session.playerId))} />
     </section>
   );
