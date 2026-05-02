@@ -10,12 +10,19 @@ interface TrackPoint {
   z: number;
 }
 
+interface FinishLineAnchor {
+  point: TrackPoint;
+  normal: TrackPoint;
+  checkpointIndex: number;
+}
+
 export interface TrackProgressModel {
   bounds: ReturnType<typeof computeTrackBounds>;
   points: TrackPoint[];
   checkpoints: number;
   totalLength: number;
   cumulativeLengths: number[];
+  finishLine: FinishLineAnchor;
 }
 
 export interface LocalRaceProgressState {
@@ -24,6 +31,8 @@ export interface LocalRaceProgressState {
   lastCheckpoint: number;
   finished: boolean;
   finishSent: boolean;
+  finishLineArmed: boolean;
+  previousFinishProjection: null | number;
 }
 
 const ORIENT_TO_TURNS: Record<number, number> = {
@@ -71,12 +80,28 @@ export function buildTrackProgressModel(trackMap: string | null): TrackProgressM
     cumulativeLengths.push(totalLength);
   }
 
+  const finishCheckpointIndex = Math.max(
+    0,
+    orderedCells.findIndex((cell) => cell[2] === 'track-finish')
+  );
+  const finishPoint = points[finishCheckpointIndex];
+  const finishNextPoint = points[(finishCheckpointIndex + 1) % points.length];
+  const finishNormal = normalizeVector({
+    x: finishNextPoint.x - finishPoint.x,
+    z: finishNextPoint.z - finishPoint.z
+  });
+
   return {
     bounds: computeTrackBounds(cells),
     points,
     checkpoints: points.length,
     totalLength,
-    cumulativeLengths
+    cumulativeLengths,
+    finishLine: {
+      point: finishPoint,
+      normal: finishNormal,
+      checkpointIndex: finishCheckpointIndex
+    }
   };
 }
 
@@ -86,7 +111,9 @@ export function createInitialRaceProgressState(): LocalRaceProgressState {
     lastNormalizedProgress: 0,
     lastCheckpoint: 0,
     finished: false,
-    finishSent: false
+    finishSent: false,
+    finishLineArmed: false,
+    previousFinishProjection: null
   };
 }
 
@@ -102,9 +129,18 @@ export function advanceRaceProgress(
 ): { state: LocalRaceProgressState; payload: MatchProgressPayload } {
   const sample = sampleTrackProgress(model, snapshot.position);
   let completedLaps = state.completedLaps;
+  let finishLineArmed = state.finishLineArmed || !isNearFinishLine(model, sample.checkpoint) || sample.normalizedProgress > 0.5;
+  const finishProjection = signedFinishProjection(model, snapshot.position);
 
-  if (state.lastNormalizedProgress > 0.85 && sample.normalizedProgress < 0.15 && sample.checkpoint < state.lastCheckpoint) {
+  if (
+    finishLineArmed &&
+    state.previousFinishProjection !== null &&
+    state.previousFinishProjection < 0 &&
+    finishProjection >= 0 &&
+    isNearFinishLine(model, sample.checkpoint)
+  ) {
     completedLaps += 1;
+    finishLineArmed = false;
   }
 
   const finished = completedLaps >= lapTarget;
@@ -113,7 +149,9 @@ export function advanceRaceProgress(
     lastNormalizedProgress: finished ? 1 : sample.normalizedProgress,
     lastCheckpoint: sample.checkpoint,
     finished,
-    finishSent: state.finishSent
+    finishSent: state.finishSent,
+    finishLineArmed: finished ? false : finishLineArmed,
+    previousFinishProjection: finishProjection
   };
 
   return {
@@ -237,4 +275,24 @@ function segmentLength(model: TrackProgressModel, index: number): number {
   const start = model.points[index];
   const end = model.points[(index + 1) % model.points.length];
   return Math.hypot(end.x - start.x, end.z - start.z);
+}
+
+function signedFinishProjection(model: TrackProgressModel, position: RuntimeSnapshot['position']): number {
+  return (
+    (position.x - model.finishLine.point.x) * model.finishLine.normal.x +
+    (position.z - model.finishLine.point.z) * model.finishLine.normal.z
+  );
+}
+
+function isNearFinishLine(model: TrackProgressModel, checkpoint: number): boolean {
+  const distance = Math.abs(checkpoint - model.finishLine.checkpointIndex);
+  return distance <= 1 || distance >= model.checkpoints - 1;
+}
+
+function normalizeVector(vector: TrackPoint): TrackPoint {
+  const length = Math.hypot(vector.x, vector.z) || 1;
+  return {
+    x: vector.x / length,
+    z: vector.z / length
+  };
 }
