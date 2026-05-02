@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import type { MatchState } from '@/realtime/protocol';
 import type { TrackProgressModel } from '@/game/trackProgress';
+import { formatRaceDuration, getFinishDeadlineRemainingMs, getPlayerRaceTimeMs, getRaceElapsedMs } from '@/game/raceTiming';
 
 /**
  * HUD stays in React so coordinator snapshots, leaderboard text, and minimap
@@ -16,12 +18,31 @@ export function RaceHud({
   currentPlayerId: string;
   model: TrackProgressModel | null;
 }) {
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  const matchId = match?.id ?? null;
+
+  useEffect(() => {
+    if (!matchId) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 100);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [matchId]);
+
   if (!match) return null;
 
   const orderedPlayers = [...match.players].sort((left, right) => left.rank - right.rank || left.playerId.localeCompare(right.playerId));
   const current = orderedPlayers.find((player) => player.playerId === currentPlayerId) ?? null;
   const currentLapNumber = current ? Math.min(match.lapTarget, current.completedLaps + (current.finishedAt ? 0 : 1)) : 1;
   const currentLapProgress = current ? Math.round(current.lapProgress * 100) : 0;
+  const currentTimerMs = current?.finishedAt ? getPlayerRaceTimeMs(match, current) : getRaceElapsedMs(match, nowMs);
+  const finishCountdownMs = getFinishDeadlineRemainingMs(match, nowMs);
 
   return (
     <>
@@ -29,6 +50,8 @@ export function RaceHud({
         <span className="panel-kicker">当前圈数</span>
         <strong>{current ? `${current.completedLaps}/${match.lapTarget}` : `0/${match.lapTarget}`}</strong>
         <span className="muted">当前第 {currentLapNumber} 圈 · 本圈进度 {currentLapProgress}%</span>
+        <span className="muted">比赛计时：{formatRaceDuration(currentTimerMs)}</span>
+        {finishCountdownMs !== null ? <span className="muted">终点倒计时：{formatRaceDuration(finishCountdownMs)}</span> : null}
         <span className="muted">阶段：{match.phase === 'finished' ? '已完赛' : '比赛中'}</span>
       </section>
 
@@ -42,7 +65,7 @@ export function RaceHud({
             <div key={player.playerId} className={`race-leaderboard-row driver-${player.color}`}>
               <span>#{player.rank}</span>
               <strong>{player.nickname}</strong>
-              <span>{player.completedLaps}/{match.lapTarget} 圈 · {Math.round(player.lapProgress * 100)}%</span>
+              <span>{formatLeaderboardStatus(match, player)}</span>
             </div>
           ))}
         </div>
@@ -70,6 +93,20 @@ export function RaceHud({
       ) : null}
     </>
   );
+}
+
+function formatLeaderboardStatus(match: MatchState, player: MatchState['players'][number]): string {
+  const raceTimeMs = getPlayerRaceTimeMs(match, player);
+
+  if (raceTimeMs !== null) {
+    return `完赛 ${formatRaceDuration(raceTimeMs)}`;
+  }
+
+  if (match.phase === 'finished') {
+    return `未完赛 · ${player.completedLaps}/${match.lapTarget} 圈 · ${Math.round(player.lapProgress * 100)}%`;
+  }
+
+  return `${player.completedLaps}/${match.lapTarget} 圈 · ${Math.round(player.lapProgress * 100)}%`;
 }
 
 function normalizeX(value: number, model: TrackProgressModel): number {

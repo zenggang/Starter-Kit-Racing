@@ -104,6 +104,7 @@ export interface MatchState {
   trackMap: string | null;
   startedAt: string;
   finishedAt: string | null;
+  finishDeadlineAt?: string | null;
   winnerPlayerId: string | null;
   players: MatchPlayerState[];
 }

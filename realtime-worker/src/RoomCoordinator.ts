@@ -24,6 +24,7 @@ import type { RoomStorage } from './storage';
 type Clock = () => number;
 type RoomCodeGenerator = () => string;
 type MatchIdGenerator = () => string;
+const MATCH_FINISH_WINDOW_MS = 60 * 1000;
 
 export interface RoomCoordinatorOptions {
   now?: Clock;
@@ -66,6 +67,8 @@ export class RoomCoordinator {
     if (!isAuthTicketValid(command.authTicket as AuthTicket | undefined, command.playerId, now, room.code)) {
       return commandError(command.commandId, room.seq, 'AUTH_TICKET_INVALID');
     }
+
+    await this.finalizeMatchIfDeadlineReached(room, now);
 
     if (command.type === 'sync.request') {
       return this.success(command.commandId, room);
@@ -383,14 +386,14 @@ export class RoomCoordinator {
     player.presence = player.finishedAt ? 'finished' : 'connected';
     updateMatchRanks(match);
 
+    if (player.finishedAt && !match.winnerPlayerId) {
+      match.winnerPlayerId = player.playerId;
+    }
+
     if (match.players.every((candidate) => candidate.finishedAt)) {
-      const finishedAt = new Date(now).toISOString();
-      match.phase = 'finished';
-      match.finishedAt = finishedAt;
-      match.winnerPlayerId = match.players[0]?.playerId ?? null;
-      room.status = 'finished';
-      room.finishedAt = finishedAt;
-      room.expiresAt = new Date(now + FINISHED_ROOM_TTL_MS).toISOString();
+      finalizeFinishedMatch(room, now);
+    } else if (player.finishedAt && !match.finishDeadlineAt) {
+      match.finishDeadlineAt = new Date(now + MATCH_FINISH_WINDOW_MS).toISOString();
     }
 
     return this.mutate(command.commandId, room);
@@ -408,6 +411,21 @@ export class RoomCoordinator {
     if (room.status === 'closed') return false;
     if (room.status !== 'waiting' && room.status !== 'finished') return false;
     return Date.parse(room.expiresAt) <= now;
+  }
+
+  private async finalizeMatchIfDeadlineReached(room: RoomState, now: number): Promise<void> {
+    const match = room.activeMatch;
+    if (!match || room.status !== 'racing' || match.phase !== 'live' || !match.finishDeadlineAt) {
+      return;
+    }
+
+    if (Date.parse(match.finishDeadlineAt) > now) {
+      return;
+    }
+
+    finalizeFinishedMatch(room, now);
+    room.seq += 1;
+    await this.storage.saveRoom(room);
   }
 
   private async mutate(commandId: string | undefined, room: RoomState): Promise<CommandResult> {
@@ -450,6 +468,7 @@ function createMatchState(room: RoomState, startedAt: string): MatchState {
     trackMap: room.trackMap,
     startedAt,
     finishedAt: null,
+    finishDeadlineAt: null,
     winnerPlayerId: null,
     players: room.players.map((player) => ({
       playerId: player.playerId,
@@ -539,6 +558,23 @@ function updateMatchRanks(match: MatchState): void {
       target.rank = index + 1;
     }
   });
+}
+
+function finalizeFinishedMatch(room: RoomState, now: number): void {
+  const match = room.activeMatch;
+  if (!match) {
+    return;
+  }
+
+  updateMatchRanks(match);
+
+  const finishedAt = new Date(now).toISOString();
+  match.phase = 'finished';
+  match.finishedAt = finishedAt;
+  match.winnerPlayerId = match.players[0]?.playerId ?? null;
+  room.status = 'finished';
+  room.finishedAt = finishedAt;
+  room.expiresAt = new Date(now + FINISHED_ROOM_TTL_MS).toISOString();
 }
 
 function stripActiveMatch(room: RoomState): RoomState {

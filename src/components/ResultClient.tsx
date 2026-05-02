@@ -6,6 +6,8 @@ import { formatRacingError } from '@/realtime/errorMessages';
 import { createMatchCommand } from '@/realtime/matchReducer';
 import { useMatchSession } from '@/realtime/useMatchSession';
 import { usePlayerSession } from '@/session/usePlayerSession';
+import { formatRaceDuration, getPlayerRaceTimeMs } from '@/game/raceTiming';
+import type { MatchPlayerState, MatchState } from '@/realtime/protocol';
 
 /**
  * Result page stays on the same coordinator-driven match snapshot used by the
@@ -20,6 +22,8 @@ export function ResultClient({ code }: { code: string }) {
   const sortedPlayers = useMemo(() => {
     return [...(match?.players ?? [])].sort((left, right) => left.rank - right.rank || left.playerId.localeCompare(right.playerId));
   }, [match?.players]);
+  const winner = useMemo(() => sortedPlayers.find((player) => player.rank === 1) ?? null, [sortedPlayers]);
+  const winnerTimeMs = match && winner ? getPlayerRaceTimeMs(match, winner) : null;
 
   useEffect(() => {
     if (room?.status === 'racing') {
@@ -51,6 +55,7 @@ export function ResultClient({ code }: { code: string }) {
         <p className="eyebrow">终点线</p>
         <h1>结果 {code}</h1>
         <p className="muted">连接状态：{connectionState === 'connected' ? '已连接' : '连接中'}</p>
+        {winnerTimeMs !== null ? <p className="muted">冠军用时：{formatRaceDuration(winnerTimeMs)}</p> : null}
       </div>
       {lastErrorCode ? <p className="error-banner">{formatRacingError(lastErrorCode)}</p> : null}
 
@@ -69,7 +74,7 @@ export function ResultClient({ code }: { code: string }) {
               <span className="driver-role">#{player.rank}</span>
               <strong>{player.nickname}</strong>
               <span>{player.completedLaps}/{match?.lapTarget ?? room?.lapTarget ?? 0} 圈</span>
-              <span>{player.finishedAt ? '已完赛' : '未完赛'}</span>
+              <span>{formatResultStatus(match, room?.lapTarget ?? 0, player)}</span>
             </div>
           ))}
         </section>
@@ -87,4 +92,18 @@ export function ResultClient({ code }: { code: string }) {
       </div>
     </section>
   );
+}
+
+function formatResultStatus(match: MatchState | null, lapTarget: number, player: MatchPlayerState): string {
+  if (!match) {
+    return `${player.completedLaps}/${lapTarget} 圈`;
+  }
+
+  const raceTimeMs = getPlayerRaceTimeMs(match, player);
+
+  if (raceTimeMs !== null) {
+    return `完赛用时 ${formatRaceDuration(raceTimeMs)}`;
+  }
+
+  return `未完赛 · ${player.completedLaps}/${lapTarget} 圈 · ${Math.round(player.lapProgress * 100)}%`;
 }

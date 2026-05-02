@@ -269,6 +269,69 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     );
   });
 
+  it('opens a 60 second finish window after the leader finishes and marks trailing racers as unfinished at timeout', async () => {
+    let now = START;
+    const coordinator = new RoomCoordinator(new InMemoryRoomStorage(), {
+      now: () => now,
+      roomCodeGenerator: () => 'ABCD12'
+    });
+
+    await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }, 'room.create:host-1', now));
+    await coordinator.execute(command('room.join', 'player-2', { nickname: 'Guest' }, 'room.join:player-2', now));
+    await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }, 'room.chooseColor:host-1', now));
+    await coordinator.execute(command('room.chooseColor', 'player-2', { color: 'green' }, 'room.chooseColor:player-2', now));
+    await coordinator.execute(command('room.ready', 'host-1', { ready: true }, 'room.ready:host-1', now));
+    await coordinator.execute(command('room.ready', 'player-2', { ready: true }, 'room.ready:player-2', now));
+    await coordinator.execute(command('room.start', 'host-1', {}, 'room.start:host-1', now));
+
+    now += 5_000;
+    const leaderFinished = await coordinator.execute(
+      command(
+        'match.progress',
+        'host-1',
+        {
+          checkpoint: 0,
+          completedLaps: 3,
+          lapProgress: 1,
+          position: { x: 8, y: 0.5, z: 4 },
+          heading: 0.1,
+          speed: 1.2,
+          finished: true
+        },
+        'match.progress:host-finish',
+        now
+      )
+    );
+
+    expect(leaderFinished.match).toMatchObject({
+      phase: 'live',
+      winnerPlayerId: 'host-1',
+      finishDeadlineAt: new Date(now + 60_000).toISOString()
+    });
+    expect(leaderFinished.room?.status).toBe('racing');
+
+    now += 60_001;
+    const timedOut = await coordinator.execute(command('match.sync', 'player-2', {}, 'match.sync:player-2', now));
+
+    expect(timedOut.room?.status).toBe('finished');
+    expect(timedOut.match).toMatchObject({
+      phase: 'finished',
+      winnerPlayerId: 'host-1'
+    });
+    expect(timedOut.match?.players).toEqual([
+      expect.objectContaining({
+        playerId: 'host-1',
+        rank: 1,
+        finishedAt: expect.any(String)
+      }),
+      expect.objectContaining({
+        playerId: 'player-2',
+        rank: 2,
+        finishedAt: null
+      })
+    ]);
+  });
+
   it('completes a full single-player online race and reopens the room for rematch', async () => {
     const coordinator = createCoordinator();
 
