@@ -119,28 +119,74 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     expect(takenColor).toMatchObject({ ok: false, errorCode: 'COLOR_TAKEN' });
   });
 
-  it('requires the host, every player readiness, and every player color before starting', async () => {
+  it('lets the host start alone after choosing a color and getting ready', async () => {
     const coordinator = createCoordinator();
 
     await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
     await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
     await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
-    const singlePlayerStart = await coordinator.execute(command('room.start', 'host-1', {}));
+
+    const started = await coordinator.execute(command('room.start', 'host-1', {}));
+
+    expect(started.ok).toBe(true);
+    expect(started.room?.status).toBe('racing');
+    expect(started.room?.startedAt).toBe(new Date(START).toISOString());
+    expect(started.match?.players).toEqual([
+      expect.objectContaining({
+        playerId: 'host-1',
+        color: 'yellow'
+      })
+    ]);
+  });
+
+  it('still requires the host, and includes ready guests when a multiplayer room starts', async () => {
+    const coordinator = createCoordinator();
+
+    await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
+    await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
+    await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
 
     await coordinator.execute(command('room.join', 'player-2', { nickname: 'Guest' }));
 
     const nonHostStart = await coordinator.execute(command('room.start', 'player-2', {}));
-    const missingGuestReadyAndColor = await coordinator.execute(command('room.start', 'host-1', {}));
     await coordinator.execute(command('room.chooseColor', 'player-2', { color: 'green' }));
     await coordinator.execute(command('room.ready', 'player-2', { ready: true }));
     const started = await coordinator.execute(command('room.start', 'host-1', {}));
 
-    expect(singlePlayerStart).toMatchObject({ ok: false, errorCode: 'MIN_PLAYERS_REQUIRED' });
     expect(nonHostStart).toMatchObject({ ok: false, errorCode: 'ONLY_HOST_CAN_START' });
-    expect(missingGuestReadyAndColor).toMatchObject({ ok: false, errorCode: 'NOT_ALL_PLAYERS_READY' });
     expect(started.ok).toBe(true);
     expect(started.room?.status).toBe('racing');
     expect(started.room?.startedAt).toBe(new Date(START).toISOString());
+    expect(started.match?.players).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ playerId: 'host-1', color: 'yellow' }),
+        expect.objectContaining({ playerId: 'player-2', color: 'green' })
+      ])
+    );
+  });
+
+  it('does not let an unready guest block the host from running the single-player path', async () => {
+    const coordinator = createCoordinator();
+
+    await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
+    await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
+    await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
+    await coordinator.execute(command('room.join', 'player-2', { nickname: 'Guest' }));
+
+    const started = await coordinator.execute(command('room.start', 'host-1', {}));
+
+    expect(started.ok).toBe(true);
+    expect(started.match?.players).toEqual([
+      expect.objectContaining({
+        playerId: 'host-1',
+        color: 'yellow'
+      })
+    ]);
+    expect(started.room?.players).toEqual([
+      expect.objectContaining({
+        playerId: 'host-1'
+      })
+    ]);
   });
 
   it('tracks match progress, finalizes results, and allows the host to rematch', async () => {
@@ -221,6 +267,61 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
         expect.objectContaining({ playerId: 'player-2', ready: false })
       ])
     );
+  });
+
+  it('completes a full single-player online race and reopens the room for rematch', async () => {
+    const coordinator = createCoordinator();
+
+    await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
+    await coordinator.execute(command('room.setLapTarget', 'host-1', { lapTarget: 2 }));
+    await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
+    await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
+
+    const started = await coordinator.execute(command('room.start', 'host-1', {}));
+    expect(started.ok).toBe(true);
+    expect(started.room?.status).toBe('racing');
+    expect(started.match?.players).toHaveLength(1);
+
+    await coordinator.execute(command('match.join', 'host-1', {}));
+
+    const finished = await coordinator.execute(
+      command('match.progress', 'host-1', {
+        checkpoint: 0,
+        completedLaps: 2,
+        lapProgress: 1,
+        position: { x: 10, y: 0.5, z: 8 },
+        heading: 0.2,
+        speed: 1,
+        finished: true
+      })
+    );
+
+    expect(finished.room).toMatchObject({
+      status: 'finished',
+      lapTarget: 2
+    });
+    expect(finished.match).toMatchObject({
+      phase: 'finished',
+      winnerPlayerId: 'host-1'
+    });
+    expect(finished.match?.players).toEqual([
+      expect.objectContaining({
+        playerId: 'host-1',
+        rank: 1,
+        completedLaps: 2,
+        finishedAt: expect.any(String)
+      })
+    ]);
+
+    const rematch = await coordinator.execute(command('room.rematch', 'host-1', {}));
+
+    expect(rematch.room).toMatchObject({
+      status: 'waiting',
+      startedAt: null,
+      finishedAt: null,
+      matchId: null
+    });
+    expect(rematch.match).toBeUndefined();
   });
 
   it('closes waiting rooms that pass the 60 minute expiration window', async () => {

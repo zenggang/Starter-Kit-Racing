@@ -21,7 +21,7 @@ export function RoomLobbyPanel({
   const current = room?.players.find((candidate) => candidate.playerId === player?.playerId) ?? null;
   const takenColors = room?.players.map((candidate) => candidate.color).filter((color): color is PlayerColor => Boolean(color)) ?? [];
   const isHost = current?.isHost ?? false;
-  const canStart = Boolean(isHost && room && room.players.length >= 2 && room.players.every((member) => member.ready && member.color));
+  const canStart = Boolean(isHost && current?.ready && current?.color);
 
   if (!room || !player) {
     return <p className="loading-copy">正在连接房间数据...</p>;
@@ -90,7 +90,11 @@ export function RoomLobbyPanel({
           </Link>
         ) : null}
       </div>
-      <p className="muted start-hint">{room.players.length < 2 ? '至少需要 2 名车手才能发车。' : '所有车手选车并准备后，房主可以发车。'}</p>
+      <p className="muted start-hint">
+        {room.players.length === 1
+          ? '单人在线模式下，房主选车并准备后即可发车。'
+          : '房主当前可以单人发车；其他已选车且已准备的车手会一起进入比赛。'}
+      </p>
     </div>
   );
 }

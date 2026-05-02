@@ -258,16 +258,18 @@ export class RoomCoordinator {
       return commandError(command.commandId, room.seq, 'ONLY_HOST_CAN_START');
     }
 
-    if (room.players.length < 2) {
-      return commandError(command.commandId, room.seq, 'MIN_PLAYERS_REQUIRED');
+    const host = this.findRoomPlayer(room, command.playerId);
+    if (!host || !host.ready || !host.color) {
+      return commandError(command.commandId, room.seq, 'NOT_ALL_PLAYERS_READY');
     }
 
-    const everyoneReadyWithColor = room.players.length > 0 && room.players.every((player) => player.ready && player.color);
-    if (!everyoneReadyWithColor) {
+    const eligiblePlayers = room.players.filter((player) => player.ready && player.color);
+    if (eligiblePlayers.length === 0) {
       return commandError(command.commandId, room.seq, 'NOT_ALL_PLAYERS_READY');
     }
 
     const startedAt = new Date(now).toISOString();
+    room.players = eligiblePlayers;
     room.status = 'racing';
     room.startedAt = startedAt;
     room.finishedAt = null;

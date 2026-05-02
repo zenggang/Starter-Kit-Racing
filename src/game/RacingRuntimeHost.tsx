@@ -46,7 +46,7 @@ export function RacingRuntimeHost({
   onRuntimeReady?: (runtime: RuntimeHandle | null) => void;
   children?: React.ReactNode;
 }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLElement | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -87,8 +87,7 @@ export function RacingRuntimeHost({
   }, [onRuntimeReady, roomCode, trackMap, vehicleColor]);
 
   return (
-    <main className="racing-runtime">
-      <div className="racing-runtime-stage" ref={containerRef} />
+    <main className="racing-runtime" ref={containerRef}>
       {children}
       {error ? <p className="race-overlay error-banner runtime-error">{error}</p> : null}
     </main>

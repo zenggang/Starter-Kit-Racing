@@ -52,17 +52,17 @@ export function useRoomSession(roomCode: string, player: PlayerSession | null) {
   }, [player, roomCode]);
 
   useEffect(() => {
-    if (!player || !ticket || ticket.mode !== 'bridge') return;
+    if (!player || !ticket) return;
 
     let cancelled = false;
     const bridgeTicket = ticket;
     const bridgePlayerId = player.playerId;
 
     /**
-     * Bridge mode only returns room state to the caller that issued the HTTP
-     * command. A lightweight sync loop keeps every waiting-room page aligned
-     * with joins, ready toggles, and the host start event without requiring a
-     * full page refresh.
+     * Room pages always keep a same-origin sync loop alive, even if ticket
+     * bootstrap selected socket mode. This makes lobby state resilient when a
+     * deployment still falls back to bridge or when WebSocket ingress is not
+     * fully available in the current environment.
      */
     async function syncBridgeSnapshot() {
       const result = await sendBridgeCommand(roomCode, bridgeTicket, createCommand('sync.request', bridgePlayerId, {}));
@@ -94,21 +94,11 @@ export function useRoomSession(roomCode: string, player: PlayerSession | null) {
         };
       }
 
-      if (ticket.mode === 'bridge') {
-        const result = await sendBridgeCommand(roomCode, ticket, command);
-        dispatch(result);
-        return result;
-      }
-
-      socketRef.current?.send(JSON.stringify(command));
-      return {
-        type: 'command.result' as const,
-        seq: state.lastSeq,
-        ok: true,
-        commandId: command.commandId
-      };
+      const result = await sendBridgeCommand(roomCode, ticket, command);
+      dispatch(result);
+      return result;
     },
-    [roomCode, state.lastSeq, ticket]
+    [roomCode, ticket]
   );
 
   return {

@@ -13,6 +13,7 @@ export function RoomClient({ code }: { code: string }) {
   const { session, rememberRoom } = usePlayerSession();
   const { snapshot, connectionState, lastErrorCode, sendCommand } = useRoomSession(code, session);
   const joinedRef = useRef(false);
+  const currentPlayer = snapshot?.players.find((candidate) => candidate.playerId === session?.playerId) ?? null;
 
   useEffect(() => {
     if (!session || connectionState !== 'connected' || joinedRef.current) return;
@@ -22,14 +23,14 @@ export function RoomClient({ code }: { code: string }) {
   }, [code, connectionState, rememberRoom, sendCommand, session]);
 
   useEffect(() => {
-    if (snapshot?.status === 'racing') {
+    if (snapshot?.status === 'racing' && currentPlayer?.ready && currentPlayer?.color) {
       router.push(`/race/${snapshot.code}`);
     }
 
-    if (snapshot?.status === 'finished') {
+    if (snapshot?.status === 'finished' && currentPlayer) {
       router.push(`/result/${snapshot.code}`);
     }
-  }, [router, snapshot]);
+  }, [currentPlayer, router, snapshot]);
 
   return (
     <section className="race-layout">

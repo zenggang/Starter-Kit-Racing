@@ -430,11 +430,6 @@ a {
   touch-action: none;
 }
 
-.racing-runtime-stage {
-  position: absolute;
-  inset: 0;
-}
-
 .racing-runtime canvas {
   display: block;
   width: 100%;

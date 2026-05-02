@@ -126,4 +126,33 @@ describe('useRoomSession bridge sync', () => {
       })
     );
   });
+
+  it('still uses same-origin sync even when ticket bootstrap says socket', async () => {
+    vi.mocked(requestCoordinatorTicket).mockResolvedValueOnce({
+      token: 'signed-ticket',
+      url: 'https://starter-kit-racing.example.com',
+      mode: 'socket'
+    });
+
+    vi.mocked(sendBridgeCommand).mockResolvedValue({
+      type: 'command.result',
+      seq: 1,
+      ok: true,
+      room: readyRoom
+    });
+
+    const { result } = renderHook(() => useRoomSession('ABCD12', player));
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(result.current.snapshot?.players).toHaveLength(2);
+    expect(sendBridgeCommand).toHaveBeenCalledWith(
+      'ABCD12',
+      expect.objectContaining({ mode: 'socket' }),
+      expect.objectContaining({ type: 'sync.request' })
+    );
+  });
 });
