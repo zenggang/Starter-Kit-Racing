@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { RaceHud } from './RaceHud';
 import { formatRacingError } from '@/realtime/errorMessages';
@@ -23,6 +23,9 @@ export function RaceClient({ code }: { code: string }) {
   const { room, match, connectionState, lastErrorCode, sendCommand } = useMatchSession(code, session);
   const runtimeRef = useRef<RuntimeHandle | null>(null);
   const progressRef = useRef(createInitialRaceProgressState());
+  const handleRuntimeReady = useCallback((runtime: RuntimeHandle | null) => {
+    runtimeRef.current = runtime;
+  }, []);
 
   const currentPlayer = useMemo(() => {
     return match?.players.find((player) => player.playerId === session?.playerId) ?? null;
@@ -107,9 +110,7 @@ export function RaceClient({ code }: { code: string }) {
       roomCode={code}
       trackMap={match.trackMap}
       vehicleColor={currentPlayer.color}
-      onRuntimeReady={(runtime) => {
-        runtimeRef.current = runtime;
-      }}
+      onRuntimeReady={handleRuntimeReady}
     >
       <RaceHud match={match} currentPlayerId={session.playerId} model={trackModel} />
       {lastErrorCode ? <p className="race-overlay error-banner race-error-banner">{formatRacingError(lastErrorCode)}</p> : null}
