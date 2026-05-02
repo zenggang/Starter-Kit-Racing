@@ -1,0 +1,7 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - paragraph [ref=e5]: 发车格
+      - heading "房间 1234" [level=1] [ref=e6]
+      - paragraph [ref=e7]: 连接状态：连接中
+    - paragraph [ref=e8]: 正在连接房间数据...

@@ -1,0 +1,27 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - paragraph [ref=e5]: 维修区
+      - heading "赛车大厅" [level=1] [ref=e6]
+      - paragraph [ref=e7]: 创建房间、输入房间码，或加入正在等候的比赛。
+      - generic [ref=e8]:
+        - generic [ref=e9]: 车手昵称
+        - textbox "车手昵称" [ref=e10]:
+          - /placeholder: 输入昵称
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]: 新比赛
+        - heading "创建房间" [level=2] [ref=e14]
+        - paragraph [ref=e15]: 生成 4 位数字房间码，邀请另一名车手进维修区后再发车。
+        - button "创建房间" [disabled] [ref=e16]
+      - generic [ref=e17]:
+        - generic [ref=e18]: 加入比赛
+        - heading "输入房间码" [level=2] [ref=e19]
+        - generic [ref=e20]:
+          - generic [ref=e21]: 房间码
+          - textbox "房间码" [ref=e22]:
+            - /placeholder: "1234"
+        - button "加入房间" [disabled] [ref=e23]
+    - generic [ref=e24]:
+      - generic [ref=e25]: 赛道空闲
+      - paragraph [ref=e26]: 暂时没有等待中的房间。可以先创建一个房间，分享房间码给对手。

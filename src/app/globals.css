@@ -140,6 +140,15 @@ a {
   gap: 8px;
 }
 
+.identity-field {
+  max-width: 280px;
+}
+
+.room-code-head {
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+
 .eyebrow,
 .panel-kicker {
   margin: 0;
@@ -547,6 +556,40 @@ a {
   bottom: max(16px, var(--safe-bottom));
 }
 
+.orientation-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding:
+    max(16px, var(--safe-top))
+    max(16px, var(--safe-right))
+    max(16px, var(--safe-bottom))
+    max(16px, var(--safe-left));
+  background:
+    linear-gradient(180deg, rgba(9, 11, 13, 0.96), rgba(9, 11, 13, 0.98)),
+    var(--bg);
+}
+
+.orientation-gate-card {
+  width: min(100%, 420px);
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(255, 211, 77, 0.12), transparent 34%),
+    rgba(17, 22, 27, 0.94);
+  padding: 20px;
+  text-align: center;
+}
+
+.orientation-gate-card strong {
+  font-size: clamp(28px, 7vw, 42px);
+  line-height: 0.95;
+}
+
 @media (min-width: 720px) {
   .race-home {
     grid-template-columns: minmax(0, 1fr) minmax(360px, 0.72fr);
@@ -587,5 +630,178 @@ a {
   .primary-action,
   .secondary-action {
     width: 100%;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 540px) {
+  .app-shell {
+    padding:
+      max(10px, var(--safe-top))
+      max(10px, var(--safe-right))
+      max(10px, var(--safe-bottom))
+      max(10px, var(--safe-left));
+  }
+
+  .race-layout,
+  .race-home {
+    width: min(100%, 1100px);
+    gap: 12px;
+  }
+
+  .race-home {
+    min-height: auto;
+    align-content: start;
+  }
+
+  .race-home-copy,
+  .race-page-head {
+    gap: 4px;
+    padding-top: 16px;
+  }
+
+  .race-home-copy::before,
+  .race-page-head::before {
+    width: min(120px, 32vw);
+    height: 8px;
+  }
+
+  .race-home h1,
+  .race-page-head h1 {
+    font-size: clamp(36px, 6vw, 60px);
+    line-height: 0.94;
+  }
+
+  .race-home h2,
+  .race-layout h2 {
+    font-size: clamp(16px, 3vw, 26px);
+  }
+
+  .muted,
+  .field span,
+  .driver-card span:not(.driver-role),
+  .room-list-item span {
+    font-size: 12px;
+  }
+
+  .identity-field {
+    max-width: 220px;
+  }
+
+  .hall-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .race-panel,
+  .surface,
+  .race-loading-card,
+  .race-status-card,
+  .race-leaderboard,
+  .race-minimap {
+    padding: 10px;
+  }
+
+  .action-panel,
+  .race-panel-home {
+    min-height: 0;
+  }
+
+  .driver-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .driver-card {
+    min-height: 82px;
+    padding: 10px;
+  }
+
+  .driver-card strong {
+    font-size: 18px;
+  }
+
+  .driver-role,
+  .status-pill {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .room-list-item {
+    min-height: 0;
+    gap: 10px;
+    padding-top: 10px;
+  }
+
+  .room-list-item strong {
+    min-width: 58px;
+    font-size: 18px;
+    letter-spacing: 0.1em;
+  }
+
+  .input,
+  button {
+    min-height: 40px;
+  }
+
+  .room-code-input {
+    font-size: 20px;
+    letter-spacing: 0.18em;
+  }
+
+  .color-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .color-swatch {
+    min-height: 46px;
+    padding: 6px 8px;
+  }
+
+  .race-loading-card,
+  .race-status-card {
+    top: max(8px, var(--safe-top));
+    left: max(8px, var(--safe-left));
+  }
+
+  .race-status-card {
+    min-width: 112px;
+    gap: 4px;
+  }
+
+  .race-status-card strong {
+    font-size: 24px;
+  }
+
+  .race-status-card .muted {
+    font-size: 11px;
+  }
+
+  .race-leaderboard {
+    top: max(8px, var(--safe-top));
+    right: max(8px, var(--safe-right));
+    width: min(280px, calc(100vw - 132px));
+    gap: 8px;
+  }
+
+  .race-leaderboard-head strong,
+  .race-leaderboard-row strong {
+    font-size: 14px;
+  }
+
+  .race-leaderboard-row {
+    gap: 8px;
+    padding-top: 6px;
+  }
+
+  .race-minimap {
+    left: max(8px, var(--safe-left));
+    bottom: calc(max(8px, var(--safe-bottom)) + 104px);
+    width: 112px;
+    gap: 6px;
+  }
+
+  .race-minimap-track {
+    stroke-width: 2;
   }
 }

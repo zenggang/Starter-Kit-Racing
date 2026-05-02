@@ -585,12 +585,12 @@ function stripActiveMatch(room: RoomState): RoomState {
 }
 
 function createRoomCode(): string {
-  return Array.from({ length: 6 }, () => Math.floor(Math.random() * 36).toString(36).toUpperCase()).join('');
+  return Array.from({ length: 4 }, () => Math.floor(Math.random() * 10).toString()).join('');
 }
 
 function normalizeRoomCode(roomCode: string | undefined): string | null {
-  const normalized = roomCode?.trim().toUpperCase();
-  return normalized && /^[A-Z0-9]{4,12}$/.test(normalized) ? normalized : null;
+  const normalized = roomCode?.trim();
+  return normalized && /^\d{4}$/.test(normalized) ? normalized : null;
 }
 
 function normalizeTrackMap(trackMap: string | null | undefined): string | null {

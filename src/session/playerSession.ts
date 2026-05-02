@@ -42,6 +42,10 @@ export function rememberLastRoomCode(storage: PlayerSessionStorage, roomCode: st
   storage.setItem(LAST_ROOM_CODE_KEY, roomCode.trim().toUpperCase());
 }
 
+export function setStoredNickname(storage: PlayerSessionStorage, nickname: string): void {
+  storage.setItem(NICKNAME_KEY, nickname.trim());
+}
+
 export function normalizeNickname(input: string | null | undefined, playerId: string): string {
   const trimmed = input?.trim() ?? '';
 

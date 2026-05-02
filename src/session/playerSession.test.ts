@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getOrCreatePlayerSession, normalizeNickname, rememberLastRoomCode, type PlayerSessionStorage } from './playerSession';
+import { getOrCreatePlayerSession, normalizeNickname, rememberLastRoomCode, setStoredNickname, type PlayerSessionStorage } from './playerSession';
 
 function createMemoryStorage(): PlayerSessionStorage {
   const values = new Map<string, string>();
@@ -37,5 +37,14 @@ describe('player session', () => {
     rememberLastRoomCode(storage, ' ab12 ');
 
     expect(getOrCreatePlayerSession(storage).lastRoomCode).toBe('AB12');
+  });
+
+  it('stores a custom nickname and reuses it for later sessions', () => {
+    vi.spyOn(crypto, 'randomUUID').mockReturnValue('abcdef00-0000-0000-0000-000000000000');
+    const storage = createMemoryStorage();
+
+    setStoredNickname(storage, '  DriftKing  ');
+
+    expect(getOrCreatePlayerSession(storage).nickname).toBe('DriftKing');
   });
 });

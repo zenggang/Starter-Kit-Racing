@@ -32,7 +32,7 @@ function command<TPayload>(
 function createCoordinator() {
   return new RoomCoordinator(new InMemoryRoomStorage(), {
     now: () => START,
-    roomCodeGenerator: () => 'ABCD12'
+    roomCodeGenerator: () => '1234'
   });
 }
 
@@ -43,7 +43,7 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     const result = await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
 
     expect(result.ok).toBe(true);
-    expect(result.room?.code).toBe('ABCD12');
+    expect(result.room?.code).toBe('1234');
     expect(result.room?.status).toBe('waiting');
     expect(result.room?.lapTarget).toBe(3);
     expect(result.room?.expiresAt).toBe(new Date(START + 3_600_000).toISOString());

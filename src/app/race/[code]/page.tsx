@@ -1,3 +1,4 @@
+import { LandscapeGate } from '@/components/LandscapeGate';
 import { LocalRaceTelemetryClient } from '@/components/LocalRaceTelemetryClient';
 import { RaceClient } from '@/components/RaceClient';
 
@@ -6,8 +7,16 @@ export default async function RacePage({ params }: { params: Promise<{ code: str
   const normalizedCode = code.toUpperCase();
 
   if (normalizedCode === 'DEMO') {
-    return <LocalRaceTelemetryClient />;
+    return (
+      <LandscapeGate>
+        <LocalRaceTelemetryClient />
+      </LandscapeGate>
+    );
   }
 
-  return <RaceClient code={normalizedCode} />;
+  return (
+    <LandscapeGate>
+      <RaceClient code={normalizedCode} />
+    </LandscapeGate>
+  );
 }

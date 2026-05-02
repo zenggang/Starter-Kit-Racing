@@ -13,10 +13,11 @@ import { usePlayerSession } from '@/session/usePlayerSession';
 
 export function HallClient() {
   const router = useRouter();
-  const { session, rememberRoom } = usePlayerSession();
+  const { session, rememberRoom, updateNickname } = usePlayerSession();
   const [rooms, setRooms] = useState<HallRoomSummary[]>([]);
   const [busy, setBusy] = useState(false);
   const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [nickname, setNickname] = useState('');
 
   useEffect(() => {
     fetch('/api/rooms')
@@ -24,6 +25,12 @@ export function HallClient() {
       .then((body) => setRooms(body.rooms ?? []))
       .catch(() => setRooms([]));
   }, []);
+
+  useEffect(() => {
+    if (session?.nickname) {
+      setNickname(session.nickname);
+    }
+  }, [session?.nickname]);
 
   async function sendHallCommand(roomCode: string, command: ReturnType<typeof createCommand>) {
     if (!session) return;
@@ -52,6 +59,20 @@ export function HallClient() {
         <p className="eyebrow">维修区</p>
         <h1>赛车大厅</h1>
         <p className="muted">创建房间、输入房间码，或加入正在等候的比赛。</p>
+        <label className="field identity-field">
+          <span>车手昵称</span>
+          <input
+            className="input"
+            value={nickname}
+            maxLength={20}
+            placeholder="输入昵称"
+            onChange={(event) => {
+              const nextNickname = event.target.value;
+              setNickname(nextNickname);
+              updateNickname(nextNickname);
+            }}
+          />
+        </label>
       </div>
       {errorCode ? <p className="error-banner">{formatRacingError(errorCode)}</p> : null}
       <div className="hall-grid">

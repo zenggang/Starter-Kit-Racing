@@ -36,7 +36,9 @@ export function RoomClient({ code }: { code: string }) {
     <section className="race-layout">
       <div className="race-page-head">
         <p className="eyebrow">发车格</p>
-        <h1>房间 {code}</h1>
+        <h1>
+          房间 <span className="room-code-head">{code}</span>
+        </h1>
         <p className="muted">连接状态：{connectionState === 'connected' ? '已连接' : '连接中'}</p>
       </div>
       {lastErrorCode ? <p className="error-banner">{formatRacingError(lastErrorCode)}</p> : null}
