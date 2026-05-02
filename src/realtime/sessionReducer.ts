@@ -49,6 +49,10 @@ export function reduceRoomSession(state: RoomSessionState, message: RealtimeMess
     };
   }
 
+  if (message.type !== 'command.result') {
+    return state;
+  }
+
   return {
     snapshot: message.room ?? state.snapshot,
     lastSeq: message.seq,

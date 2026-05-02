@@ -2,11 +2,14 @@ import { DurableObject } from 'cloudflare:workers';
 import { verifyCoordinatorBearerToken } from './auth';
 import { RoomCoordinator } from './RoomCoordinator';
 import type { CommandResult, RoomCommandEnvelope, RoomSnapshot } from './protocol';
+import { createReadModelWriter, type ReadModelWriter } from './readModelWriter';
 import { DurableObjectRoomStorage } from './storage';
 
 export interface Env {
   ROOM_COORDINATOR: DurableObjectNamespace<RoomCoordinatorDurableObject>;
   COORDINATOR_SHARED_SECRET?: string;
+  SUPABASE_URL?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
 }
 
 /**
@@ -16,18 +19,40 @@ export interface Env {
  */
 export class RoomCoordinatorDurableObject extends DurableObject<Env> {
   private readonly coordinator: RoomCoordinator;
+  private readonly readModelWriter: ReadModelWriter;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.coordinator = new RoomCoordinator(new DurableObjectRoomStorage(ctx.storage));
+    this.readModelWriter = createReadModelWriter(env);
   }
 
   async execute(command: RoomCommandEnvelope): Promise<CommandResult> {
-    return this.coordinator.execute(command);
+    const result = await this.coordinator.execute(command);
+    await this.syncReadModels(command, result);
+    return result;
   }
 
   async snapshot(): Promise<RoomSnapshot | null> {
     return this.coordinator.snapshot();
+  }
+
+  private async syncReadModels(command: RoomCommandEnvelope, result: CommandResult): Promise<void> {
+    if (!result.ok || !result.room) return;
+
+    if (command.type.startsWith('room.')) {
+      await this.readModelWriter.syncRoom(result.room);
+    }
+
+    if (command.type === 'room.start' && result.match) {
+      await this.readModelWriter.syncMatch(result.room, result.match);
+      return;
+    }
+
+    if (command.type === 'match.progress' && result.match && (result.match.phase === 'finished' || result.match.phase === 'aborted')) {
+      await this.readModelWriter.syncRoom(result.room);
+      await this.readModelWriter.syncMatch(result.room, result.match);
+    }
   }
 }
 

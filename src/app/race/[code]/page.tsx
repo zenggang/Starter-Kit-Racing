@@ -1,7 +1,7 @@
-import { RacingRuntimeHost } from '@/game/RacingRuntimeHost';
+import { RaceClient } from '@/components/RaceClient';
 
 export default async function RacePage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
 
-  return <RacingRuntimeHost roomCode={code.toUpperCase()} />;
+  return <RaceClient code={code.toUpperCase()} />;
 }

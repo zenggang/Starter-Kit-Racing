@@ -3,6 +3,7 @@ import { initialRoomSessionState, reduceRoomSession } from './sessionReducer';
 import type { RoomState } from './protocol';
 
 const room: RoomState = {
+  id: 'room-1',
   code: 'ABCD',
   hostPlayerId: 'host',
   status: 'waiting',
@@ -13,6 +14,7 @@ const room: RoomState = {
   finishedAt: null,
   expiresAt: '2026-04-26T01:00:00.000Z',
   closedReason: null,
+  matchId: null,
   players: []
 };
 

@@ -143,6 +143,86 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     expect(started.room?.startedAt).toBe(new Date(START).toISOString());
   });
 
+  it('tracks match progress, finalizes results, and allows the host to rematch', async () => {
+    const coordinator = createCoordinator();
+
+    await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
+    await coordinator.execute(command('room.join', 'player-2', { nickname: 'Guest' }));
+    await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
+    await coordinator.execute(command('room.chooseColor', 'player-2', { color: 'green' }));
+    await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
+    await coordinator.execute(command('room.ready', 'player-2', { ready: true }));
+    const started = await coordinator.execute(command('room.start', 'host-1', {}));
+
+    expect(started.match?.phase).toBe('live');
+    expect(started.match?.players).toHaveLength(2);
+
+    await coordinator.execute(command('match.join', 'host-1', {}));
+    await coordinator.execute(command('match.join', 'player-2', {}));
+
+    const hostProgress = await coordinator.execute(
+      command('match.progress', 'host-1', {
+        checkpoint: 2,
+        completedLaps: 1,
+        lapProgress: 0.35,
+        position: { x: 1, y: 0.5, z: 2 },
+        heading: 0,
+        speed: 0.8
+      })
+    );
+
+    expect(hostProgress.match?.players.find((player) => player.playerId === 'host-1')).toMatchObject({
+      completedLaps: 1,
+      lapProgress: 0.35,
+      rank: 1
+    });
+
+    await coordinator.execute(
+      command('match.progress', 'host-1', {
+        checkpoint: 0,
+        completedLaps: 3,
+        lapProgress: 1,
+        position: { x: 3, y: 0.5, z: 4 },
+        heading: 0.5,
+        speed: 1.1,
+        finished: true
+      })
+    );
+
+    const finished = await coordinator.execute(
+      command('match.progress', 'player-2', {
+        checkpoint: 0,
+        completedLaps: 3,
+        lapProgress: 1,
+        position: { x: 4, y: 0.5, z: 5 },
+        heading: 0.3,
+        speed: 1.0,
+        finished: true
+      })
+    );
+
+    expect(finished.room?.status).toBe('finished');
+    expect(finished.match?.phase).toBe('finished');
+    expect(finished.match?.winnerPlayerId).toBe('host-1');
+    expect(finished.match?.players.map((player) => player.rank)).toEqual([1, 2]);
+
+    const rematch = await coordinator.execute(command('room.rematch', 'host-1', {}));
+
+    expect(rematch.room).toMatchObject({
+      status: 'waiting',
+      matchId: null,
+      startedAt: null,
+      finishedAt: null
+    });
+    expect(rematch.match).toBeUndefined();
+    expect(rematch.room?.players).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ playerId: 'host-1', ready: false }),
+        expect.objectContaining({ playerId: 'player-2', ready: false })
+      ])
+    );
+  });
+
   it('closes waiting rooms that pass the 60 minute expiration window', async () => {
     const storage = new InMemoryRoomStorage();
     const coordinator = new RoomCoordinator(storage, {

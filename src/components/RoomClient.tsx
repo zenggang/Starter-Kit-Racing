@@ -25,6 +25,10 @@ export function RoomClient({ code }: { code: string }) {
     if (snapshot?.status === 'racing') {
       router.push(`/race/${snapshot.code}`);
     }
+
+    if (snapshot?.status === 'finished') {
+      router.push(`/result/${snapshot.code}`);
+    }
   }, [router, snapshot]);
 
   return (

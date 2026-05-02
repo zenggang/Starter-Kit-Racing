@@ -2,25 +2,55 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-interface RacingRuntimeHandle {
-  destroy(): void;
+interface RacingRuntimeModule {
+  mountRacingRuntime(container: HTMLElement, options?: RuntimeMountOptions): Promise<RuntimeHandle>;
 }
 
-interface RacingRuntimeModule {
-  mountRacingRuntime(container: HTMLElement, options?: Record<string, unknown>): Promise<RacingRuntimeHandle>;
+export interface RuntimeSnapshot {
+  position: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  heading: number;
+  speed: number;
+  driftIntensity: number;
+}
+
+export interface RuntimeHandle {
+  destroy(): void;
+  getSnapshot(): RuntimeSnapshot;
+}
+
+interface RuntimeMountOptions {
+  assetBaseUrl?: string;
+  roomCode?: string;
+  trackMap?: string | null;
+  vehicleColor?: 'yellow' | 'green' | 'purple' | 'red';
 }
 
 /**
- * Mounts the legacy Three.js racing runtime inside the Next.js race route. The
- * container owns the full mobile viewport so touch steering is not intercepted
- * by document scrolling or browser chrome changes.
+ * Hosts the legacy canvas runtime inside the App Router shell while keeping the
+ * runtime itself isolated from React state and coordinator transport details.
  */
-export function RacingRuntimeHost({ roomCode }: { roomCode: string }) {
+export function RacingRuntimeHost({
+  roomCode,
+  trackMap,
+  vehicleColor,
+  onRuntimeReady,
+  children
+}: {
+  roomCode: string;
+  trackMap: string | null;
+  vehicleColor: RuntimeMountOptions['vehicleColor'];
+  onRuntimeReady?: (runtime: RuntimeHandle | null) => void;
+  children?: React.ReactNode;
+}) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let runtime: RacingRuntimeHandle | null = null;
+    let runtime: RuntimeHandle | null = null;
     let cancelled = false;
 
     async function mount() {
@@ -30,13 +60,18 @@ export function RacingRuntimeHost({ roomCode }: { roomCode: string }) {
         const mod = (await import('../../js/main.js')) as RacingRuntimeModule;
         runtime = await mod.mountRacingRuntime(containerRef.current, {
           assetBaseUrl: '/racing/',
-          roomCode
+          roomCode,
+          trackMap,
+          vehicleColor
         });
 
         if (cancelled) {
           runtime.destroy();
           runtime = null;
+          return;
         }
+
+        onRuntimeReady?.(runtime);
       } catch (nextError) {
         setError(nextError instanceof Error ? nextError.message : 'RUNTIME_MOUNT_FAILED');
       }
@@ -46,13 +81,16 @@ export function RacingRuntimeHost({ roomCode }: { roomCode: string }) {
 
     return () => {
       cancelled = true;
+      onRuntimeReady?.(null);
       runtime?.destroy();
     };
-  }, [roomCode]);
+  }, [onRuntimeReady, roomCode, trackMap, vehicleColor]);
 
   return (
-    <main className="racing-runtime" ref={containerRef}>
-      {error ? <p className="error">{error}</p> : null}
+    <main className="racing-runtime">
+      <div className="racing-runtime-stage" ref={containerRef} />
+      {children}
+      {error ? <p className="race-overlay error-banner runtime-error">{error}</p> : null}
     </main>
   );
 }

@@ -19,15 +19,45 @@ const modelNames = [
 ];
 
 /**
+ * Accepts the legacy standalone `map` query alongside the newer `trackMap`
+ * room/match field so the React shell can swap call sites incrementally.
+ */
+function readTrackMapOption( options ) {
+
+	if ( typeof options.trackMap === 'string' && options.trackMap.length > 0 ) return options.trackMap;
+	if ( typeof options.map === 'string' && options.map.length > 0 ) return options.map;
+
+	return options.useQueryMap ? new URLSearchParams( window.location.search ).get( 'map' ) : null;
+
+}
+
+/**
+ * Keeps the runtime handle shape stable even if mount is cancelled while assets
+ * are loading, which prevents the online shell from branching on partial state.
+ */
+function createEmptyRuntimeSnapshot() {
+
+	return {
+		position: { x: 0, y: 0, z: 0 },
+		heading: 0,
+		speed: 0,
+		driftIntensity: 0,
+	};
+
+}
+
+/**
  * Mounts the legacy Three.js racing runtime into a caller-owned container. The
- * coordinator-backed React shell controls when this runtime exists; the runtime
- * still owns local vehicle physics, camera, particles, audio and touch input.
+ * coordinator-backed React shell controls when this runtime exists and only
+ * samples plain snapshots from it. The runtime keeps owning local vehicle
+ * physics, camera, particles, audio and touch input so the online adapter can
+ * stay observational until the multiplayer authority model is ready.
  */
 export async function mountRacingRuntime( container, options = {} ) {
 
 	const assetBaseUrl = options.assetBaseUrl || '';
-	const mapParam = options.map ?? ( options.useQueryMap ? new URLSearchParams( window.location.search ).get( 'map' ) : null );
-	const vehicleColor = options.vehicleColor || 'yellow';
+	const mapParam = readTrackMapOption( options );
+	const vehicleColor = typeof options.vehicleColor === 'string' && options.vehicleColor.length > 0 ? options.vehicleColor : 'yellow';
 	const width = container.clientWidth || window.innerWidth;
 	const height = container.clientHeight || window.innerHeight;
 	let animationFrame = 0;
@@ -77,7 +107,14 @@ export async function mountRacingRuntime( container, options = {} ) {
 	if ( destroyed ) {
 
 		renderer.dispose();
-		return { destroy() {} };
+		return {
+			destroy() {},
+			getSnapshot() {
+
+				return createEmptyRuntimeSnapshot();
+
+			}
+		};
 
 	}
 
@@ -160,11 +197,17 @@ export async function mountRacingRuntime( container, options = {} ) {
 	vehicle.rigidBody = sphereBody;
 	vehicle.physicsWorld = world;
 
+	const respawnState = spawn || {
+		position: [ 3.5, 0.5, 5 ],
+		angle: 0,
+	};
+	vehicle.setRespawnState( respawnState.position, respawnState.angle );
+
 	if ( spawn ) {
 
 		const [ sx, sy, sz ] = spawn.position;
 		vehicle.spherePos.set( sx, sy, sz );
-		vehicle.prevModelPos.set( sx, 0, sz );
+		vehicle.prevModelPos.set( sx, sy - 0.5, sz );
 		vehicle.container.rotation.y = spawn.angle;
 
 	}
@@ -247,6 +290,16 @@ export async function mountRacingRuntime( container, options = {} ) {
 	animate();
 
 	return {
+		/**
+		 * The shell reads this lightweight snapshot and forwards it into room or
+		 * match flows later. It intentionally does not receive physics handles,
+		 * which keeps the legacy runtime authoritative for local simulation.
+		 */
+		getSnapshot() {
+
+			return vehicle.getRuntimeSnapshot();
+
+		},
 		destroy() {
 
 			destroyed = true;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createCommandResult, isPlayerColor, validateLapTarget } from './protocol';
+import { createCommandResult, isPlayerColor, validateLapTarget, validateMatchProgressPayload } from './protocol';
 
 describe('Phase 1 realtime protocol', () => {
   it('accepts integer lap targets from 1 through 10', () => {
@@ -29,5 +29,20 @@ describe('Phase 1 realtime protocol', () => {
       errorCode: 'COLOR_TAKEN',
       commandId: 'cmd-1'
     });
+  });
+
+  it('accepts coordinator telemetry payloads with bounded lap progress', () => {
+    expect(
+      validateMatchProgressPayload({
+        checkpoint: 2,
+        completedLaps: 1,
+        lapProgress: 0.45,
+        position: { x: 1, y: 0.5, z: 2 },
+        heading: 0,
+        speed: 1.2,
+        finished: false
+      })
+    ).toBe(true);
+    expect(validateMatchProgressPayload({ checkpoint: 0, completedLaps: -1, lapProgress: 3, position: null, heading: 0, speed: 0 })).toBe(false);
   });
 });

@@ -430,11 +430,126 @@ a {
   touch-action: none;
 }
 
+.racing-runtime-stage {
+  position: absolute;
+  inset: 0;
+}
+
 .racing-runtime canvas {
   display: block;
   width: 100%;
   height: 100%;
   touch-action: none;
+}
+
+.race-overlay {
+  position: absolute;
+  z-index: 20;
+}
+
+.race-loading-card,
+.race-status-card,
+.race-leaderboard,
+.race-minimap {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(8, 11, 14, 0.82);
+  backdrop-filter: blur(12px);
+  padding: 12px;
+}
+
+.race-loading-card {
+  top: max(16px, var(--safe-top));
+  left: max(16px, var(--safe-left));
+  right: max(16px, var(--safe-right));
+  display: grid;
+  gap: 8px;
+}
+
+.race-status-card {
+  top: max(16px, var(--safe-top));
+  left: max(16px, var(--safe-left));
+  display: grid;
+  gap: 6px;
+  min-width: 124px;
+}
+
+.race-status-card strong {
+  font-size: 30px;
+}
+
+.race-leaderboard {
+  top: max(16px, var(--safe-top));
+  right: max(16px, var(--safe-right));
+  width: min(320px, calc(100vw - 32px));
+  display: grid;
+  gap: 10px;
+}
+
+.race-leaderboard-head,
+.race-leaderboard-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.race-leaderboard-list {
+  display: grid;
+  gap: 8px;
+}
+
+.race-leaderboard-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 8px;
+}
+
+.race-minimap {
+  left: max(16px, var(--safe-left));
+  bottom: calc(max(16px, var(--safe-bottom)) + 180px);
+  width: 150px;
+  display: grid;
+  gap: 8px;
+}
+
+.race-minimap-svg {
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: visible;
+}
+
+.race-minimap-track {
+  fill: none;
+  stroke: rgba(247, 248, 244, 0.65);
+  stroke-width: 2.5;
+}
+
+.race-minimap-player {
+  stroke: rgba(0, 0, 0, 0.58);
+  stroke-width: 1.5;
+}
+
+.race-minimap-yellow {
+  fill: #f4c430;
+}
+
+.race-minimap-green {
+  fill: #52c46b;
+}
+
+.race-minimap-purple {
+  fill: #9b6ef3;
+}
+
+.race-minimap-red {
+  fill: #ef5350;
+}
+
+.runtime-error,
+.race-error-banner {
+  left: max(16px, var(--safe-left));
+  right: max(16px, var(--safe-right));
+  bottom: max(16px, var(--safe-bottom));
 }
 
 @media (min-width: 720px) {
@@ -458,6 +573,10 @@ a {
   .race-panel,
   .surface {
     padding: 20px;
+  }
+
+  .race-minimap {
+    bottom: max(16px, var(--safe-bottom));
   }
 }
 

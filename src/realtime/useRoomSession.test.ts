@@ -18,6 +18,7 @@ const player: PlayerSession = {
 };
 
 const waitingRoom: RoomState = {
+  id: 'room-1',
   code: 'ABCD12',
   hostPlayerId: 'host-1',
   status: 'waiting',
@@ -28,6 +29,7 @@ const waitingRoom: RoomState = {
   finishedAt: null,
   expiresAt: '2026-05-02T01:00:00.000Z',
   closedReason: null,
+  matchId: null,
   players: [
     {
       playerId: 'host-1',

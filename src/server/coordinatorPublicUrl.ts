@@ -1,14 +1,16 @@
 import type { TransportMode } from '@/realtime/protocol';
 
 /**
- * Selects one transport mode on the server so the browser does not guess between
- * direct Workers socket access and the same-origin bridge fallback.
+ * Selects one transport mode on the server so the browser never has to guess
+ * whether the current deployment should use direct socket ingress or the
+ * validated same-origin bridge path.
  */
 export function chooseCoordinatorMode(coordinatorUrl: string, bridgeEnabled: boolean): TransportMode | null {
   const host = safeHost(coordinatorUrl);
 
-  if (!host) return bridgeEnabled ? 'bridge' : null;
-  if (host.endsWith('.workers.dev')) return bridgeEnabled ? 'bridge' : null;
+  if (bridgeEnabled) return 'bridge';
+  if (!host) return null;
+  if (host.endsWith('.workers.dev')) return null;
 
   return 'socket';
 }

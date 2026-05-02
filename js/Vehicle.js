@@ -52,6 +52,8 @@ export class Vehicle {
 		this.inputZ = 0;
 
 		this.driftIntensity = 0;
+		this.respawnPosition = new THREE.Vector3( 3.5, 0.5, 5 );
+		this.respawnHeading = 0;
 
 	}
 
@@ -93,6 +95,31 @@ export class Vehicle {
 		} );
 
 		return this.container;
+
+	}
+
+	/**
+	 * Stores the runtime-owned respawn pose separately from scene bootstrapping
+	 * so custom tracks can reuse the same reset path without teaching the online
+	 * shell about physics internals.
+	 */
+	setRespawnState( position, heading = 0 ) {
+
+		if ( Array.isArray( position ) ) {
+
+			this.respawnPosition.set( position[ 0 ] ?? 3.5, position[ 1 ] ?? 0.5, position[ 2 ] ?? 5 );
+
+		} else if ( position && typeof position === 'object' ) {
+
+			this.respawnPosition.set( position.x ?? 3.5, position.y ?? 0.5, position.z ?? 5 );
+
+		} else {
+
+			this.respawnPosition.set( 3.5, 0.5, 5 );
+
+		}
+
+		this.respawnHeading = Number.isFinite( heading ) ? heading : 0;
 
 	}
 
@@ -191,21 +218,7 @@ export class Vehicle {
 
 		if ( this.spherePos.y < - 10 ) {
 
-			if ( this.rigidBody ) {
-
-				rigidBody.setPosition( this.physicsWorld, this.rigidBody, [ 3.5, 0.5, 5 ], false );
-				rigidBody.setLinearVelocity( this.physicsWorld, this.rigidBody, [ 0, 0, 0 ] );
-				rigidBody.setAngularVelocity( this.physicsWorld, this.rigidBody, [ 0, 0, 0 ] );
-
-			}
-
-			this.spherePos.set( 3.5, 0.5, 5 );
-			this.sphereVel.set( 0, 0, 0 );
-			this.linearSpeed = 0;
-			this.angularSpeed = 0;
-			this.acceleration = 0;
-			this.container.rotation.set( 0, 0, 0 );
-			this.container.quaternion.identity();
+			this.resetToRespawn();
 
 		}
 
@@ -227,6 +240,81 @@ export class Vehicle {
 
 		this.driftIntensity = Math.abs( this.linearSpeed - this.acceleration ) +
 			( this.bodyNode ? Math.abs( this.bodyNode.rotation.z ) * 2 : 0 );
+
+	}
+
+	/**
+	 * Replays the configured spawn pose through both the visual model and the
+	 * rigid body. Resetting through a single method keeps local single-player
+	 * recovery and future online-shell reads aligned on the same source of truth.
+	 */
+	resetToRespawn() {
+
+		const respawn = [ this.respawnPosition.x, this.respawnPosition.y, this.respawnPosition.z ];
+
+		if ( this.rigidBody ) {
+
+			rigidBody.setPosition( this.physicsWorld, this.rigidBody, respawn, false );
+			rigidBody.setLinearVelocity( this.physicsWorld, this.rigidBody, [ 0, 0, 0 ] );
+			rigidBody.setAngularVelocity( this.physicsWorld, this.rigidBody, [ 0, 0, 0 ] );
+
+		}
+
+		this.spherePos.copy( this.respawnPosition );
+		this.sphereVel.set( 0, 0, 0 );
+		this.modelVelocity.set( 0, 0, 0 );
+		this.linearSpeed = 0;
+		this.angularSpeed = 0;
+		this.acceleration = 0;
+		this.driftIntensity = 0;
+		this.container.rotation.set( 0, this.respawnHeading, 0 );
+		this.container.position.set(
+			this.respawnPosition.x,
+			this.respawnPosition.y - 0.5,
+			this.respawnPosition.z
+		);
+
+		if ( this.bodyNode ) {
+
+			this.bodyNode.rotation.x = 0;
+			this.bodyNode.rotation.z = 0;
+			this.bodyNode.position.y = 0.3;
+
+		}
+
+		if ( this.wheelFL ) this.wheelFL.rotation.y = 0;
+		if ( this.wheelFR ) this.wheelFR.rotation.y = 0;
+
+		this.prevModelPos.copy( this.container.position );
+
+	}
+
+	/**
+	 * The React/online wrapper only samples this immutable plain-object snapshot.
+	 * It does not drive integration, stepping or correction, which lets the
+	 * proven local physics continue to own authoritative movement for now.
+	 */
+	getRuntimeSnapshot() {
+
+		_forward.set( 0, 0, 1 ).applyQuaternion( this.container.quaternion );
+		_forward.y = 0;
+
+		if ( _forward.lengthSq() > 0 ) {
+
+			_forward.normalize();
+
+		}
+
+		return {
+			position: {
+				x: this.spherePos.x,
+				y: this.spherePos.y,
+				z: this.spherePos.z,
+			},
+			heading: Math.atan2( _forward.x, _forward.z ),
+			speed: Math.hypot( this.modelVelocity.x, this.modelVelocity.z ),
+			driftIntensity: this.driftIntensity,
+		};
 
 	}
 

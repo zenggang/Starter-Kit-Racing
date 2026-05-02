@@ -57,6 +57,7 @@ function injectCoordinatorAuth(payload: unknown, ticket: NonNullable<ReturnType<
     playerId: command.playerId || ticket.playerId,
     authTicket: {
       playerId: ticket.playerId,
+      roomCode: ticket.roomCode,
       issuedAt: ticket.issuedAt,
       expiresAt: ticket.expiresAt
     },
