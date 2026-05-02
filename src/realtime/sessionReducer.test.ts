@@ -44,4 +44,19 @@ describe('room session reducer', () => {
     expect(next.snapshot).toEqual(room);
     expect(next.lastErrorCode).toBe('COLOR_TAKEN');
   });
+
+  it('applies newer command results even when bridge responses arrive out of order', () => {
+    const state = reduceRoomSession(initialRoomSessionState, { type: 'room.snapshot', seq: 1, room });
+    const nextRoom = { ...room, lapTarget: 5 };
+    const next = reduceRoomSession(state, {
+      type: 'command.result',
+      seq: 3,
+      ok: true,
+      room: nextRoom
+    });
+
+    expect(next.snapshot?.lapTarget).toBe(5);
+    expect(next.lastSeq).toBe(3);
+    expect(next.needsSync).toBe(false);
+  });
 });

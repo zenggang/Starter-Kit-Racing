@@ -22,7 +22,9 @@ export const initialMatchSessionState: MatchSessionState = {
  * bridge or socket message stream.
  */
 export function reduceMatchSession(state: MatchSessionState, message: RealtimeMessage): MatchSessionState {
-  if (message.seq > state.lastSeq + 1 && state.lastSeq !== 0) {
+  const isAuthoritativeSnapshot = message.type === 'match.snapshot' || message.type === 'command.result';
+
+  if (message.seq > state.lastSeq + 1 && state.lastSeq !== 0 && !isAuthoritativeSnapshot) {
     return {
       ...state,
       needsSync: true

@@ -66,4 +66,40 @@ describe('match session reducer', () => {
     expect(next.match).toEqual(match);
     expect(next.lastErrorCode).toBe('MATCH_NOT_ACTIVE');
   });
+
+  it('applies newer command results even when bridge responses arrive out of order', () => {
+    const state = reduceMatchSession(initialMatchSessionState, { type: 'match.snapshot', seq: 1, room, match });
+    const next = reduceMatchSession(state, {
+      type: 'command.result',
+      seq: 3,
+      ok: true,
+      room,
+      match: {
+        ...match,
+        players: [
+          {
+            playerId: 'player-1',
+            nickname: 'LocalRacer',
+            color: 'yellow',
+            isHost: true,
+            presence: 'connected',
+            rank: 1,
+            position: { x: 12, y: 0.5, z: 18 },
+            heading: 0.5,
+            speed: 4,
+            checkpoint: 6,
+            completedLaps: 0,
+            lapProgress: 0.42,
+            totalProgress: 0.42,
+            lastReportAt: '2026-04-26T00:01:01.000Z',
+            finishedAt: null
+          }
+        ]
+      }
+    });
+
+    expect(next.match?.players[0]?.lapProgress).toBe(0.42);
+    expect(next.lastSeq).toBe(3);
+    expect(next.needsSync).toBe(false);
+  });
 });

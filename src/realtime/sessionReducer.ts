@@ -20,7 +20,9 @@ export const initialRoomSessionState: RoomSessionState = {
  * and replace local state with the returned snapshot.
  */
 export function reduceRoomSession(state: RoomSessionState, message: RealtimeMessage): RoomSessionState {
-  if (message.seq > state.lastSeq + 1 && state.lastSeq !== 0) {
+  const isAuthoritativeSnapshot = message.type === 'room.snapshot' || message.type === 'command.result';
+
+  if (message.seq > state.lastSeq + 1 && state.lastSeq !== 0 && !isAuthoritativeSnapshot) {
     return {
       ...state,
       needsSync: true
