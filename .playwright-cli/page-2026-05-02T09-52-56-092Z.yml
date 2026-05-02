@@ -1,0 +1,17 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: 当前圈数
+    - strong [ref=e5]: 0/1
+    - generic [ref=e6]: 当前第 1 圈 · 本圈进度 0%
+    - generic [ref=e7]: 阶段：比赛中
+  - generic [ref=e8]:
+    - generic [ref=e9]:
+      - generic [ref=e10]: 实时排行榜
+      - strong [ref=e11]: DEMO
+    - generic [ref=e13]:
+      - generic [ref=e14]: "#1"
+      - strong [ref=e15]: LocalRacer
+      - generic [ref=e16]: 0/1 圈 · 0%
+  - generic [ref=e17]:
+    - generic [ref=e18]: 小地图
+    - img "赛道小地图" [ref=e19]

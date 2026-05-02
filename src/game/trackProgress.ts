@@ -127,7 +127,7 @@ export function advanceRaceProgress(
   snapshot: RuntimeSnapshot,
   lapTarget: number
 ): { state: LocalRaceProgressState; payload: MatchProgressPayload } {
-  const sample = sampleTrackProgress(model, snapshot.position);
+  const sample = sampleTrackProgress(model, snapshot.position, state.previousFinishProjection === null ? null : state.lastCheckpoint);
   let completedLaps = state.completedLaps;
   let finishLineArmed = state.finishLineArmed || !isNearFinishLine(model, sample.checkpoint) || sample.normalizedProgress > 0.5;
   const finishProjection = signedFinishProjection(model, snapshot.position);
@@ -168,12 +168,23 @@ export function advanceRaceProgress(
   };
 }
 
-export function sampleTrackProgress(model: TrackProgressModel, position: RuntimeSnapshot['position']) {
+export function sampleTrackProgress(model: TrackProgressModel, position: RuntimeSnapshot['position'], checkpointHint: number | null = null) {
+  const fallbackDistance = CELL_RAW * GRID_SCALE * 0.9;
+  const hintedSample = sampleTrackProgressFromIndices(model, position, checkpointHint === null ? [...model.points.keys()] : buildCandidateIndices(model, checkpointHint));
+
+  if (checkpointHint !== null && hintedSample.distance > fallbackDistance) {
+    return sampleTrackProgressFromIndices(model, position, [...model.points.keys()]);
+  }
+
+  return hintedSample;
+}
+
+function sampleTrackProgressFromIndices(model: TrackProgressModel, position: RuntimeSnapshot['position'], candidateIndices: number[]) {
   let closestDistance = Number.POSITIVE_INFINITY;
   let checkpoint = 0;
   let segmentProgress = 0;
 
-  for (let index = 0; index < model.points.length; index += 1) {
+  for (const index of candidateIndices) {
     const start = model.points[index];
     const end = model.points[(index + 1) % model.points.length];
     const sample = projectPointOnSegment(position.x, position.z, start, end);
@@ -189,6 +200,7 @@ export function sampleTrackProgress(model: TrackProgressModel, position: Runtime
 
   return {
     checkpoint,
+    distance: closestDistance,
     normalizedProgress: model.totalLength > 0 ? travelled / model.totalLength : 0
   };
 }
@@ -275,6 +287,19 @@ function segmentLength(model: TrackProgressModel, index: number): number {
   const start = model.points[index];
   const end = model.points[(index + 1) % model.points.length];
   return Math.hypot(end.x - start.x, end.z - start.z);
+}
+
+function buildCandidateIndices(model: TrackProgressModel, checkpointHint: number): number[] {
+  const indices = new Set<number>();
+  const backwardWindow = 2;
+  const forwardWindow = 4;
+
+  for (let delta = -backwardWindow; delta <= forwardWindow; delta += 1) {
+    const index = (checkpointHint + delta + model.points.length) % model.points.length;
+    indices.add(index);
+  }
+
+  return [...indices];
 }
 
 function signedFinishProjection(model: TrackProgressModel, position: RuntimeSnapshot['position']): number {

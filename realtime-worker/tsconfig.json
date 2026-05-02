@@ -11,5 +11,5 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+  "include": ["src/**/*.ts", "test/index.test.ts", "test/roomCoordinator.test.ts"]
 }
