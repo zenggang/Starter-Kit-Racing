@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import type { RoomCommandEnvelope } from './protocol';
-import { initialRoomSessionState, reduceRoomSession } from './sessionReducer';
+import { createCommand, initialRoomSessionState, reduceRoomSession } from './sessionReducer';
 import { openCoordinatorSocket, requestCoordinatorTicket, sendBridgeCommand, type CoordinatorTicket } from './sessionClient';
 import type { PlayerSession } from '@/session/playerSession';
 
 export type ConnectionState = 'idle' | 'connecting' | 'connected' | 'error';
+const BRIDGE_SYNC_INTERVAL_MS = 1_500;
 
 /**
  * Unifies bridge and socket access behind one room-session hook. Components send
@@ -49,6 +50,37 @@ export function useRoomSession(roomCode: string, player: PlayerSession | null) {
       socketRef.current = null;
     };
   }, [player, roomCode]);
+
+  useEffect(() => {
+    if (!player || !ticket || ticket.mode !== 'bridge') return;
+
+    let cancelled = false;
+    const bridgeTicket = ticket;
+    const bridgePlayerId = player.playerId;
+
+    /**
+     * Bridge mode only returns room state to the caller that issued the HTTP
+     * command. A lightweight sync loop keeps every waiting-room page aligned
+     * with joins, ready toggles, and the host start event without requiring a
+     * full page refresh.
+     */
+    async function syncBridgeSnapshot() {
+      const result = await sendBridgeCommand(roomCode, bridgeTicket, createCommand('sync.request', bridgePlayerId, {}));
+      if (!cancelled) {
+        dispatch(result);
+      }
+    }
+
+    void syncBridgeSnapshot();
+    const syncTimer = window.setInterval(() => {
+      void syncBridgeSnapshot();
+    }, BRIDGE_SYNC_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(syncTimer);
+    };
+  }, [player, roomCode, ticket]);
 
   const sendCommand = useCallback(
     async (command: RoomCommandEnvelope) => {
