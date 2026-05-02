@@ -1,5 +1,7 @@
 export interface VerifiedCoordinatorTicket {
   playerId: string;
+  nickname: string;
+  roomCode?: string;
   issuedAt: number;
   expiresAt: number;
 }
@@ -15,6 +17,14 @@ export async function verifyCoordinatorBearerToken(
   now = Date.now()
 ): Promise<VerifiedCoordinatorTicket | null> {
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
+  return verifyCoordinatorToken(token, sharedSecret, now);
+}
+
+export async function verifyCoordinatorToken(
+  token: string | null | undefined,
+  sharedSecret: string | undefined,
+  now = Date.now()
+): Promise<VerifiedCoordinatorTicket | null> {
   if (!token || !sharedSecret) return null;
 
   const [body, signature] = token.split('.');
@@ -41,10 +51,18 @@ function decodeTicketPayload(body: string): VerifiedCoordinatorTicket | null {
   try {
     const payload = JSON.parse(new TextDecoder().decode(base64UrlToBytes(body))) as Partial<VerifiedCoordinatorTicket>;
     const playerId = payload.playerId;
+    const nickname = payload.nickname;
+    const roomCode = payload.roomCode;
     const issuedAt = payload.issuedAt;
     const expiresAt = payload.expiresAt;
 
-    if (typeof playerId !== 'string' || typeof issuedAt !== 'number' || typeof expiresAt !== 'number') {
+    if (
+      typeof playerId !== 'string' ||
+      typeof nickname !== 'string' ||
+      typeof issuedAt !== 'number' ||
+      typeof expiresAt !== 'number' ||
+      (roomCode !== undefined && typeof roomCode !== 'string')
+    ) {
       return null;
     }
 
@@ -54,6 +72,8 @@ function decodeTicketPayload(body: string): VerifiedCoordinatorTicket | null {
 
     return {
       playerId,
+      nickname,
+      roomCode,
       issuedAt,
       expiresAt
     };

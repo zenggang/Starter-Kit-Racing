@@ -135,6 +135,86 @@ a {
   gap: 16px;
 }
 
+.console-screen {
+  min-height: calc(100dvh - max(32px, var(--safe-top)) - max(32px, var(--safe-bottom)));
+  align-content: center;
+}
+
+.control-console,
+.lobby-console {
+  width: min(100%, 980px);
+  margin: 0 auto;
+}
+
+.console-topline {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.console-title-group {
+  display: grid;
+  gap: 6px;
+}
+
+.console-screen-title {
+  font-size: 34px;
+  line-height: 0.94;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.console-block-title {
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.console-section-head {
+  display: grid;
+  gap: 4px;
+}
+
+.console-action-grid,
+.room-console-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.console-action-card,
+.console-room-list,
+.console-section {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(7, 9, 11, 0.48);
+  padding: 14px;
+}
+
+.console-action-card {
+  justify-content: space-between;
+  min-height: 0;
+}
+
+.console-button {
+  min-width: 0;
+}
+
+.compact-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.compact-actions {
+  gap: 10px;
+}
+
+.room-driver-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .race-page-head {
   display: grid;
   gap: 8px;
@@ -596,6 +676,11 @@ a {
     align-items: center;
   }
 
+  .console-action-grid,
+  .room-console-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .hall-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -631,6 +716,12 @@ a {
   .secondary-action {
     width: 100%;
   }
+
+  .compact-row,
+  .console-topline {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }
 
 @media (orientation: landscape) and (max-height: 540px) {
@@ -640,6 +731,7 @@ a {
       max(10px, var(--safe-right))
       max(10px, var(--safe-bottom))
       max(10px, var(--safe-left));
+    overflow: hidden;
   }
 
   .race-layout,
@@ -648,9 +740,9 @@ a {
     gap: 12px;
   }
 
-  .race-home {
-    min-height: auto;
-    align-content: start;
+  .console-screen {
+    min-height: calc(100dvh - max(20px, var(--safe-top)) - max(20px, var(--safe-bottom)));
+    align-content: center;
   }
 
   .race-home-copy,
@@ -684,7 +776,12 @@ a {
   }
 
   .identity-field {
-    max-width: 220px;
+    max-width: 196px;
+  }
+
+  .control-console,
+  .lobby-console {
+    width: min(100%, 920px);
   }
 
   .hall-grid {
@@ -706,18 +803,52 @@ a {
     min-height: 0;
   }
 
+  .console-topline {
+    align-items: center;
+    gap: 12px;
+  }
+
+  .console-title-group {
+    gap: 3px;
+  }
+
+  .console-screen-title {
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .console-block-title {
+    font-size: 15px;
+  }
+
+  .console-action-grid,
+  .room-console-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .console-action-card,
+  .console-room-list,
+  .console-section {
+    padding: 10px;
+  }
+
+  .console-action-card {
+    gap: 10px;
+  }
+
   .driver-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 
   .driver-card {
-    min-height: 82px;
-    padding: 10px;
+    min-height: 72px;
+    padding: 8px 10px;
   }
 
   .driver-card strong {
-    font-size: 18px;
+    font-size: 15px;
   }
 
   .driver-role,
@@ -728,24 +859,24 @@ a {
 
   .room-list-item {
     min-height: 0;
-    gap: 10px;
-    padding-top: 10px;
+    gap: 8px;
+    padding-top: 8px;
   }
 
   .room-list-item strong {
-    min-width: 58px;
-    font-size: 18px;
+    min-width: 48px;
+    font-size: 15px;
     letter-spacing: 0.1em;
   }
 
   .input,
   button {
-    min-height: 40px;
+    min-height: 38px;
   }
 
   .room-code-input {
-    font-size: 20px;
-    letter-spacing: 0.18em;
+    font-size: 17px;
+    letter-spacing: 0.16em;
   }
 
   .color-grid {
@@ -754,8 +885,33 @@ a {
   }
 
   .color-swatch {
-    min-height: 46px;
-    padding: 6px 8px;
+    min-height: 40px;
+    padding: 5px 6px;
+  }
+
+  .compact-actions {
+    flex-wrap: wrap;
+  }
+
+  .compact-actions .primary-action,
+  .compact-actions .secondary-action {
+    min-width: 0;
+    flex: 1 1 0;
+  }
+
+  .start-hint {
+    padding-top: 8px;
+  }
+
+  .control-console .muted,
+  .lobby-console .muted,
+  .control-console .field span,
+  .lobby-console .field span,
+  .control-console .driver-card span:not(.driver-role),
+  .lobby-console .driver-card span:not(.driver-role),
+  .control-console .room-list-item span,
+  .lobby-console .room-list-item span {
+    font-size: 11px;
   }
 
   .race-loading-card,

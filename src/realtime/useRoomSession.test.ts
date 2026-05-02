@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useRoomSession } from './useRoomSession';
 import type { RoomState } from './protocol';
 import type { PlayerSession } from '@/session/playerSession';
-import { requestCoordinatorTicket, sendBridgeCommand } from './sessionClient';
+import { openCoordinatorSocket, requestCoordinatorTicket, sendBridgeCommand } from './sessionClient';
 
 vi.mock('./sessionClient', () => ({
   openCoordinatorSocket: vi.fn(),
@@ -127,13 +127,59 @@ describe('useRoomSession bridge sync', () => {
     );
   });
 
-  it('still uses same-origin sync even when ticket bootstrap says socket', async () => {
-    vi.mocked(requestCoordinatorTicket).mockResolvedValueOnce({
+  it('does not start bridge polling while the socket transport is healthy', async () => {
+    const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
+    const socket = {
+      close: vi.fn(),
+      addEventListener: vi.fn((type: string, listener: (...args: unknown[]) => void) => {
+        listeners.set(type, [...(listeners.get(type) ?? []), listener]);
+      })
+    } as unknown as WebSocket;
+
+    vi.mocked(requestCoordinatorTicket).mockResolvedValue({
       token: 'signed-ticket',
       url: 'https://starter-kit-racing.example.com',
       mode: 'socket'
     });
+    vi.mocked(openCoordinatorSocket).mockReturnValue(socket);
 
+    const { result } = renderHook(() => useRoomSession('ABCD12', player));
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      listeners.get('open')?.forEach((listener) => listener(new Event('open')));
+      await Promise.resolve();
+    });
+
+    vi.mocked(sendBridgeCommand).mockClear();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5_000);
+    });
+
+    expect(result.current.connectionState).toBe('connected');
+    expect(sendBridgeCommand).not.toHaveBeenCalled();
+  });
+
+  it('falls back to bridge sync after the socket transport closes', async () => {
+    const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
+    const socket = {
+      close: vi.fn(),
+      addEventListener: vi.fn((type: string, listener: (...args: unknown[]) => void) => {
+        listeners.set(type, [...(listeners.get(type) ?? []), listener]);
+      })
+    } as unknown as WebSocket;
+
+    vi.mocked(requestCoordinatorTicket).mockResolvedValue({
+      token: 'signed-ticket',
+      url: 'https://starter-kit-racing.example.com',
+      mode: 'socket'
+    });
+    vi.mocked(openCoordinatorSocket).mockReturnValue(socket);
     vi.mocked(sendBridgeCommand).mockResolvedValue({
       type: 'command.result',
       seq: 1,
@@ -142,6 +188,18 @@ describe('useRoomSession bridge sync', () => {
     });
 
     const { result } = renderHook(() => useRoomSession('ABCD12', player));
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      listeners.get('open')?.forEach((listener) => listener(new Event('open')));
+      listeners.get('close')?.forEach((listener) => listener(new Event('close')));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
 
     await act(async () => {
       await Promise.resolve();

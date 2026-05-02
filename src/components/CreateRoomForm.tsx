@@ -13,11 +13,13 @@ export function CreateRoomForm({
   onCreate(command: ReturnType<typeof createCommand>): void;
 }) {
   return (
-    <div className="race-panel action-panel stack">
-      <span className="panel-kicker">新比赛</span>
-      <h2>创建房间</h2>
-      <p className="muted">生成 4 位数字房间码，邀请另一名车手进维修区后再发车。</p>
-      <button type="button" className="primary-action" disabled={!player || disabled} onClick={() => player && onCreate(createCommand('room.create', player.playerId))}>
+    <div className="console-action-card stack">
+      <div className="console-section-head">
+        <span className="panel-kicker">新比赛</span>
+        <strong className="console-block-title">创建房间</strong>
+      </div>
+      <p className="muted">立即生成 4 位数字房间码。</p>
+      <button type="button" className="primary-action console-button" disabled={!player || disabled} onClick={() => player && onCreate(createCommand('room.create', player.playerId))}>
         创建房间
       </button>
     </div>

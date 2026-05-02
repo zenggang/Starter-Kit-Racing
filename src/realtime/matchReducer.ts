@@ -45,6 +45,16 @@ export function reduceMatchSession(state: MatchSessionState, message: RealtimeMe
     };
   }
 
+  if (message.type === 'room.event') {
+    return {
+      room: message.room,
+      match: state.match,
+      lastSeq: message.seq,
+      lastErrorCode: null,
+      needsSync: false
+    };
+  }
+
   if (message.type === 'command.result') {
     return {
       room: message.room ?? state.room,

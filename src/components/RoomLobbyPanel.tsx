@@ -10,11 +10,15 @@ import type { PlayerSession } from '@/session/playerSession';
 export function RoomLobbyPanel({
   room,
   player,
+  roomCode,
+  connectionState,
   disabled,
   onCommand
 }: {
   room: RoomState | null;
   player: PlayerSession | null;
+  roomCode: string;
+  connectionState: 'idle' | 'connecting' | 'connected' | 'error';
   disabled?: boolean;
   onCommand(command: ReturnType<typeof createCommand>): void;
 }) {
@@ -28,73 +32,84 @@ export function RoomLobbyPanel({
   }
 
   return (
-    <div className="race-panel lobby-panel stack">
-      <div className="lobby-topline">
-        <div>
-          <span className="panel-kicker">发车区</span>
-          <h2>{room.code}</h2>
+    <div className="race-panel lobby-console stack">
+      <div className="console-topline">
+        <div className="console-title-group">
+          <span className="panel-kicker">发车格</span>
+          <strong className="console-screen-title">
+            房间 <span className="room-code-head">{roomCode}</span>
+          </strong>
+          <p className="muted">连接状态：{connectionState === 'connected' ? '已连接' : '连接中'}</p>
         </div>
         <span className="status-pill">{room.status === 'waiting' ? '等待中' : '比赛中'}</span>
       </div>
 
-      <section className="driver-grid">
-        {room.players.map((member) => (
-          <div key={member.playerId} className={`driver-card driver-${member.color ?? 'none'}`}>
-            <span className="driver-role">{member.isHost ? '房主' : '车手'}</span>
-            <strong>{member.nickname}</strong>
-            <span>{member.color ? '已选赛车' : '未选赛车'}</span>
-            <span>{member.ready ? '已准备' : '待准备'}</span>
+      <div className="room-console-grid">
+        <section className="console-section stack">
+          <div className="console-section-head">
+            <span className="panel-kicker">车手席</span>
+            <strong className="console-block-title">已入场车手</strong>
           </div>
-        ))}
-      </section>
+          <section className="driver-grid room-driver-grid">
+            {room.players.map((member) => (
+              <div key={member.playerId} className={`driver-card driver-${member.color ?? 'none'}`}>
+                <span className="driver-role">{member.isHost ? '房主' : '车手'}</span>
+                <strong>{member.nickname}</strong>
+                <span>{member.color ? '已选赛车' : '未选赛车'}</span>
+                <span>{member.ready ? '已准备' : '待准备'}</span>
+              </div>
+            ))}
+          </section>
+        </section>
 
-      <section className="tuning-panel">
-        <div>
-          <span className="panel-kicker">比赛圈数</span>
-          <p className="muted">{isHost ? '房主可以调整圈数' : '等待房主调整圈数'}</p>
-        </div>
-        <LapTargetControl
-          value={room.lapTarget}
-          disabled={!isHost || disabled}
-          onChange={(lapTarget) => onCommand(createCommand('room.setLapTarget', player.playerId, { lapTarget }))}
-        />
-      </section>
+        <section className="console-section stack">
+          <section className="compact-row">
+            <div>
+              <span className="panel-kicker">比赛圈数</span>
+              <p className="muted">{isHost ? '房主可在这里调圈数' : '等待房主调圈数'}</p>
+            </div>
+            <LapTargetControl
+              value={room.lapTarget}
+              disabled={!isHost || disabled}
+              onChange={(lapTarget) => onCommand(createCommand('room.setLapTarget', player.playerId, { lapTarget }))}
+            />
+          </section>
 
-      <section className="tuning-panel tuning-panel-column">
-        <div>
-          <span className="panel-kicker">选择赛车</span>
-          <p className="muted">每辆车只能被一名车手选择。</p>
-        </div>
-        <ColorPicker
-          selected={current?.color ?? null}
-          taken={takenColors}
-          disabled={disabled}
-          onSelect={(color) => onCommand(createCommand('room.chooseColor', player.playerId, { color }))}
-        />
-      </section>
+          <section className="console-section-head">
+            <span className="panel-kicker">选择赛车</span>
+            <strong className="console-block-title">发车准备</strong>
+          </section>
+          <ColorPicker
+            selected={current?.color ?? null}
+            taken={takenColors}
+            disabled={disabled}
+            onSelect={(color) => onCommand(createCommand('room.chooseColor', player.playerId, { color }))}
+          />
 
-      <div className="race-actions">
-        <button type="button" className="secondary-action" disabled={disabled} onClick={() => onCommand(createCommand('room.ready', player.playerId))}>
-          准备
-        </button>
-        {isHost ? (
-          <button type="button" className="primary-action" disabled={disabled || !canStart} onClick={() => onCommand(createCommand('room.start', player.playerId))}>
-            发车
-          </button>
-        ) : null}
-        {room.status === 'racing' ? (
-          <Link href={`/race/${room.code}`}>
-            <button type="button" className="primary-action">
-              进入赛道
+          <div className="race-actions compact-actions">
+            <button type="button" className="secondary-action" disabled={disabled} onClick={() => onCommand(createCommand('room.ready', player.playerId))}>
+              准备
             </button>
-          </Link>
-        ) : null}
+            {isHost ? (
+              <button type="button" className="primary-action" disabled={disabled || !canStart} onClick={() => onCommand(createCommand('room.start', player.playerId))}>
+                发车
+              </button>
+            ) : null}
+            {room.status === 'racing' ? (
+              <Link href={`/race/${room.code}`}>
+                <button type="button" className="primary-action">
+                  进入赛道
+                </button>
+              </Link>
+            ) : null}
+          </div>
+          <p className="muted start-hint">
+            {room.players.length === 1
+              ? '单人在线模式下，房主选车并准备后即可发车。'
+              : '房主当前可以单人发车；其他已选车且已准备的车手会一起进入比赛。'}
+          </p>
+        </section>
       </div>
-      <p className="muted start-hint">
-        {room.players.length === 1
-          ? '单人在线模式下，房主选车并准备后即可发车。'
-          : '房主当前可以单人发车；其他已选车且已准备的车手会一起进入比赛。'}
-      </p>
     </div>
   );
 }

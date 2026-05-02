@@ -8,11 +8,10 @@ import type { TransportMode } from '@/realtime/protocol';
 export function chooseCoordinatorMode(coordinatorUrl: string, bridgeEnabled: boolean): TransportMode | null {
   const host = safeHost(coordinatorUrl);
 
+  if (host && !host.endsWith('.workers.dev')) return 'socket';
   if (bridgeEnabled) return 'bridge';
-  if (!host) return null;
-  if (host.endsWith('.workers.dev')) return null;
 
-  return 'socket';
+  return null;
 }
 
 function safeHost(url: string): string | null {

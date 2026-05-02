@@ -28,7 +28,7 @@ describe('/api/coordinator-ticket', () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body.mode).toBe('bridge');
+    expect(body.mode).toBe('socket');
     expect(JSON.stringify(body)).not.toContain('server-secret');
   });
 });

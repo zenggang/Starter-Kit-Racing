@@ -1,14 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import type { RoomCommandEnvelope } from './protocol';
+import type { RoomCommandEnvelope, TransportMode } from './protocol';
 import { createMatchCommand, initialMatchSessionState, reduceMatchSession } from './matchReducer';
 import { openCoordinatorSocket, requestCoordinatorTicket, sendBridgeCommand, type CoordinatorTicket } from './sessionClient';
 import type { PlayerSession } from '@/session/playerSession';
 
 export type MatchConnectionState = 'idle' | 'connecting' | 'connected' | 'error';
 
-const BRIDGE_SYNC_INTERVAL_MS = 1_500;
+const BRIDGE_SYNC_INTERVAL_MS = 5_000;
 
 /**
  * Race and result pages consume one match session hook instead of directly
@@ -19,6 +19,7 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
   const [state, dispatch] = useReducer(reduceMatchSession, initialMatchSessionState);
   const [connectionState, setConnectionState] = useState<MatchConnectionState>('idle');
   const [ticket, setTicket] = useState<CoordinatorTicket | null>(null);
+  const [transportMode, setTransportMode] = useState<TransportMode | null>(null);
   const socketRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -26,6 +27,7 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
 
     let cancelled = false;
     setConnectionState('connecting');
+    setTransportMode(null);
 
     requestCoordinatorTicket({
       playerId: player.playerId,
@@ -35,9 +37,25 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
       .then((nextTicket) => {
         if (cancelled) return;
         setTicket(nextTicket);
+        setTransportMode(nextTicket.mode);
 
         if (nextTicket.mode === 'socket') {
-          socketRef.current = openCoordinatorSocket(nextTicket, dispatch);
+          const socket = openCoordinatorSocket(roomCode, nextTicket, dispatch);
+          socketRef.current = socket;
+          socket.addEventListener('open', () => {
+            if (!cancelled) {
+              setConnectionState('connected');
+            }
+          });
+          const fallbackToBridge = () => {
+            if (cancelled) return;
+            socketRef.current = null;
+            setTransportMode('bridge');
+            setConnectionState('connected');
+          };
+          socket.addEventListener('close', fallbackToBridge);
+          socket.addEventListener('error', fallbackToBridge);
+          return;
         }
 
         setConnectionState('connected');
@@ -65,7 +83,17 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
         };
       }
 
-      if (ticket.mode === 'bridge') {
+      if (transportMode === 'socket' && socketRef.current?.readyState === WebSocket.OPEN) {
+        socketRef.current.send(JSON.stringify(command));
+        return {
+          type: 'command.result' as const,
+          seq: state.lastSeq,
+          ok: true,
+          commandId: command.commandId
+        };
+      }
+
+      if (transportMode === 'bridge' || ticket.mode === 'bridge') {
         const result = await sendBridgeCommand(roomCode, ticket, command);
         dispatch(result);
         return result;
@@ -79,7 +107,7 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
         commandId: command.commandId
       };
     },
-    [roomCode, state.lastSeq, ticket]
+    [roomCode, state.lastSeq, ticket, transportMode]
   );
 
   useEffect(() => {
@@ -89,7 +117,7 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
   }, [connectionState, player, sendCommand, ticket]);
 
   useEffect(() => {
-    if (!player || !ticket || ticket.mode !== 'bridge') return;
+    if (!player || !ticket || transportMode !== 'bridge') return;
 
     let cancelled = false;
     const bridgeTicket = ticket;
@@ -111,7 +139,7 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
       cancelled = true;
       window.clearInterval(syncTimer);
     };
-  }, [player, roomCode, ticket]);
+  }, [player, roomCode, ticket, transportMode]);
 
   useEffect(() => {
     if (!state.needsSync || !player || !ticket) return;

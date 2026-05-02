@@ -54,32 +54,36 @@ export function HallClient() {
   }
 
   return (
-    <section className="race-layout">
-      <div className="race-page-head">
-        <p className="eyebrow">维修区</p>
-        <h1>赛车大厅</h1>
-        <p className="muted">创建房间、输入房间码，或加入正在等候的比赛。</p>
-        <label className="field identity-field">
-          <span>车手昵称</span>
-          <input
-            className="input"
-            value={nickname}
-            maxLength={20}
-            placeholder="输入昵称"
-            onChange={(event) => {
-              const nextNickname = event.target.value;
-              setNickname(nextNickname);
-              updateNickname(nextNickname);
-            }}
-          />
-        </label>
+    <section className="race-layout console-screen">
+      <div className="race-panel control-console stack">
+        <div className="console-topline">
+          <div className="console-title-group">
+            <span className="panel-kicker">维修区</span>
+            <strong className="console-screen-title">赛车大厅</strong>
+            <p className="muted">所有操作集中在主控台内完成。</p>
+          </div>
+          <label className="field identity-field">
+            <span>车手昵称</span>
+            <input
+              className="input"
+              value={nickname}
+              maxLength={20}
+              placeholder="输入昵称"
+              onChange={(event) => {
+                const nextNickname = event.target.value;
+                setNickname(nextNickname);
+                updateNickname(nextNickname);
+              }}
+            />
+          </label>
+        </div>
+        {errorCode ? <p className="error-banner">{formatRacingError(errorCode)}</p> : null}
+        <div className="console-action-grid">
+          <CreateRoomForm player={session} disabled={busy} onCreate={(command) => sendHallCommand('new', command)} />
+          <JoinRoomForm player={session} disabled={busy} onJoin={sendHallCommand} />
+        </div>
+        <HallRoomList rooms={rooms} onJoin={(code) => session && sendHallCommand(code, createCommand('room.join', session.playerId))} />
       </div>
-      {errorCode ? <p className="error-banner">{formatRacingError(errorCode)}</p> : null}
-      <div className="hall-grid">
-        <CreateRoomForm player={session} disabled={busy} onCreate={(command) => sendHallCommand('new', command)} />
-        <JoinRoomForm player={session} disabled={busy} onJoin={sendHallCommand} />
-      </div>
-      <HallRoomList rooms={rooms} onJoin={(code) => session && sendHallCommand(code, createCommand('room.join', session.playerId))} />
     </section>
   );
 }

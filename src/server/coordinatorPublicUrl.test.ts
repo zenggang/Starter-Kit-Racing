@@ -6,8 +6,8 @@ describe('coordinator transport mode', () => {
     expect(chooseCoordinatorMode('https://racing-worker.example.workers.dev', true)).toBe('bridge');
   });
 
-  it('prefers bridge when the same-origin fallback is enabled', () => {
-    expect(chooseCoordinatorMode('https://racing.example.com', true)).toBe('bridge');
+  it('prefers socket when a custom coordinator host is available', () => {
+    expect(chooseCoordinatorMode('https://racing.example.com', true)).toBe('socket');
   });
 
   it('returns null when only an unsafe direct workers url is available', () => {

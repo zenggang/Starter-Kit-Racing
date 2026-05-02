@@ -60,8 +60,9 @@ export async function sendBridgeCommand(roomCode: string, ticket: CoordinatorTic
   return body;
 }
 
-export function openCoordinatorSocket(ticket: CoordinatorTicket, onMessage: (message: RealtimeMessage) => void): WebSocket {
-  const url = new URL(ticket.url);
+export function openCoordinatorSocket(roomCode: string, ticket: CoordinatorTicket, onMessage: (message: RealtimeMessage) => void): WebSocket {
+  const baseUrl = ticket.url.replace(/\/$/, '');
+  const url = new URL(`${baseUrl}/rooms/${encodeURIComponent(roomCode)}/socket`);
   url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
   url.searchParams.set('token', ticket.token);
 

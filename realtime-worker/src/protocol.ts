@@ -143,6 +143,12 @@ export interface RoomSnapshot {
   room: RoomState;
 }
 
+export interface RoomEvent {
+  type: 'room.event';
+  seq: number;
+  room: RoomState;
+}
+
 export interface MatchSnapshot {
   type: 'match.snapshot';
   seq: number;
@@ -150,7 +156,14 @@ export interface MatchSnapshot {
   match: MatchState;
 }
 
-export type RealtimeEvent = RoomSnapshot | MatchSnapshot | CommandResult;
+export interface MatchEvent {
+  type: 'match.event';
+  seq: number;
+  room: RoomState;
+  match: MatchState;
+}
+
+export type RealtimeEvent = RoomSnapshot | RoomEvent | MatchSnapshot | MatchEvent | CommandResult;
 
 export type CreateRoomPayload = {
   roomCode?: string;

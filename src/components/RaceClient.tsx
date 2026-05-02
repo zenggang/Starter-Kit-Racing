@@ -10,7 +10,7 @@ import { RacingRuntimeHost, type RuntimeHandle } from '@/game/RacingRuntimeHost'
 import { advanceRaceProgress, buildTrackProgressModel, createInitialRaceProgressState } from '@/game/trackProgress';
 import { usePlayerSession } from '@/session/usePlayerSession';
 
-const TELEMETRY_INTERVAL_MS = 200;
+const TELEMETRY_INTERVAL_MS = 250;
 
 /**
  * Race page binds the legacy canvas runtime to coordinator-backed match state.
@@ -23,6 +23,13 @@ export function RaceClient({ code }: { code: string }) {
   const { room, match, connectionState, lastErrorCode, sendCommand } = useMatchSession(code, session);
   const runtimeRef = useRef<RuntimeHandle | null>(null);
   const progressRef = useRef(createInitialRaceProgressState());
+  const telemetryInFlightRef = useRef(false);
+  const connectionStateRef = useRef(connectionState);
+  const sendCommandRef = useRef(sendCommand);
+  const trackModelRef = useRef<ReturnType<typeof buildTrackProgressModel> | null>(null);
+  const playerIdRef = useRef<string | null>(session?.playerId ?? null);
+  const lapTargetRef = useRef<number | null>(match?.lapTarget ?? null);
+  const matchPhaseRef = useRef(match?.phase ?? null);
   const [runtimeReady, setRuntimeReady] = useState(false);
   const handleRuntimeReady = useCallback((runtime: RuntimeHandle | null) => {
     runtimeRef.current = runtime;
@@ -38,7 +45,29 @@ export function RaceClient({ code }: { code: string }) {
   }, [match, room]);
 
   useEffect(() => {
+    connectionStateRef.current = connectionState;
+  }, [connectionState]);
+
+  useEffect(() => {
+    sendCommandRef.current = sendCommand;
+  }, [sendCommand]);
+
+  useEffect(() => {
+    trackModelRef.current = trackModel;
+  }, [trackModel]);
+
+  useEffect(() => {
+    playerIdRef.current = session?.playerId ?? null;
+  }, [session?.playerId]);
+
+  useEffect(() => {
+    lapTargetRef.current = match?.lapTarget ?? null;
+    matchPhaseRef.current = match?.phase ?? null;
+  }, [match?.lapTarget, match?.phase]);
+
+  useEffect(() => {
     progressRef.current = createInitialRaceProgressState();
+    telemetryInFlightRef.current = false;
   }, [match?.id]);
 
   useEffect(() => {
@@ -58,30 +87,48 @@ export function RaceClient({ code }: { code: string }) {
   }, [code, match?.phase, room?.status, router]);
 
   useEffect(() => {
-    if (!session || !match || !trackModel || !runtimeReady || connectionState !== 'connected' || match.phase !== 'live') return;
+    if (!runtimeReady || !match?.id) return;
 
     let cancelled = false;
-    const activeTrackModel = trackModel;
-    const activeMatch = match;
-    const activePlayerId = session.playerId;
 
     async function reportProgress() {
       const runtime = runtimeRef.current;
-      if (!runtime || cancelled) return;
+      const activeTrackModel = trackModelRef.current;
+      const activePlayerId = playerIdRef.current;
+      const lapTarget = lapTargetRef.current;
 
-      const telemetry = advanceRaceProgress(activeTrackModel, progressRef.current, runtime.getSnapshot(), activeMatch.lapTarget);
-      progressRef.current = telemetry.state;
-
-      if (telemetry.state.finished && telemetry.state.finishSent) {
+      if (
+        !runtime ||
+        cancelled ||
+        telemetryInFlightRef.current ||
+        !activeTrackModel ||
+        !activePlayerId ||
+        lapTarget === null ||
+        connectionStateRef.current !== 'connected' ||
+        matchPhaseRef.current !== 'live'
+      ) {
         return;
       }
 
-      const result = await sendCommand(createMatchCommand('match.progress', activePlayerId, telemetry.payload));
-      if (!cancelled && result.ok && telemetry.payload.finished) {
-        progressRef.current = {
-          ...progressRef.current,
-          finishSent: true
-        };
+      telemetryInFlightRef.current = true;
+      const telemetry = advanceRaceProgress(activeTrackModel, progressRef.current, runtime.getSnapshot(), lapTarget);
+      progressRef.current = telemetry.state;
+
+      if (telemetry.state.finished && telemetry.state.finishSent) {
+        telemetryInFlightRef.current = false;
+        return;
+      }
+
+      try {
+        const result = await sendCommandRef.current(createMatchCommand('match.progress', activePlayerId, telemetry.payload));
+        if (!cancelled && result.ok && telemetry.payload.finished) {
+          progressRef.current = {
+            ...progressRef.current,
+            finishSent: true
+          };
+        }
+      } finally {
+        telemetryInFlightRef.current = false;
       }
     }
 
@@ -94,7 +141,7 @@ export function RaceClient({ code }: { code: string }) {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [connectionState, match, runtimeReady, sendCommand, session, trackModel]);
+  }, [match?.id, runtimeReady]);
 
   if (!session || !room || !match || !currentPlayer) {
     return (

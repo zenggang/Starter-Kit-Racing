@@ -46,6 +46,19 @@ describe('match session reducer', () => {
     expect(next.needsSync).toBe(false);
   });
 
+  it('updates room state when room events arrive during a match session', () => {
+    const state = reduceMatchSession(initialMatchSessionState, { type: 'match.snapshot', seq: 1, room, match });
+    const next = reduceMatchSession(state, {
+      type: 'room.event',
+      seq: 2,
+      room: { ...room, status: 'waiting' }
+    });
+
+    expect(next.room?.status).toBe('waiting');
+    expect(next.match).toEqual(match);
+    expect(next.lastSeq).toBe(2);
+  });
+
   it('flags sequence gaps without applying the event', () => {
     const state = reduceMatchSession(initialMatchSessionState, { type: 'match.snapshot', seq: 1, room, match });
     const next = reduceMatchSession(state, {

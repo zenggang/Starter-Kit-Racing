@@ -17,15 +17,17 @@ export function JoinRoomForm({
 
   return (
     <form
-      className="race-panel action-panel stack"
+      className="console-action-card stack"
       onSubmit={(event) => {
         event.preventDefault();
         if (!player || roomCode.trim().length !== 4) return;
         onJoin(roomCode.trim(), createCommand('room.join', player.playerId));
       }}
     >
-      <span className="panel-kicker">加入比赛</span>
-      <h2>输入房间码</h2>
+      <div className="console-section-head">
+        <span className="panel-kicker">加入比赛</span>
+        <strong className="console-block-title">输入房间码</strong>
+      </div>
       <label className="field">
         <span>房间码</span>
         <input
@@ -38,7 +40,7 @@ export function JoinRoomForm({
           onChange={(event) => setRoomCode(event.target.value.replace(/\D/g, '').slice(0, 4))}
         />
       </label>
-      <button type="submit" className="secondary-action" disabled={!player || disabled || roomCode.trim().length !== 4}>
+      <button type="submit" className="secondary-action console-button" disabled={!player || disabled || roomCode.trim().length !== 4}>
         加入房间
       </button>
     </form>
