@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import type { HallRoomSummary } from '@/server/rooms';
 
 export function HallRoomList({ rooms, onJoin }: { rooms: HallRoomSummary[]; onJoin(code: string): void }) {

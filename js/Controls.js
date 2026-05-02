@@ -35,8 +35,6 @@ export class Controls {
 
 	setupTouchUI() {
 
-		if ( ! ( 'ontouchstart' in window ) ) return;
-
 		const css = document.createElement( 'style' );
 		this.touchStyle = css;
 		css.textContent = `
@@ -50,6 +48,11 @@ export class Controls {
 		const container = document.createElement( 'div' );
 		container.className = 'touch-controls';
 		this.touchContainer = container;
+
+		// Keep the virtual stick available in every runtime shell. Some mobile
+		// simulators and embedded webviews can drive pointer events correctly
+		// while still omitting `window.ontouchstart`, which previously caused the
+		// joystick to disappear entirely.
 
 		const steerZone = document.createElement( 'div' );
 		steerZone.className = 'steer-zone';

@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CreateRoomForm } from './CreateRoomForm';
@@ -10,6 +11,9 @@ import type { HallRoomSummary } from '@/server/rooms';
 import { createCommand } from '@/realtime/sessionReducer';
 import { formatRacingError } from '@/realtime/errorMessages';
 import { usePlayerSession } from '@/session/usePlayerSession';
+import { resolveSessionNickname } from '@/session/playerSession';
+
+const ROOM_LIST_REFRESH_INTERVAL_MS = 5_000;
 
 export function HallClient() {
   const router = useRouter();
@@ -20,10 +24,36 @@ export function HallClient() {
   const [nickname, setNickname] = useState('');
 
   useEffect(() => {
-    fetch('/api/rooms')
-      .then((response) => response.json())
-      .then((body) => setRooms(body.rooms ?? []))
-      .catch(() => setRooms([]));
+    let cancelled = false;
+
+    /**
+     * The hall is the shared waiting-room radar. A lightweight refresh keeps
+     * newly created rooms joinable without asking players to manually reload.
+     */
+    async function refreshRooms() {
+      try {
+        const response = await fetch('/api/rooms');
+        const body = await response.json();
+
+        if (!cancelled) {
+          setRooms(body.rooms ?? []);
+        }
+      } catch {
+        if (!cancelled) {
+          setRooms([]);
+        }
+      }
+    }
+
+    void refreshRooms();
+    const refreshTimer = window.setInterval(() => {
+      void refreshRooms();
+    }, ROOM_LIST_REFRESH_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(refreshTimer);
+    };
   }, []);
 
   useEffect(() => {
@@ -38,7 +68,9 @@ export function HallClient() {
     setErrorCode(null);
 
     try {
-      const ticket = await requestCoordinatorTicket({ playerId: session.playerId, nickname: session.nickname, roomCode });
+      const nicknameForCommand = resolveSessionNickname(session);
+      updateNickname(nicknameForCommand);
+      const ticket = await requestCoordinatorTicket({ playerId: session.playerId, nickname: nicknameForCommand, roomCode });
       const result = await sendBridgeCommand(roomCode, ticket, command);
 
       if (!result.ok || !result.room) {

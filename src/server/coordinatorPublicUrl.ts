@@ -8,8 +8,14 @@ import type { TransportMode } from '@/realtime/protocol';
 export function chooseCoordinatorMode(coordinatorUrl: string, bridgeEnabled: boolean): TransportMode | null {
   const host = safeHost(coordinatorUrl);
 
-  if (host && !host.endsWith('.workers.dev')) return 'socket';
-  if (bridgeEnabled) return 'bridge';
+  /**
+   * Prefer WebSocket whenever the coordinator URL is syntactically valid,
+   * including the default `workers.dev` hostname. The browser hooks already
+   * contain a bridge fallback path, so choosing socket first is the only way to
+   * avoid turning every race tick into a billed HTTP request.
+   */
+  if (host) return 'socket';
+  if (bridgeEnabled) return null;
 
   return null;
 }

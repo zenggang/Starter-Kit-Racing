@@ -5,10 +5,12 @@ import type { RoomCommandEnvelope, TransportMode } from './protocol';
 import { createMatchCommand, initialMatchSessionState, reduceMatchSession } from './matchReducer';
 import { openCoordinatorSocket, requestCoordinatorTicket, sendBridgeCommand, type CoordinatorTicket } from './sessionClient';
 import type { PlayerSession } from '@/session/playerSession';
+import { resolveSessionNickname } from '@/session/playerSession';
 
 export type MatchConnectionState = 'idle' | 'connecting' | 'connected' | 'error';
 
 const BRIDGE_SYNC_INTERVAL_MS = 5_000;
+const SOCKET_CONNECT_TIMEOUT_MS = 3_000;
 
 /**
  * Race and result pages consume one match session hook instead of directly
@@ -21,17 +23,38 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
   const [ticket, setTicket] = useState<CoordinatorTicket | null>(null);
   const [transportMode, setTransportMode] = useState<TransportMode | null>(null);
   const socketRef = useRef<WebSocket | null>(null);
+  const ticketRef = useRef<CoordinatorTicket | null>(null);
+  const transportModeRef = useRef<TransportMode | null>(null);
+  const lastSeqRef = useRef(0);
+  const joinedMatchKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    ticketRef.current = ticket;
+  }, [ticket]);
+
+  useEffect(() => {
+    transportModeRef.current = transportMode;
+  }, [transportMode]);
+
+  useEffect(() => {
+    lastSeqRef.current = state.lastSeq;
+  }, [state.lastSeq]);
+
+  useEffect(() => {
+    joinedMatchKeyRef.current = null;
+  }, [roomCode, player?.playerId]);
 
   useEffect(() => {
     if (!player) return;
 
     let cancelled = false;
+    let socketConnectTimer = 0;
     setConnectionState('connecting');
     setTransportMode(null);
 
     requestCoordinatorTicket({
       playerId: player.playerId,
-      nickname: player.nickname,
+      nickname: resolveSessionNickname(player),
       roomCode
     })
       .then((nextTicket) => {
@@ -42,19 +65,34 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
         if (nextTicket.mode === 'socket') {
           const socket = openCoordinatorSocket(roomCode, nextTicket, dispatch);
           socketRef.current = socket;
-          socket.addEventListener('open', () => {
-            if (!cancelled) {
-              setConnectionState('connected');
-            }
-          });
           const fallbackToBridge = () => {
-            if (cancelled) return;
+            if (cancelled || socketRef.current !== socket) return;
+            window.clearTimeout(socketConnectTimer);
             socketRef.current = null;
+            try {
+              socket.close();
+            } catch {
+              // Ignore close races; the hook is already switching to bridge.
+            }
             setTransportMode('bridge');
             setConnectionState('connected');
           };
+          socket.addEventListener('open', () => {
+            if (cancelled || socketRef.current !== socket) {
+              try {
+                socket.close();
+              } catch {
+                // Ignore late open events from sockets we already abandoned.
+              }
+              return;
+            }
+
+            window.clearTimeout(socketConnectTimer);
+            setConnectionState('connected');
+          });
           socket.addEventListener('close', fallbackToBridge);
           socket.addEventListener('error', fallbackToBridge);
+          socketConnectTimer = window.setTimeout(fallbackToBridge, SOCKET_CONNECT_TIMEOUT_MS);
           return;
         }
 
@@ -66,6 +104,7 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
 
     return () => {
       cancelled = true;
+      window.clearTimeout(socketConnectTimer);
       socketRef.current?.close();
       socketRef.current = null;
     };
@@ -73,7 +112,10 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
 
   const sendCommand = useCallback(
     async (command: RoomCommandEnvelope) => {
-      if (!ticket) {
+      const activeTicket = ticketRef.current;
+      const activeTransportMode = transportModeRef.current;
+
+      if (!activeTicket) {
         return {
           type: 'command.result' as const,
           seq: 0,
@@ -83,18 +125,18 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
         };
       }
 
-      if (transportMode === 'socket' && socketRef.current?.readyState === WebSocket.OPEN) {
+      if (activeTransportMode === 'socket' && socketRef.current?.readyState === WebSocket.OPEN) {
         socketRef.current.send(JSON.stringify(command));
         return {
           type: 'command.result' as const,
-          seq: state.lastSeq,
+          seq: lastSeqRef.current,
           ok: true,
           commandId: command.commandId
         };
       }
 
-      if (transportMode === 'bridge' || ticket.mode === 'bridge') {
-        const result = await sendBridgeCommand(roomCode, ticket, command);
+      if (activeTransportMode === 'bridge' || activeTicket.mode === 'bridge') {
+        const result = await sendBridgeCommand(roomCode, activeTicket, command);
         dispatch(result);
         return result;
       }
@@ -102,19 +144,36 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
       socketRef.current?.send(JSON.stringify(command));
       return {
         type: 'command.result' as const,
-        seq: state.lastSeq,
+        seq: lastSeqRef.current,
         ok: true,
         commandId: command.commandId
       };
     },
-    [roomCode, state.lastSeq, ticket, transportMode]
+    [roomCode]
   );
 
   useEffect(() => {
     if (!player || !ticket || connectionState !== 'connected') return;
 
-    void sendCommand(createMatchCommand('match.join', player.playerId, {}));
-  }, [connectionState, player, sendCommand, ticket]);
+    const joinKey = `${roomCode}:${ticket.token}:${player.playerId}`;
+
+    if (joinedMatchKeyRef.current === joinKey) {
+      return;
+    }
+
+    joinedMatchKeyRef.current = joinKey;
+    let cancelled = false;
+
+    void sendCommand(createMatchCommand('match.join', player.playerId, {})).then((result) => {
+      if (!cancelled && !result.ok && joinedMatchKeyRef.current === joinKey) {
+        joinedMatchKeyRef.current = null;
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [connectionState, player, roomCode, sendCommand, ticket]);
 
   useEffect(() => {
     if (!player || !ticket || transportMode !== 'bridge') return;
@@ -149,6 +208,7 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
   return {
     room: state.room,
     match: state.match,
+    transportMode,
     connectionState,
     lastErrorCode: state.lastErrorCode,
     needsSync: state.needsSync,

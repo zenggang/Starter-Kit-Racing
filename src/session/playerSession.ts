@@ -28,12 +28,18 @@ export function getOrCreatePlayerSession(storage: PlayerSessionStorage, nickname
     storage.setItem(PLAYER_ID_KEY, playerId);
   }
 
-  const nickname = normalizeNickname(nicknameInput ?? storage.getItem(NICKNAME_KEY), playerId);
-  storage.setItem(NICKNAME_KEY, nickname);
+  const storedNickname = storage.getItem(NICKNAME_KEY);
+  const rawNickname =
+    nicknameInput !== undefined && nicknameInput !== null
+      ? nicknameInput.trim().slice(0, MAX_NICKNAME_LENGTH)
+      : storedNickname === null
+        ? normalizeNickname('', playerId)
+        : storedNickname.trim().slice(0, MAX_NICKNAME_LENGTH);
+  storage.setItem(NICKNAME_KEY, rawNickname);
 
   return {
     playerId,
-    nickname,
+    nickname: rawNickname,
     lastRoomCode: storage.getItem(LAST_ROOM_CODE_KEY)
   };
 }
@@ -43,7 +49,11 @@ export function rememberLastRoomCode(storage: PlayerSessionStorage, roomCode: st
 }
 
 export function setStoredNickname(storage: PlayerSessionStorage, nickname: string): void {
-  storage.setItem(NICKNAME_KEY, nickname.trim());
+  storage.setItem(NICKNAME_KEY, nickname.trim().slice(0, MAX_NICKNAME_LENGTH));
+}
+
+export function resolveSessionNickname(session: Pick<PlayerSession, 'playerId' | 'nickname'>): string {
+  return normalizeNickname(session.nickname, session.playerId);
 }
 
 export function normalizeNickname(input: string | null | undefined, playerId: string): string {

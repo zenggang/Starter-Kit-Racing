@@ -8,4 +8,9 @@ script = ""
 [[actions]]
 name = "运行"
 icon = "run"
-command = "cd \"/Users/javababy/Downloads/AI demo/Starter-Kit-Racing\" && python3 -m http.server 8000"
+command = "cd \"/Users/javababy/Downloads/AI demo/Starter-Kit-Racing\" && npm run dev -- --hostname 0.0.0.0 --port 3000"
+
+[[actions]]
+name = "本地联网"
+icon = "tool"
+command = "cd \"/Users/javababy/Downloads/AI demo/Starter-Kit-Racing\" && npm run dev -- --hostname 0.0.0.0 --port 3000"

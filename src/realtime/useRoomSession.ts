@@ -5,9 +5,11 @@ import type { RoomCommandEnvelope, TransportMode } from './protocol';
 import { createCommand, initialRoomSessionState, reduceRoomSession } from './sessionReducer';
 import { openCoordinatorSocket, requestCoordinatorTicket, sendBridgeCommand, type CoordinatorTicket } from './sessionClient';
 import type { PlayerSession } from '@/session/playerSession';
+import { resolveSessionNickname } from '@/session/playerSession';
 
 export type ConnectionState = 'idle' | 'connecting' | 'connected' | 'error';
 const BRIDGE_SYNC_INTERVAL_MS = 5_000;
+const SOCKET_CONNECT_TIMEOUT_MS = 3_000;
 
 /**
  * Unifies bridge and socket access behind one room-session hook. Components send
@@ -24,12 +26,13 @@ export function useRoomSession(roomCode: string, player: PlayerSession | null) {
     if (!player) return;
 
     let cancelled = false;
+    let socketConnectTimer = 0;
     setConnectionState('connecting');
     setTransportMode(null);
 
     requestCoordinatorTicket({
       playerId: player.playerId,
-      nickname: player.nickname,
+      nickname: resolveSessionNickname(player),
       roomCode
     })
       .then((nextTicket) => {
@@ -40,19 +43,34 @@ export function useRoomSession(roomCode: string, player: PlayerSession | null) {
         if (nextTicket.mode === 'socket') {
           const socket = openCoordinatorSocket(roomCode, nextTicket, dispatch);
           socketRef.current = socket;
-          socket.addEventListener('open', () => {
-            if (!cancelled) {
-              setConnectionState('connected');
-            }
-          });
           const fallbackToBridge = () => {
-            if (cancelled) return;
+            if (cancelled || socketRef.current !== socket) return;
+            window.clearTimeout(socketConnectTimer);
             socketRef.current = null;
+            try {
+              socket.close();
+            } catch {
+              // Ignore close races; the hook is already switching to bridge.
+            }
             setTransportMode('bridge');
             setConnectionState('connected');
           };
+          socket.addEventListener('open', () => {
+            if (cancelled || socketRef.current !== socket) {
+              try {
+                socket.close();
+              } catch {
+                // Ignore late open events from sockets we already abandoned.
+              }
+              return;
+            }
+
+            window.clearTimeout(socketConnectTimer);
+            setConnectionState('connected');
+          });
           socket.addEventListener('close', fallbackToBridge);
           socket.addEventListener('error', fallbackToBridge);
+          socketConnectTimer = window.setTimeout(fallbackToBridge, SOCKET_CONNECT_TIMEOUT_MS);
           return;
         }
 
@@ -64,6 +82,7 @@ export function useRoomSession(roomCode: string, player: PlayerSession | null) {
 
     return () => {
       cancelled = true;
+      window.clearTimeout(socketConnectTimer);
       socketRef.current?.close();
       socketRef.current = null;
     };

@@ -1,8 +1,10 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { ColorPicker } from './ColorPicker';
 import { LapTargetControl } from './LapTargetControl';
+import { createLobbySeatSlots, getRosterDensity } from './rosterLayout';
 import type { PlayerColor, RoomState } from '@/realtime/protocol';
 import { createCommand } from '@/realtime/sessionReducer';
 import type { PlayerSession } from '@/session/playerSession';
@@ -26,6 +28,8 @@ export function RoomLobbyPanel({
   const takenColors = room?.players.map((candidate) => candidate.color).filter((color): color is PlayerColor => Boolean(color)) ?? [];
   const isHost = current?.isHost ?? false;
   const canStart = Boolean(isHost && current?.ready && current?.color);
+  const seatSlots = room ? createLobbySeatSlots(room.players) : [];
+  const rosterDensity = getRosterDensity(room?.players.length ?? 0, { reserveCapacity: true });
 
   if (!room || !player) {
     return <p className="loading-copy">正在连接房间数据...</p>;
@@ -50,15 +54,28 @@ export function RoomLobbyPanel({
             <span className="panel-kicker">车手席</span>
             <strong className="console-block-title">已入场车手</strong>
           </div>
-          <section className="driver-grid room-driver-grid">
-            {room.players.map((member) => (
-              <div key={member.playerId} className={`driver-card driver-${member.color ?? 'none'}`}>
-                <span className="driver-role">{member.isHost ? '房主' : '车手'}</span>
-                <strong>{member.nickname}</strong>
-                <span>{member.color ? '已选赛车' : '未选赛车'}</span>
-                <span>{member.ready ? '已准备' : '待准备'}</span>
-              </div>
-            ))}
+          <section className="driver-grid room-driver-grid" data-roster-density={rosterDensity}>
+            {seatSlots.map((member, index) =>
+              member ? (
+                <div key={member.playerId} className={`driver-card driver-${member.color ?? 'none'}`}>
+                  <span className="driver-role">{member.isHost ? '房主' : '车手'}</span>
+                  <strong>{member.nickname}</strong>
+                  <div className="driver-meta">
+                    <span>{member.color ? '已选赛车' : '未选赛车'}</span>
+                    <span>{member.ready ? '已准备' : '待准备'}</span>
+                  </div>
+                </div>
+              ) : (
+                <div key={`seat-${index + 1}`} className="driver-card driver-card-empty">
+                  <span className="driver-role">空位</span>
+                  <strong>待加入</strong>
+                  <div className="driver-meta">
+                    <span>等待车手进入房间</span>
+                    <span>发车后将不再补位</span>
+                  </div>
+                </div>
+              )
+            )}
           </section>
         </section>
 

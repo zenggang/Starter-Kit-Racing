@@ -8,9 +8,8 @@ import { createMatchCommand } from '@/realtime/matchReducer';
 import { useMatchSession } from '@/realtime/useMatchSession';
 import { RacingRuntimeHost, type RuntimeHandle } from '@/game/RacingRuntimeHost';
 import { advanceRaceProgress, buildTrackProgressModel, createInitialRaceProgressState } from '@/game/trackProgress';
+import { getRaceTelemetryIntervalMs } from '@/game/telemetryPolicy';
 import { usePlayerSession } from '@/session/usePlayerSession';
-
-const TELEMETRY_INTERVAL_MS = 250;
 
 /**
  * Race page binds the legacy canvas runtime to coordinator-backed match state.
@@ -20,7 +19,7 @@ const TELEMETRY_INTERVAL_MS = 250;
 export function RaceClient({ code }: { code: string }) {
   const router = useRouter();
   const { session } = usePlayerSession();
-  const { room, match, connectionState, lastErrorCode, sendCommand } = useMatchSession(code, session);
+  const { room, match, transportMode, connectionState, lastErrorCode, sendCommand } = useMatchSession(code, session);
   const runtimeRef = useRef<RuntimeHandle | null>(null);
   const progressRef = useRef(createInitialRaceProgressState());
   const telemetryInFlightRef = useRef(false);
@@ -43,6 +42,7 @@ export function RaceClient({ code }: { code: string }) {
   const trackModel = useMemo(() => {
     return room && match ? buildTrackProgressModel(match.trackMap ?? room.trackMap) : null;
   }, [match, room]);
+  const telemetryIntervalMs = useMemo(() => getRaceTelemetryIntervalMs(transportMode ?? null), [transportMode]);
 
   useEffect(() => {
     connectionStateRef.current = connectionState;
@@ -135,13 +135,13 @@ export function RaceClient({ code }: { code: string }) {
     void reportProgress();
     const timer = window.setInterval(() => {
       void reportProgress();
-    }, TELEMETRY_INTERVAL_MS);
+    }, telemetryIntervalMs);
 
     return () => {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [match?.id, runtimeReady]);
+  }, [match?.id, runtimeReady, telemetryIntervalMs]);
 
   if (!session || !room || !match || !currentPlayer) {
     return (

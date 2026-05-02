@@ -8,14 +8,14 @@ export default async function RacePage({ params }: { params: Promise<{ code: str
 
   if (normalizedCode === 'DEMO') {
     return (
-      <LandscapeGate>
+      <LandscapeGate suspendWhenBlocked>
         <LocalRaceTelemetryClient />
       </LandscapeGate>
     );
   }
 
   return (
-    <LandscapeGate>
+    <LandscapeGate suspendWhenBlocked>
       <RaceClient code={normalizedCode} />
     </LandscapeGate>
   );

@@ -1,0 +1,32 @@
+- main [ref=e2]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: 维修区
+        - strong [ref=e8]: 赛车大厅
+        - paragraph [ref=e9]: 所有操作集中在主控台内完成。
+      - generic [ref=e10]:
+        - generic [ref=e11]: 车手昵称
+        - textbox "车手昵称" [ref=e12]:
+          - /placeholder: 输入昵称
+    - generic [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - generic [ref=e16]: 新比赛
+          - strong [ref=e17]: 创建房间
+        - paragraph [ref=e18]: 立即生成 4 位数字房间码。
+        - button "创建房间" [disabled] [ref=e19]
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - generic [ref=e22]: 加入比赛
+          - strong [ref=e23]: 输入房间码
+        - generic [ref=e24]:
+          - generic [ref=e25]: 房间码
+          - textbox "房间码" [ref=e26]:
+            - /placeholder: "1234"
+        - button "加入房间" [disabled] [ref=e27]
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - generic [ref=e30]: 候场列表
+        - strong [ref=e31]: 暂无等待中的房间
+      - paragraph [ref=e32]: 直接创建房间，分享 4 位数字房间码即可开始。

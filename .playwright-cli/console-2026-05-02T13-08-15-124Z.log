@@ -1,0 +1,328 @@
+[     532ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:25630
+[     599ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/favicon.ico:0
+[  204756ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:25630
+[  334189ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[  334567ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:3000/api/coordinator-ticket:0
+[  334579ms] Error: COORDINATOR_NOT_READY
+    at requestCoordinatorTicket (webpack-internal:///(app-pages-browser)/./src/realtime/sessionClient.ts:22:15)
+    at async sendHallCommand (webpack-internal:///(app-pages-browser)/./src/components/HallClient.tsx:67:28)
+[  334579ms] [LOG] [Fast Refresh] done in 389ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[  344879ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:25630
+[  355285ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:3000/api/coordinator-ticket:0
+[  355292ms] Error: COORDINATOR_NOT_READY
+    at requestCoordinatorTicket (webpack-internal:///(app-pages-browser)/./src/realtime/sessionClient.ts:22:15)
+    at async sendHallCommand (webpack-internal:///(app-pages-browser)/./src/components/HallClient.tsx:67:28)
+[  765467ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[  766890ms] [WARNING] [Fast Refresh] performing full reload
+
+Fast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.
+You might have a file which exports a React component but also exports a value that is imported by a non-React component file.
+Consider migrating the non-React component export to a separate file and importing it into both files.
+
+It is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.
+Fast Refresh requires at least one parent function component in your React tree. @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:111
+[  768940ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:25630
+[  986681ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:25630
+[  987347ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[  987989ms] [LOG] [Fast Refresh] done in 643ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[  992250ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[  992430ms] [LOG] [Fast Refresh] done in 181ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[  995623ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[  996048ms] [LOG] [Fast Refresh] done in 425ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1065997ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1068291ms] [LOG] [Fast Refresh] done in 2294ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1069411ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1069412ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1069413ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1069417ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1069419ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1069420ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1073565ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/favicon.ico:0
+[ 1110093ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1110358ms] [LOG] [Fast Refresh] done in 265ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1244158ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1244159ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1244160ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1244163ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1244165ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1244166ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1446723ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1447557ms] [LOG] [Fast Refresh] done in 835ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1578021ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1579232ms] [LOG] [Fast Refresh] done in 1211ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1671310ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1672024ms] [LOG] [Fast Refresh] done in 712ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1787363ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8000/hall:0
+[ 1787407ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8000/favicon.ico:0
+[ 1795793ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795874ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795949ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795950ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795950ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795950ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glTexStorage2D: Desired resource size is greater than max texture size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795951ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795952ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795953ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795954ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795954ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795954ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795954ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795973ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glTexStorage2D: Desired resource size is greater than max texture size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795974ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1795978ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795979ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795979ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795979ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795979ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795979ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795979ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1795980ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796002ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796022ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glTexStorage2D: Desired resource size is greater than max texture size. @ http://localhost:8000/:0
+[ 1796023ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796024ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796025ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796025ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796025ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796025ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796025ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796025ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796025ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796025ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796057ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796057ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796057ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796057ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796057ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796057ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796057ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796057ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796057ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796057ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796057ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796057ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796057ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796057ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glTexStorage2D: Desired resource size is greater than max texture size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796058ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796069ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796070ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796070ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796070ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796070ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796070ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796070ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796070ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796070ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796070ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796070ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796070ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796072ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796073ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796073ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796073ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796073ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796073ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796073ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796073ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796074ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796074ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796074ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796074ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796085ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glTexStorage2D: Desired resource size is greater than max texture size. @ http://localhost:8000/:0
+[ 1796085ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796085ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796085ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796085ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796085ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796085ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796086ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796087ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796104ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796105ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796105ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796105ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796105ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796105ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796105ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796105ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796105ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796106ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796106ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796106ms] [WARNING] WebGL: INVALID_VALUE: texImage2D: width or height out of range @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js:10720
+[ 1796120ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glTexStorage2D: Desired resource size is greater than max texture size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElementsInstanced: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawElements: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796121ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796122ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796122ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_VALUE: glRenderbufferStorage: Desired resource size is greater than max renderbuffer size. @ http://localhost:8000/:0
+[ 1796122ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796122ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796123ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glClear: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796123ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796123ms] [WARNING] [.WebGL-0x10c18938a00] GL_INVALID_FRAMEBUFFER_OPERATION: glDrawArrays: Framebuffer is incomplete: Attachment has zero size. @ http://localhost:8000/:0
+[ 1796123ms] [WARNING] WebGL: too many errors, no more errors will be reported to the console for this context. @ http://localhost:8000/:0
+[ 1807407ms] [WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio @ http://localhost:8000/js/Audio.js:110
+[ 1807412ms] [WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.core.js:51017
+[ 1807413ms] [WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.core.js:51017
+[ 1807413ms] [WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio @ https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.core.js:51017
+[ 1949194ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:25630
+[ 1953212ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js:25630
+[ 1956055ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:196
+[ 1956823ms] [LOG] [Fast Refresh] done in 767ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/report-hmr-latency.js:13
+[ 1957562ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1957563ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1957563ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1957569ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1957570ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1957571ms] [WARNING] Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: JSHandle@node @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:99
+[ 1966376ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/favicon.ico:0

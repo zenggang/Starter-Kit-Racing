@@ -19,7 +19,13 @@ function readViewportMode(): ViewportMode {
  * the full UI mounted and overlays a hard rotate prompt whenever the viewport
  * falls back to portrait phone dimensions.
  */
-export function LandscapeGate({ children }: { children: React.ReactNode }) {
+export function LandscapeGate({
+  children,
+  suspendWhenBlocked = false
+}: {
+  children: React.ReactNode;
+  suspendWhenBlocked?: boolean;
+}) {
   const [mode, setMode] = useState<ViewportMode>(() => readViewportMode());
 
   useEffect(() => {
@@ -39,7 +45,7 @@ export function LandscapeGate({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {children}
+      {mode === 'landscape-playable' || !suspendWhenBlocked ? children : null}
       {mode === 'portrait-blocked' ? (
         <div className="orientation-gate" role="dialog" aria-live="polite" aria-label="横屏提示">
           <div className="orientation-gate-card">

@@ -3,7 +3,7 @@ import { LandscapeGate } from '@/components/LandscapeGate';
 
 export default function HallPage() {
   return (
-    <LandscapeGate>
+    <LandscapeGate suspendWhenBlocked>
       <main className="app-shell">
         <HallClient />
       </main>

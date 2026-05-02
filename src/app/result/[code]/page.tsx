@@ -5,7 +5,7 @@ export default async function ResultPage({ params }: { params: Promise<{ code: s
   const { code } = await params;
 
   return (
-    <LandscapeGate>
+    <LandscapeGate suspendWhenBlocked>
       <main className="app-shell">
         <ResultClient code={code.toUpperCase()} />
       </main>

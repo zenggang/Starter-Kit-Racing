@@ -66,7 +66,7 @@ export async function mountRacingRuntime( container, options = {} ) {
 	registerAll();
 
 	const renderer = new THREE.WebGLRenderer( { antialias: true, outputBufferType: THREE.HalfFloatType } );
-	renderer.setSize( width, height );
+	renderer.setSize( width, height, false );
 	renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.shadowMap.enabled = true;
 	renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -249,13 +249,18 @@ export async function mountRacingRuntime( container, options = {} ) {
 
 		const nextWidth = container.clientWidth || window.innerWidth;
 		const nextHeight = container.clientHeight || window.innerHeight;
-		renderer.setSize( nextWidth, nextHeight );
+		renderer.setPixelRatio( window.devicePixelRatio );
+		renderer.setSize( nextWidth, nextHeight, false );
 		bloomPass.setSize( nextWidth, nextHeight );
 		cam.resize( nextWidth, nextHeight );
 
 	};
 
 	window.addEventListener( 'resize', onResize );
+	window.visualViewport?.addEventListener( 'resize', onResize );
+	window.addEventListener( 'orientationchange', onResize );
+	const resizeObserver = new ResizeObserver( () => onResize() );
+	resizeObserver.observe( container );
 
 	const timer = new THREE.Timer();
 
@@ -305,6 +310,9 @@ export async function mountRacingRuntime( container, options = {} ) {
 			destroyed = true;
 			cancelAnimationFrame( animationFrame );
 			window.removeEventListener( 'resize', onResize );
+			window.visualViewport?.removeEventListener( 'resize', onResize );
+			window.removeEventListener( 'orientationchange', onResize );
+			resizeObserver.disconnect();
 			controls.dispose();
 			particles.dispose();
 			driftMarks.dispose();

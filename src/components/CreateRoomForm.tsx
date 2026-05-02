@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { createCommand } from '@/realtime/sessionReducer';
 import type { PlayerSession } from '@/session/playerSession';
 

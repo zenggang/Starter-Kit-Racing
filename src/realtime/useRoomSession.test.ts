@@ -213,4 +213,45 @@ describe('useRoomSession bridge sync', () => {
       expect.objectContaining({ type: 'sync.request' })
     );
   });
+
+  it('falls back to bridge sync when the socket transport never opens', async () => {
+    const socket = {
+      close: vi.fn(),
+      addEventListener: vi.fn()
+    } as unknown as WebSocket;
+
+    vi.mocked(requestCoordinatorTicket).mockResolvedValue({
+      token: 'signed-ticket',
+      url: 'https://starter-kit-racing.example.workers.dev',
+      mode: 'socket'
+    });
+    vi.mocked(openCoordinatorSocket).mockReturnValue(socket);
+    vi.mocked(sendBridgeCommand).mockResolvedValue({
+      type: 'command.result',
+      seq: 1,
+      ok: true,
+      room: readyRoom
+    });
+
+    const { result } = renderHook(() => useRoomSession('ABCD12', player));
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(result.current.connectionState).toBe('connected');
+    expect(result.current.snapshot?.players).toHaveLength(2);
+    expect(sendBridgeCommand).toHaveBeenCalledWith(
+      'ABCD12',
+      expect.objectContaining({ mode: 'socket' }),
+      expect.objectContaining({ type: 'sync.request' })
+    );
+  });
 });

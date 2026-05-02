@@ -1,7 +1,9 @@
 'use client';
 
+import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getRosterDensity } from './rosterLayout';
 import { formatRacingError } from '@/realtime/errorMessages';
 import { createMatchCommand } from '@/realtime/matchReducer';
 import { useMatchSession } from '@/realtime/useMatchSession';
@@ -24,6 +26,7 @@ export function ResultClient({ code }: { code: string }) {
   }, [match?.players]);
   const winner = useMemo(() => sortedPlayers.find((player) => player.rank === 1) ?? null, [sortedPlayers]);
   const winnerTimeMs = match && winner ? getPlayerRaceTimeMs(match, winner) : null;
+  const rosterDensity = getRosterDensity(sortedPlayers.length);
 
   useEffect(() => {
     if (room?.status === 'racing') {
@@ -50,36 +53,43 @@ export function ResultClient({ code }: { code: string }) {
   }
 
   return (
-    <section className="race-layout">
-      <div className="race-page-head">
-        <p className="eyebrow">终点线</p>
-        <h1>结果 {code}</h1>
-        <p className="muted">连接状态：{connectionState === 'connected' ? '已连接' : '连接中'}</p>
-        {winnerTimeMs !== null ? <p className="muted">冠军用时：{formatRaceDuration(winnerTimeMs)}</p> : null}
-      </div>
+    <section className="race-layout console-screen">
       {lastErrorCode ? <p className="error-banner">{formatRacingError(lastErrorCode)}</p> : null}
 
-      <div className="race-panel stack">
-        <div className="lobby-topline">
-          <div>
-            <span className="panel-kicker">比赛结果</span>
-            <h2>{match?.winnerPlayerId ? '完赛排名' : '等待完赛同步'}</h2>
+      <div className="race-panel result-console stack">
+        <div className="console-topline">
+          <div className="console-title-group">
+            <span className="panel-kicker">终点线</span>
+            <strong className="console-screen-title">
+              结果 <span className="room-code-head">{code}</span>
+            </strong>
+            <p className="muted">连接状态：{connectionState === 'connected' ? '已连接' : '连接中'}</p>
+            {winnerTimeMs !== null ? <p className="muted">冠军用时：{formatRaceDuration(winnerTimeMs)}</p> : null}
           </div>
           {match?.winnerPlayerId ? <span className="status-pill">已完赛</span> : null}
         </div>
 
-        <section className="driver-grid">
+        <div className="console-section-head">
+          <div>
+            <span className="panel-kicker">比赛结果</span>
+            <strong className="console-block-title">{match?.winnerPlayerId ? '完赛排名' : '等待完赛同步'}</strong>
+          </div>
+        </div>
+
+        <section className="driver-grid result-driver-grid" data-roster-density={rosterDensity}>
           {sortedPlayers.map((player) => (
             <div key={player.playerId} className={`driver-card driver-${player.color}`}>
               <span className="driver-role">#{player.rank}</span>
               <strong>{player.nickname}</strong>
-              <span>{player.completedLaps}/{match?.lapTarget ?? room?.lapTarget ?? 0} 圈</span>
-              <span>{formatResultStatus(match, room?.lapTarget ?? 0, player)}</span>
+              <div className="driver-meta">
+                <span>{player.completedLaps}/{match?.lapTarget ?? room?.lapTarget ?? 0} 圈</span>
+                <span>{formatResultStatus(match, room?.lapTarget ?? 0, player)}</span>
+              </div>
             </div>
           ))}
         </section>
 
-        <div className="race-actions">
+        <div className="race-actions compact-actions">
           <button type="button" className="secondary-action" onClick={() => router.push('/hall')}>
             返回大厅
           </button>
