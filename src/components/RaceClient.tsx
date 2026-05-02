@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RaceHud } from './RaceHud';
 import { formatRacingError } from '@/realtime/errorMessages';
@@ -23,8 +23,10 @@ export function RaceClient({ code }: { code: string }) {
   const { room, match, connectionState, lastErrorCode, sendCommand } = useMatchSession(code, session);
   const runtimeRef = useRef<RuntimeHandle | null>(null);
   const progressRef = useRef(createInitialRaceProgressState());
+  const [runtimeReady, setRuntimeReady] = useState(false);
   const handleRuntimeReady = useCallback((runtime: RuntimeHandle | null) => {
     runtimeRef.current = runtime;
+    setRuntimeReady(Boolean(runtime));
   }, []);
 
   const currentPlayer = useMemo(() => {
@@ -56,7 +58,7 @@ export function RaceClient({ code }: { code: string }) {
   }, [code, match?.phase, room?.status, router]);
 
   useEffect(() => {
-    if (!session || !match || !trackModel || !runtimeRef.current || connectionState !== 'connected' || match.phase !== 'live') return;
+    if (!session || !match || !trackModel || !runtimeReady || connectionState !== 'connected' || match.phase !== 'live') return;
 
     let cancelled = false;
     const activeTrackModel = trackModel;
@@ -92,7 +94,7 @@ export function RaceClient({ code }: { code: string }) {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [connectionState, match, sendCommand, session, trackModel]);
+  }, [connectionState, match, runtimeReady, sendCommand, session, trackModel]);
 
   if (!session || !room || !match || !currentPlayer) {
     return (
