@@ -38,4 +38,22 @@ describe('track progress anchors', () => {
     expect(sample.checkpoint).toBe(0);
     expect(sample.normalizedProgress).toBeCloseTo(0, 5);
   });
+
+  it('does not award a lap when the player reverses across the finish line before completing the loop', () => {
+    const model = buildTrackProgressModel(null);
+    let state = createInitialRaceProgressState();
+    const checkpointBeforeFinish = (model.finishLine.checkpointIndex - 1 + model.checkpoints) % model.checkpoints;
+    const previousPoint = model.points[checkpointBeforeFinish];
+    const finishPoint = model.finishLine.point;
+    const afterFinish = {
+      x: finishPoint.x + model.finishLine.normal.x * 2,
+      z: finishPoint.z + model.finishLine.normal.z * 2
+    };
+
+    ({ state } = advanceRaceProgress(model, state, snapshotAt(afterFinish.x, afterFinish.z), 3));
+    ({ state } = advanceRaceProgress(model, state, snapshotAt(previousPoint.x, previousPoint.z), 3));
+    ({ state } = advanceRaceProgress(model, state, snapshotAt(afterFinish.x, afterFinish.z), 3));
+
+    expect(state.completedLaps).toBe(0);
+  });
 });

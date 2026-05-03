@@ -114,4 +114,48 @@ describe('realtime broadcast fanout', () => {
       }
     });
   });
+
+  it('fans bridge-triggered rematch resets out to result-page socket peers', () => {
+    const peer = {
+      send: vi.fn()
+    };
+
+    const command: RoomCommandEnvelope = {
+      commandId: 'room.rematch:host-1',
+      type: 'room.rematch',
+      playerId: 'host-1',
+      authTicket: {
+        playerId: 'host-1',
+        roomCode: '8693',
+        issuedAt: 1,
+        expiresAt: 2
+      },
+      payload: {}
+    };
+    const result: CommandResult = {
+      type: 'command.result',
+      commandId: 'room.rematch:host-1',
+      ok: true,
+      seq: 10,
+      room: {
+        ...room,
+        status: 'waiting',
+        startedAt: null,
+        finishedAt: null,
+        matchId: null
+      }
+    };
+
+    broadcastRealtimeEvent([peer], command, result, null);
+
+    expect(peer.send).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(peer.send.mock.calls[0][0] as string)).toMatchObject({
+      type: 'room.event',
+      room: {
+        status: 'waiting',
+        code: '8693',
+        matchId: null
+      }
+    });
+  });
 });

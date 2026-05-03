@@ -29,6 +29,7 @@ export interface LocalRaceProgressState {
   completedLaps: number;
   lastNormalizedProgress: number;
   lastCheckpoint: number;
+  forwardProgressSinceLapStart: number;
   finished: boolean;
   finishSent: boolean;
   finishLineArmed: boolean;
@@ -110,6 +111,7 @@ export function createInitialRaceProgressState(): LocalRaceProgressState {
     completedLaps: 0,
     lastNormalizedProgress: 0,
     lastCheckpoint: 0,
+    forwardProgressSinceLapStart: 0,
     finished: false,
     finishSent: false,
     finishLineArmed: false,
@@ -128,12 +130,15 @@ export function advanceRaceProgress(
   lapTarget: number
 ): { state: LocalRaceProgressState; payload: MatchProgressPayload } {
   const sample = sampleTrackProgress(model, snapshot.position, state.previousFinishProjection === null ? null : state.lastCheckpoint);
+  const forwardProgressDelta = measureForwardProgressDelta(state.lastNormalizedProgress, sample.normalizedProgress);
   let completedLaps = state.completedLaps;
-  let finishLineArmed = state.finishLineArmed || !isNearFinishLine(model, sample.checkpoint) || sample.normalizedProgress > 0.5;
+  let forwardProgressSinceLapStart = Math.min(1, state.forwardProgressSinceLapStart + forwardProgressDelta);
+  let finishLineArmed = state.finishLineArmed || forwardProgressSinceLapStart >= FINISH_LINE_ARM_PROGRESS;
   const finishProjection = signedFinishProjection(model, snapshot.position);
 
   if (
     finishLineArmed &&
+    forwardProgressSinceLapStart >= FINISH_LINE_ARM_PROGRESS &&
     state.previousFinishProjection !== null &&
     state.previousFinishProjection < 0 &&
     finishProjection >= 0 &&
@@ -141,6 +146,7 @@ export function advanceRaceProgress(
   ) {
     completedLaps += 1;
     finishLineArmed = false;
+    forwardProgressSinceLapStart = 0;
   }
 
   const finished = completedLaps >= lapTarget;
@@ -148,6 +154,7 @@ export function advanceRaceProgress(
     completedLaps: finished ? lapTarget : completedLaps,
     lastNormalizedProgress: finished ? 1 : sample.normalizedProgress,
     lastCheckpoint: sample.checkpoint,
+    forwardProgressSinceLapStart: finished ? 1 : forwardProgressSinceLapStart,
     finished,
     finishSent: state.finishSent,
     finishLineArmed: finished ? false : finishLineArmed,
@@ -166,6 +173,26 @@ export function advanceRaceProgress(
       finished
     }
   };
+}
+
+/**
+ * Treats progress as "forward" only when the normalized loop value moves a
+ * small distance ahead, or wraps naturally from the end of the loop back to
+ * the beginning. Large positive jumps near the finish line are interpreted as
+ * reverse shuffles across the start area and therefore do not arm a lap.
+ */
+function measureForwardProgressDelta(previous: number, current: number): number {
+  const delta = current - previous;
+
+  if (delta >= 0 && delta <= 0.5) {
+    return delta;
+  }
+
+  if (delta < 0 && Math.abs(delta) >= 0.5) {
+    return 1 + delta;
+  }
+
+  return 0;
 }
 
 export function sampleTrackProgress(model: TrackProgressModel, position: RuntimeSnapshot['position'], checkpointHint: number | null = null) {
@@ -321,3 +348,4 @@ function normalizeVector(vector: TrackPoint): TrackPoint {
     z: vector.z / length
   };
 }
+const FINISH_LINE_ARM_PROGRESS = 0.6;
