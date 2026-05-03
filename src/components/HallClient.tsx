@@ -110,11 +110,11 @@ export function HallClient() {
           </label>
         </div>
         {errorCode ? <p className="error-banner">{formatRacingError(errorCode)}</p> : null}
-        <div className="console-action-grid">
+        <div className="hall-console-grid">
           <CreateRoomForm player={session} disabled={busy} onCreate={(command) => sendHallCommand('new', command)} />
           <JoinRoomForm player={session} disabled={busy} onJoin={sendHallCommand} />
+          <HallRoomList rooms={rooms} onJoin={(code) => session && sendHallCommand(code, createCommand('room.join', session.playerId))} />
         </div>
-        <HallRoomList rooms={rooms} onJoin={(code) => session && sendHallCommand(code, createCommand('room.join', session.playerId))} />
       </div>
     </section>
   );
