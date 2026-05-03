@@ -56,9 +56,19 @@ export function RaceClient({ code }: { code: string }) {
     );
   }, [match?.players, session?.playerId]);
 
-  const trackModel = useMemo(() => {
-    return room && match ? buildTrackProgressModel(match.trackMap ?? room.trackMap) : null;
+  const effectiveMatch = useMemo(() => {
+    if (!room || !match) return null;
+
+    return {
+      ...match,
+      trackName: match.trackName ?? room.trackName,
+      trackMap: match.trackMap ?? room.trackMap
+    };
   }, [match, room]);
+
+  const trackModel = useMemo(() => {
+    return effectiveMatch ? buildTrackProgressModel(effectiveMatch.trackMap) : null;
+  }, [effectiveMatch]);
   const telemetryIntervalMs = useMemo(() => getRaceTelemetryIntervalMs(transportMode ?? null), [transportMode]);
 
   useEffect(() => {
@@ -160,7 +170,7 @@ export function RaceClient({ code }: { code: string }) {
     };
   }, [match?.id, runtimeReady, telemetryIntervalMs]);
 
-  if (!session || !room || !match || !currentPlayer) {
+  if (!session || !room || !match || !effectiveMatch || !currentPlayer) {
     return (
       <section className="racing-runtime">
         <div className="race-overlay race-loading-card">
@@ -174,12 +184,12 @@ export function RaceClient({ code }: { code: string }) {
   return (
     <RacingRuntimeHost
       roomCode={code}
-      trackMap={match.trackMap}
+      trackMap={effectiveMatch.trackMap}
       vehicleColor={currentPlayer.color}
       remoteVehicles={remoteVehicles}
       onRuntimeReady={handleRuntimeReady}
     >
-      <RaceHud match={match} currentPlayerId={session.playerId} model={trackModel} />
+      <RaceHud match={effectiveMatch} currentPlayerId={session.playerId} model={trackModel} />
       {lastErrorCode ? <p className="race-overlay error-banner race-error-banner">{formatRacingError(lastErrorCode)}</p> : null}
     </RacingRuntimeHost>
   );

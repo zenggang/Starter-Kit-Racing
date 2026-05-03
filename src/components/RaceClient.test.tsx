@@ -1,12 +1,23 @@
 import React from 'react';
-import { render, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { RaceClient } from './RaceClient';
 import type { MatchState, RoomState } from '@/realtime/protocol';
+import { encodeTrackCells } from '../../shared/trackMapValidation';
 
 const replaceSpy = vi.fn();
 const sendCommandSpy = vi.fn();
 let racingRuntimeHostProps: Record<string, unknown> | null = null;
+const CUSTOM_TRACK_MAP = encodeTrackCells([
+  [0, 0, 'track-corner', 16],
+  [1, 0, 'track-finish', 16],
+  [2, 0, 'track-corner', 0],
+  [2, 1, 'track-straight', 0],
+  [2, 2, 'track-corner', 22],
+  [1, 2, 'track-straight', 16],
+  [0, 2, 'track-corner', 10],
+  [0, 1, 'track-straight', 0]
+]);
 
 vi.stubGlobal('React', React);
 
@@ -136,5 +147,22 @@ describe('RaceClient remote vehicle projection', () => {
         }
       ]);
     });
+  });
+
+  it('falls back to the room custom track when match track fields are missing', async () => {
+    raceRoom.trackId = 'track-room';
+    raceRoom.trackName = '自定义 T 赛道';
+    raceRoom.trackMap = CUSTOM_TRACK_MAP;
+    raceMatch.trackId = null;
+    raceMatch.trackName = null;
+    raceMatch.trackMap = null;
+
+    render(<RaceClient code="8966" />);
+
+    await waitFor(() => {
+      expect(racingRuntimeHostProps?.trackMap).toBe(CUSTOM_TRACK_MAP);
+    });
+
+    expect(screen.getByText('赛道：自定义 T 赛道')).toBeInTheDocument();
   });
 });

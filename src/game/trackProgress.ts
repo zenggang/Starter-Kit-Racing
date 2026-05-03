@@ -166,7 +166,7 @@ export function advanceRaceProgress(
     payload: {
       checkpoint: sample.checkpoint,
       completedLaps: finished ? lapTarget : completedLaps,
-      lapProgress: finished ? 1 : sample.normalizedProgress,
+      lapProgress: finished ? 1 : nextState.forwardProgressSinceLapStart,
       position: snapshot.position,
       heading: snapshot.heading,
       speed: snapshot.speed,

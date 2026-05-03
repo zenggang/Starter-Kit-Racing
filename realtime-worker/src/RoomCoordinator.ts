@@ -529,7 +529,13 @@ function normalizeProgress(
   }
 
   const reportedTotalProgress = payload.completedLaps + payload.lapProgress;
-  if (reportedTotalProgress + 0.05 < player.totalProgress) {
+  const sameLapProgressResetRecovery =
+    payload.completedLaps === player.completedLaps &&
+    player.lapProgress >= 0.95 &&
+    payload.lapProgress <= 0.25 &&
+    reportedTotalProgress + 0.05 < player.totalProgress;
+
+  if (reportedTotalProgress + 0.05 < player.totalProgress && !sameLapProgressResetRecovery) {
     return { ok: false, errorCode: 'MATCH_PROGRESS_REGRESSION' };
   }
 
@@ -537,10 +543,16 @@ function normalizeProgress(
     return { ok: false, errorCode: 'MATCH_FINISH_DUPLICATE' };
   }
 
-  const nextTotalProgress = Math.max(player.totalProgress, reportedTotalProgress);
+  const nextTotalProgress = sameLapProgressResetRecovery ? reportedTotalProgress : Math.max(player.totalProgress, reportedTotalProgress);
   const nextCompletedLaps = payload.completedLaps > player.completedLaps ? payload.completedLaps : player.completedLaps;
-  const nextLapProgress = payload.completedLaps > player.completedLaps ? payload.lapProgress : Math.max(player.lapProgress, payload.lapProgress);
-  const nextCheckpoint = payload.completedLaps > player.completedLaps ? payload.checkpoint : Math.max(player.checkpoint, payload.checkpoint);
+  const nextLapProgress =
+    payload.completedLaps > player.completedLaps || sameLapProgressResetRecovery
+      ? payload.lapProgress
+      : Math.max(player.lapProgress, payload.lapProgress);
+  const nextCheckpoint =
+    payload.completedLaps > player.completedLaps || sameLapProgressResetRecovery
+      ? payload.checkpoint
+      : Math.max(player.checkpoint, payload.checkpoint);
   const finishedAt = payload.finished && payload.completedLaps >= lapTarget ? new Date(now).toISOString() : null;
 
   return {

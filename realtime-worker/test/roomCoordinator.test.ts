@@ -365,6 +365,54 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     );
   });
 
+  it('recovers from a stale full-lap packet and accepts lower same-lap progress again', async () => {
+    const coordinator = createCoordinator();
+
+    await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
+    await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
+    await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
+    await coordinator.execute(command('room.start', 'host-1', {}));
+    await coordinator.execute(command('match.join', 'host-1', {}));
+
+    const staleFullLap = await coordinator.execute(
+      command('match.progress', 'host-1', {
+        checkpoint: 7,
+        completedLaps: 1,
+        lapProgress: 1,
+        position: { x: 10, y: 0.5, z: 10 },
+        heading: 0.2,
+        speed: 0.9
+      })
+    );
+
+    expect(staleFullLap.ok).toBe(true);
+    expect(staleFullLap.match?.players.find((player) => player.playerId === 'host-1')).toMatchObject({
+      completedLaps: 1,
+      lapProgress: 1,
+      totalProgress: 2
+    });
+
+    const recovered = await coordinator.execute(
+      command('match.progress', 'host-1', {
+        checkpoint: 1,
+        completedLaps: 1,
+        lapProgress: 0.07,
+        position: { x: 12, y: 0.5, z: 14 },
+        heading: 0.4,
+        speed: 1.1
+      })
+    );
+
+    expect(recovered.ok).toBe(true);
+    expect(recovered.match?.players.find((player) => player.playerId === 'host-1')).toMatchObject({
+      completedLaps: 1,
+      lapProgress: 0.07,
+      totalProgress: 1.07,
+      checkpoint: 1,
+      position: { x: 12, y: 0.5, z: 14 }
+    });
+  });
+
   it('opens a 60 second finish window after the leader finishes and marks trailing racers as unfinished at timeout', async () => {
     let now = START;
     const coordinator = new RoomCoordinator(new InMemoryRoomStorage(), {
