@@ -1,8 +1,9 @@
 import { DurableObject } from 'cloudflare:workers';
 import { verifyCoordinatorBearerToken, type VerifiedCoordinatorTicket } from './auth';
 import { RoomCoordinator } from './RoomCoordinator';
-import type { CommandResult, MatchEvent, RealtimeEvent, RoomCommandEnvelope, RoomEvent, RoomSnapshot } from './protocol';
+import type { CommandResult, RoomCommandEnvelope, RoomSnapshot } from './protocol';
 import { createReadModelWriter, type ReadModelWriter } from './readModelWriter';
+import { broadcastRealtimeEvent } from './realtimeBroadcast';
 import { DurableObjectRoomStorage } from './storage';
 
 export interface Env {
@@ -29,9 +30,10 @@ export class RoomCoordinatorDurableObject extends DurableObject<Env> {
     this.readModelWriter = createReadModelWriter(env);
   }
 
-  async execute(command: RoomCommandEnvelope): Promise<CommandResult> {
+  async execute(command: RoomCommandEnvelope, sourceSocket: WebSocket | null = null): Promise<CommandResult> {
     const result = await this.coordinator.execute(command);
     await this.syncReadModels(command, result);
+    broadcastRealtimeEvent(this.ctx.getWebSockets(), command, result, sourceSocket);
     return result;
   }
 
@@ -89,9 +91,8 @@ export class RoomCoordinatorDurableObject extends DurableObject<Env> {
       return;
     }
 
-    const result = await this.execute(command);
+    const result = await this.execute(command, socket);
     socket.send(JSON.stringify(result));
-    this.broadcastRealtimeEvent(socket, command, result);
   }
 
   private async syncReadModels(command: RoomCommandEnvelope, result: CommandResult): Promise<void> {
@@ -109,26 +110,6 @@ export class RoomCoordinatorDurableObject extends DurableObject<Env> {
     if (command.type === 'match.progress' && result.match && (result.match.phase === 'finished' || result.match.phase === 'aborted')) {
       await this.readModelWriter.syncRoom(result.room);
       await this.readModelWriter.syncMatch(result.room, result.match);
-    }
-  }
-
-  private broadcastRealtimeEvent(socket: WebSocket, command: RoomCommandEnvelope, result: CommandResult): void {
-    const event = buildRealtimeEvent(command, result);
-    if (!event) {
-      return;
-    }
-
-    const payload = JSON.stringify(event);
-    for (const peer of this.ctx.getWebSockets()) {
-      if (peer === socket) {
-        continue;
-      }
-
-      try {
-        peer.send(payload);
-      } catch {
-        // Ignore stale peers; DO hibernation cleans them up after close.
-      }
     }
   }
 }
@@ -234,42 +215,6 @@ function injectSocketCommand(rawCommand: unknown, ticket: VerifiedCoordinatorTic
     },
     payload
   };
-}
-
-function buildRealtimeEvent(command: RoomCommandEnvelope, result: CommandResult): RealtimeEvent | null {
-  if (!result.ok || !result.room) {
-    return null;
-  }
-
-  if (command.type === 'match.progress' || command.type === 'match.join' || command.type === 'match.leave') {
-    return result.match
-      ? {
-          type: 'match.event',
-          seq: result.seq,
-          room: result.room,
-          match: result.match
-        } satisfies MatchEvent
-      : null;
-  }
-
-  if (command.type === 'match.sync' && result.match?.phase === 'finished') {
-    return {
-      type: 'match.event',
-      seq: result.seq,
-      room: result.room,
-      match: result.match
-    } satisfies MatchEvent;
-  }
-
-  if (command.type === 'sync.request' || command.type === 'match.sync') {
-    return null;
-  }
-
-  return {
-    type: 'room.event',
-    seq: result.seq,
-    room: result.room
-  } satisfies RoomEvent;
 }
 
 function authError(): Response {
