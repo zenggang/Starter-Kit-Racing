@@ -26,6 +26,7 @@
 html,
 body {
   width: 100%;
+  max-width: 100%;
   min-height: 100%;
   margin: 0;
   background:
@@ -34,13 +35,15 @@ body {
     var(--bg);
   color: var(--text);
   font-family: Arial, Helvetica, sans-serif;
+  overflow-x: clip;
   overscroll-behavior: none;
   touch-action: manipulation;
 }
 
 body {
   min-height: 100dvh;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: hidden;
 }
 
 button,
@@ -70,19 +73,24 @@ a {
 }
 
 .app-shell {
+  width: 100%;
+  max-width: 100%;
   min-height: 100dvh;
   padding:
     max(16px, var(--safe-top))
     max(16px, var(--safe-right))
     max(16px, var(--safe-bottom))
     max(16px, var(--safe-left));
-  overflow: auto;
+  overflow-x: clip;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 .race-home,
 .race-layout {
-  width: min(100%, 980px);
+  width: 100%;
+  max-width: 980px;
+  min-width: 0;
   margin: 0 auto;
 }
 
@@ -142,7 +150,9 @@ a {
 
 .control-console,
 .lobby-console {
-  width: min(100%, 980px);
+  width: 100%;
+  max-width: 980px;
+  min-width: 0;
   margin: 0 auto;
 }
 
@@ -150,12 +160,16 @@ a {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 18px;
+  min-width: 0;
 }
 
 .console-title-group {
   display: grid;
+  flex: 1 1 0;
   gap: 6px;
+  min-width: 0;
 }
 
 .console-screen-title {
@@ -189,6 +203,7 @@ a {
   border-radius: 12px;
   background: rgba(7, 9, 11, 0.48);
   padding: 14px;
+  min-width: 0;
 }
 
 .console-action-card {
@@ -204,7 +219,9 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
+  min-width: 0;
 }
 
 .compact-actions {
@@ -216,7 +233,9 @@ a {
 }
 
 .result-console {
-  width: min(100%, 980px);
+  width: 100%;
+  max-width: 980px;
+  min-width: 0;
   margin: 0 auto;
 }
 
@@ -230,7 +249,9 @@ a {
 }
 
 .identity-field {
+  width: min(100%, 280px);
   max-width: 280px;
+  min-width: 0;
 }
 
 .room-code-head {
@@ -252,6 +273,7 @@ a {
   flex-direction: column;
   gap: 16px;
   width: 100%;
+  min-width: 0;
 }
 
 .race-panel,
@@ -553,9 +575,11 @@ a {
 .racing-runtime {
   position: fixed;
   inset: 0;
-  width: 100vw;
-  height: 100dvh;
-  overflow: hidden;
+  width: 100%;
+  max-width: 100dvw;
+  height: 100%;
+  max-height: 100dvh;
+  overflow: clip;
   background: #000;
   touch-action: none;
 }
@@ -606,9 +630,11 @@ a {
 .race-leaderboard {
   top: max(16px, var(--safe-top));
   right: max(16px, var(--safe-right));
-  width: min(320px, calc(100vw - 32px));
+  width: min(320px, calc(100% - 32px));
+  max-width: calc(100% - max(16px, var(--safe-left)) - max(16px, var(--safe-right)));
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .race-leaderboard-head,
@@ -617,6 +643,7 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  min-width: 0;
 }
 
 .race-leaderboard-list {
@@ -772,12 +799,14 @@ a {
       max(10px, var(--safe-right))
       max(10px, var(--safe-bottom))
       max(10px, var(--safe-left));
-    overflow: hidden;
+    overflow-x: clip;
+    overflow-y: auto;
   }
 
   .race-layout,
   .race-home {
-    width: min(100%, 1100px);
+    width: 100%;
+    max-width: 1100px;
     gap: 12px;
   }
 
@@ -823,7 +852,8 @@ a {
   .control-console,
   .lobby-console,
   .result-console {
-    width: min(100%, 920px);
+    width: 100%;
+    max-width: 920px;
   }
 
   .hall-grid {
@@ -978,7 +1008,8 @@ a {
   .race-leaderboard {
     top: max(8px, var(--safe-top));
     right: max(8px, var(--safe-right));
-    width: min(286px, calc(100vw - 132px));
+    width: min(286px, calc(100% - 132px));
+    max-width: calc(100% - max(8px, var(--safe-left)) - max(8px, var(--safe-right)));
     gap: 8px;
   }
 
