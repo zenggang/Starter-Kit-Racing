@@ -188,9 +188,10 @@ export class RoomCoordinator {
     room.players.splice(playerIndex, 1);
 
     /**
-     * A room should only disappear once it is truly empty. If other racers are
-     * still waiting inside, the coordinator promotes the next seat to host so
-     * the room can keep its lifecycle intact instead of stranding everyone.
+     * If the last racer leaves, the room obviously disappears. Product also
+     * treats the host leaving as a hard room teardown for everyone else, so
+     * occupied waiting/finished rooms close immediately instead of promoting a
+     * new host and silently keeping guests stranded on the room page.
      */
     if (room.players.length === 0) {
       room.status = 'closed';
@@ -200,11 +201,12 @@ export class RoomCoordinator {
     }
 
     if (departing.isHost) {
+      room.status = 'closed';
+      room.closedAt = timestamp;
+      room.closedReason = 'host_left';
       room.players.forEach((player) => {
         player.isHost = false;
       });
-      room.players[0].isHost = true;
-      room.hostPlayerId = room.players[0].playerId;
     }
 
     return this.mutate(command.commandId, room);

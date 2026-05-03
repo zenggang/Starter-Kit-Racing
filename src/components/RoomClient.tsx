@@ -31,6 +31,10 @@ export function RoomClient({ code }: { code: string }) {
     if (snapshot?.status === 'finished' && currentPlayer) {
       router.push(`/result/${snapshot.code}`);
     }
+
+    if (snapshot?.status === 'closed') {
+      router.replace('/');
+    }
   }, [currentPlayer, router, snapshot]);
 
   async function handleLeaveRoom() {

@@ -1,9 +1,10 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RoomClient } from './RoomClient';
 
 const replaceSpy = vi.fn();
+const pushSpy = vi.fn();
 const sendCommandSpy = vi.fn().mockResolvedValue({
   type: 'command.result',
   seq: 2,
@@ -29,7 +30,7 @@ vi.stubGlobal('React', React);
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: pushSpy,
     replace: replaceSpy
   })
 }));
@@ -45,21 +46,53 @@ vi.mock('@/session/usePlayerSession', () => ({
   })
 }));
 
+let mockedSnapshot = {
+  id: 'room-1',
+  code: '8966',
+  hostPlayerId: 'player-1',
+  status: 'waiting',
+  lapTarget: 3,
+  trackMap: null,
+  createdAt: '2026-05-02T10:00:00.000Z',
+  startedAt: null,
+  finishedAt: null,
+  expiresAt: '2026-05-02T11:00:00.000Z',
+  closedReason: null,
+  matchId: null,
+  players: [
+    {
+      playerId: 'player-1',
+      nickname: '车手1',
+      color: 'yellow',
+      status: 'ready',
+      ready: true,
+      isHost: true,
+      lastSeenAt: '2026-05-02T10:00:00.000Z'
+    }
+  ]
+};
+
 vi.mock('@/realtime/useRoomSession', () => ({
   useRoomSession: () => ({
-    snapshot: {
-      id: 'room-1',
-      code: '8966',
-      hostPlayerId: 'player-1',
+    snapshot: mockedSnapshot,
+    connectionState: 'connected',
+    lastErrorCode: null,
+    sendCommand: sendCommandSpy
+  })
+}));
+
+describe('RoomClient', () => {
+  beforeEach(() => {
+    replaceSpy.mockClear();
+    pushSpy.mockClear();
+    sendCommandSpy.mockClear();
+  });
+
+  it('sends room.leave and returns to the hall when the racer exits the room', async () => {
+    mockedSnapshot = {
+      ...mockedSnapshot,
       status: 'waiting',
-      lapTarget: 3,
-      trackMap: null,
-      createdAt: '2026-05-02T10:00:00.000Z',
-      startedAt: null,
-      finishedAt: null,
-      expiresAt: '2026-05-02T11:00:00.000Z',
       closedReason: null,
-      matchId: null,
       players: [
         {
           playerId: 'player-1',
@@ -71,15 +104,7 @@ vi.mock('@/realtime/useRoomSession', () => ({
           lastSeenAt: '2026-05-02T10:00:00.000Z'
         }
       ]
-    },
-    connectionState: 'connected',
-    lastErrorCode: null,
-    sendCommand: sendCommandSpy
-  })
-}));
-
-describe('RoomClient', () => {
-  it('sends room.leave and returns to the hall when the racer exits the room', async () => {
+    };
     render(<RoomClient code="8966" />);
 
     fireEvent.click(screen.getByRole('button', { name: '退出房间' }));
@@ -95,5 +120,41 @@ describe('RoomClient', () => {
     await waitFor(() => {
       expect(replaceSpy).toHaveBeenCalledWith('/');
     });
+  });
+
+  it('returns guests to the hall when the room becomes closed', async () => {
+    mockedSnapshot = {
+      ...mockedSnapshot,
+      hostPlayerId: 'player-1',
+      status: 'closed',
+      closedReason: 'host_left',
+      players: [
+        {
+          playerId: 'player-1',
+          nickname: '房主',
+          color: 'yellow',
+          status: 'ready',
+          ready: true,
+          isHost: true,
+          lastSeenAt: '2026-05-02T10:00:00.000Z'
+        },
+        {
+          playerId: 'player-2',
+          nickname: '房客',
+          color: 'green',
+          status: 'ready',
+          ready: true,
+          isHost: false,
+          lastSeenAt: '2026-05-02T10:00:00.000Z'
+        }
+      ]
+    };
+
+    render(<RoomClient code="8966" />);
+
+    await waitFor(() => {
+      expect(replaceSpy).toHaveBeenCalledWith('/');
+    });
+    expect(pushSpy).not.toHaveBeenCalled();
   });
 });

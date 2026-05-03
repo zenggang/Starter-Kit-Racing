@@ -248,7 +248,7 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     ]);
   });
 
-  it('promotes the next racer to host when the current host exits an occupied room', async () => {
+  it('closes the room for everyone when the current host exits an occupied waiting room', async () => {
     const coordinator = createCoordinator();
 
     await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
@@ -258,16 +258,17 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
 
     expect(left.ok).toBe(true);
     expect(left.room).toMatchObject({
-      status: 'waiting',
-      hostPlayerId: 'player-2',
-      closedReason: null
+      status: 'closed',
+      hostPlayerId: 'host-1',
+      closedReason: 'host_left'
     });
-    expect(left.room?.players).toEqual([
+    expect(left.room?.players).toEqual(
+      expect.arrayContaining([
       expect.objectContaining({
         playerId: 'player-2',
-        isHost: true
+        isHost: false
       })
-    ]);
+    ]));
   });
 
   it('automatically closes the room after the last racer exits', async () => {
