@@ -17,9 +17,25 @@ export interface RuntimeSnapshot {
   driftIntensity: number;
 }
 
+export interface RemoteVehicleTelemetry {
+  playerId: string;
+  nickname: string;
+  color: NonNullable<RuntimeMountOptions['vehicleColor']>;
+  presence: 'pending' | 'connected' | 'disconnected' | 'finished';
+  position: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  heading: number;
+  speed: number;
+  lastReportAt: string | null;
+}
+
 export interface RuntimeHandle {
   destroy(): void;
   getSnapshot(): RuntimeSnapshot;
+  updateRemoteVehicles(vehicles: RemoteVehicleTelemetry[]): void;
 }
 
 interface RuntimeMountOptions {
@@ -37,16 +53,20 @@ export function RacingRuntimeHost({
   roomCode,
   trackMap,
   vehicleColor,
+  remoteVehicles,
   onRuntimeReady,
   children
 }: {
   roomCode: string;
   trackMap: string | null;
   vehicleColor: RuntimeMountOptions['vehicleColor'];
+  remoteVehicles?: RemoteVehicleTelemetry[];
   onRuntimeReady?: (runtime: RuntimeHandle | null) => void;
   children?: React.ReactNode;
 }) {
   const containerRef = useRef<HTMLElement | null>(null);
+  const runtimeRef = useRef<RuntimeHandle | null>(null);
+  const remoteVehiclesRef = useRef<RemoteVehicleTelemetry[]>(remoteVehicles ?? []);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -71,6 +91,8 @@ export function RacingRuntimeHost({
           return;
         }
 
+        runtimeRef.current = runtime;
+        runtime.updateRemoteVehicles(remoteVehiclesRef.current);
         onRuntimeReady?.(runtime);
       } catch (nextError) {
         setError(nextError instanceof Error ? nextError.message : 'RUNTIME_MOUNT_FAILED');
@@ -82,9 +104,15 @@ export function RacingRuntimeHost({
     return () => {
       cancelled = true;
       onRuntimeReady?.(null);
+      runtimeRef.current = null;
       runtime?.destroy();
     };
   }, [onRuntimeReady, roomCode, trackMap, vehicleColor]);
+
+  useEffect(() => {
+    remoteVehiclesRef.current = remoteVehicles ?? [];
+    runtimeRef.current?.updateRemoteVehicles(remoteVehiclesRef.current);
+  }, [remoteVehicles]);
 
   return (
     <main className="racing-runtime" ref={containerRef}>

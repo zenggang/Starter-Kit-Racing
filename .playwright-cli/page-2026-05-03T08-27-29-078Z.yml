@@ -1,0 +1,54 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e6]:
+    - navigation [ref=e8]:
+      - link "Supabase Logo" [ref=e83] [cursor=pointer]:
+        - /url: https://supabase.com
+        - img "Supabase Logo" [ref=e84]
+      - link "Documentation" [ref=e10] [cursor=pointer]:
+        - /url: https://supabase.com/docs
+        - img [ref=e12]
+        - generic [ref=e15]: Documentation
+    - main [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - heading "Welcome back" [level=1] [ref=e20]
+          - heading "Sign in to your account" [level=2] [ref=e21]
+        - generic [ref=e22]:
+          - button "Continue with GitHub" [ref=e25] [cursor=pointer]:
+            - img [ref=e27]
+            - generic [ref=e30]: Continue with GitHub
+          - link "Continue with SSO" [ref=e33] [cursor=pointer]:
+            - /url: /dashboard/sign-in-sso?returnTo=%2Fproject%2Fdvxofhrqxuyakwzefker%2Fsql%2Fnew
+            - img [ref=e35]
+            - generic [ref=e38]: Continue with SSO
+          - generic [ref=e43]: or
+          - generic [ref=e44]:
+            - generic [ref=e46]:
+              - generic [ref=e49]: Email
+              - textbox "Email" [ref=e52]:
+                - /placeholder: you@example.com
+            - generic [ref=e53]:
+              - generic [ref=e55]:
+                - generic [ref=e58]: Password
+                - generic [ref=e61]:
+                  - textbox "Password" [ref=e62]:
+                    - /placeholder: ••••••••
+                  - button "Show password" [ref=e63] [cursor=pointer]:
+                    - img [ref=e65]
+              - link "Forgot password?" [ref=e68] [cursor=pointer]:
+                - /url: /dashboard/forgot-password?returnTo=%2Fproject%2Fdvxofhrqxuyakwzefker%2Fsql%2Fnew
+            - button "Sign in" [ref=e71] [cursor=pointer]:
+              - generic [ref=e72]: Sign in
+        - generic [ref=e74]:
+          - text: Don’t have an account?
+          - link "Sign up" [ref=e75] [cursor=pointer]:
+            - /url: /dashboard/sign-up?returnTo=%2Fproject%2Fdvxofhrqxuyakwzefker%2Fsql%2Fnew
+      - paragraph [ref=e77]:
+        - text: By continuing, you agree to Supabase’s
+        - link "Terms of Service" [ref=e78] [cursor=pointer]:
+          - /url: https://supabase.com/terms
+        - text: and
+        - link "Privacy Policy" [ref=e79] [cursor=pointer]:
+          - /url: https://supabase.com/privacy
+        - text: ", and to receive periodic emails with updates."
+  - alert [ref=e80]: Supabase

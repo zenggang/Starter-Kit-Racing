@@ -1,0 +1,27 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: 赛道工坊
+      - strong [ref=e7]: 自定义赛道
+      - paragraph [ref=e8]: 使用原生 3D 画图工具：拖拽画路、擦除改线、ghost 预览会自动拼接路块。
+    - link "返回大厅" [ref=e9] [cursor=pointer]:
+      - /url: /hall
+  - generic [ref=e11]:
+    - group "赛道编辑工具" [ref=e13]:
+      - button "画路" [ref=e14] [cursor=pointer]
+      - button "擦除" [ref=e15] [cursor=pointer]
+      - button "新建" [ref=e16] [cursor=pointer]
+      - button "我的赛道" [ref=e17] [cursor=pointer]
+    - generic [ref=e19]:
+      - paragraph [ref=e20]: 正在加载原生编辑器...
+      - generic "原生赛道编辑器" [ref=e21]
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - generic [ref=e24]: 赛道名称
+        - textbox "赛道名称" [ref=e25]: 我的赛道
+      - paragraph [ref=e26]: 赛道数据无效，请重新编辑后保存
+      - generic [ref=e27]:
+        - generic [ref=e28]: 单指画路 / 擦除
+        - generic [ref=e29]: 双指拖拽缩放
+        - generic [ref=e30]: 点终点切方向
+      - button "保存赛道" [disabled] [ref=e31]

@@ -11,6 +11,7 @@ import { buildWallColliders, createSphereBody } from './Physics.js';
 import { SmokeTrails } from './Particles.js';
 import { DriftMarks } from './DriftMarks.js';
 import { GameAudio } from './Audio.js';
+import { RemoteVehicles } from './RemoteVehicles.js';
 
 const modelNames = [
 	'vehicle-truck-yellow', 'vehicle-truck-green', 'vehicle-truck-purple', 'vehicle-truck-red',
@@ -109,6 +110,7 @@ export async function mountRacingRuntime( container, options = {} ) {
 		renderer.dispose();
 		return {
 			destroy() {},
+			updateRemoteVehicles() {},
 			getSnapshot() {
 
 				return createEmptyRuntimeSnapshot();
@@ -225,6 +227,7 @@ export async function mountRacingRuntime( container, options = {} ) {
 	const controls = new Controls( { container } );
 	const particles = new SmokeTrails( scene, { assetBaseUrl } );
 	const driftMarks = new DriftMarks( scene );
+	const remoteVehicles = new RemoteVehicles( scene, models );
 
 	const audio = new GameAudio();
 	audio.init( cam.camera, { assetBaseUrl, target: window } );
@@ -286,6 +289,7 @@ export async function mountRacingRuntime( container, options = {} ) {
 		cam.update( dt, vehicle.spherePos, vehicle.modelVelocity );
 		particles.update( dt, vehicle );
 		driftMarks.update( dt, vehicle );
+		remoteVehicles.update( dt );
 		audio.update( dt, vehicle.linearSpeed / MAX_SPEED, input.z, vehicle.driftIntensity );
 
 		renderer.render( scene, cam.camera );
@@ -305,6 +309,16 @@ export async function mountRacingRuntime( container, options = {} ) {
 			return vehicle.getRuntimeSnapshot();
 
 		},
+		/**
+		 * Applies coordinator-owned remote telemetry as visual-only ghost cars.
+		 * The RemoteVehicles manager only owns Three objects; it never creates
+		 * rigid bodies, so remote racers cannot influence crashcat collision.
+		 */
+		updateRemoteVehicles( vehicles ) {
+
+			remoteVehicles.setVehicles( vehicles );
+
+		},
 		destroy() {
 
 			destroyed = true;
@@ -316,6 +330,7 @@ export async function mountRacingRuntime( container, options = {} ) {
 			controls.dispose();
 			particles.dispose();
 			driftMarks.dispose();
+			remoteVehicles.dispose();
 			audio.dispose();
 			renderer.domElement.remove();
 			renderer.dispose();

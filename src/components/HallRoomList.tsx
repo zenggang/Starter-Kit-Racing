@@ -27,6 +27,7 @@ export function HallRoomList({ rooms, onJoin }: { rooms: HallRoomSummary[]; onJo
           <strong>{room.code}</strong>
           <span>{room.playerCount} 名车手</span>
           <span>{room.lapTarget} 圈</span>
+          <span>{room.trackName ?? '默认赛道'}</span>
           <button type="button" className="secondary-action" onClick={() => onJoin(room.code)}>
             加入
           </button>

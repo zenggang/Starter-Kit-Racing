@@ -37,27 +37,40 @@ describe('HallClient room list refresh', () => {
   });
 
   it('refreshes waiting rooms so newly created rooms appear in the hall without manual reload', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify({ rooms: [] })))
-      .mockResolvedValueOnce(
+    let roomCalls = 0;
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = input.toString();
+      if (url.startsWith('/api/tracks')) {
+        return Promise.resolve(new Response(JSON.stringify({ tracks: [] })));
+      }
+
+      roomCalls += 1;
+      return Promise.resolve(
         new Response(
           JSON.stringify({
-            rooms: [
-              {
-                code: '1234',
-                lapTarget: 3,
-                playerCount: 1,
-                expiresAt: '2026-05-02T00:10:00.000Z'
-              }
-            ]
+            rooms:
+              roomCalls === 1
+                ? []
+                : [
+                    {
+                      code: '1234',
+                      lapTarget: 3,
+                      trackName: null,
+                      playerCount: 1,
+                      expiresAt: '2026-05-02T00:10:00.000Z'
+                    }
+                  ]
           })
         )
       );
+    });
 
     vi.stubGlobal('fetch', fetchMock);
 
     render(<HallClient />);
+
+    const editorEntry = screen.getByRole('link', { name: '创建/管理赛道' });
+    expect(editorEntry).toHaveAttribute('href', '/track-editor');
 
     await act(async () => {
       await Promise.resolve();

@@ -6,7 +6,7 @@ import { RaceHud } from './RaceHud';
 import { formatRacingError } from '@/realtime/errorMessages';
 import { createMatchCommand } from '@/realtime/matchReducer';
 import { useMatchSession } from '@/realtime/useMatchSession';
-import { RacingRuntimeHost, type RuntimeHandle } from '@/game/RacingRuntimeHost';
+import { RacingRuntimeHost, type RemoteVehicleTelemetry, type RuntimeHandle } from '@/game/RacingRuntimeHost';
 import { advanceRaceProgress, buildTrackProgressModel, createInitialRaceProgressState } from '@/game/trackProgress';
 import { getRaceTelemetryIntervalMs } from '@/game/telemetryPolicy';
 import { usePlayerSession } from '@/session/usePlayerSession';
@@ -37,6 +37,23 @@ export function RaceClient({ code }: { code: string }) {
 
   const currentPlayer = useMemo(() => {
     return match?.players.find((player) => player.playerId === session?.playerId) ?? null;
+  }, [match?.players, session?.playerId]);
+
+  const remoteVehicles = useMemo<RemoteVehicleTelemetry[]>(() => {
+    return (
+      match?.players
+        .filter((player) => player.playerId !== session?.playerId)
+        .map((player) => ({
+          playerId: player.playerId,
+          nickname: player.nickname,
+          color: player.color,
+          presence: player.presence,
+          position: player.position,
+          heading: player.heading,
+          speed: player.speed,
+          lastReportAt: player.lastReportAt
+        })) ?? []
+    );
   }, [match?.players, session?.playerId]);
 
   const trackModel = useMemo(() => {
@@ -159,6 +176,7 @@ export function RaceClient({ code }: { code: string }) {
       roomCode={code}
       trackMap={match.trackMap}
       vehicleColor={currentPlayer.color}
+      remoteVehicles={remoteVehicles}
       onRuntimeReady={handleRuntimeReady}
     >
       <RaceHud match={match} currentPlayerId={session.playerId} model={trackModel} />

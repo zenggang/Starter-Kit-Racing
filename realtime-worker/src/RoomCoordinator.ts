@@ -20,6 +20,7 @@ import {
   type RoomState
 } from './protocol';
 import type { RoomStorage } from './storage';
+import { validateTrackMap } from '../../shared/trackMapValidation';
 
 type Clock = () => number;
 type RoomCodeGenerator = () => string;
@@ -122,6 +123,11 @@ export class RoomCoordinator {
   private async createRoom(command: RoomCommandEnvelope<CreateRoomPayload>, now: number): Promise<CommandResult> {
     const timestamp = new Date(now).toISOString();
     const roomCode = normalizeRoomCode(command.payload.roomCode) ?? this.roomCodeGenerator();
+    const track = normalizeTrackSelection(command.payload.trackId, command.payload.trackName, command.payload.trackMap);
+    if (!track.ok) {
+      return commandError(command.commandId, 0, track.errorCode);
+    }
+
     const host = createPlayer(command.playerId, command.payload.nickname, true, timestamp);
     const room: RoomState = {
       id: crypto.randomUUID(),
@@ -129,7 +135,9 @@ export class RoomCoordinator {
       hostPlayerId: command.playerId,
       status: 'waiting',
       lapTarget: DEFAULT_LAP_TARGET,
-      trackMap: normalizeTrackMap(command.payload.trackMap),
+      trackId: track.trackId,
+      trackName: track.trackName,
+      trackMap: track.trackMap,
       createdAt: timestamp,
       startedAt: null,
       finishedAt: null,
@@ -283,6 +291,10 @@ export class RoomCoordinator {
     const eligiblePlayers = room.players.filter((player) => player.ready && player.color);
     if (eligiblePlayers.length === 0) {
       return commandError(command.commandId, room.seq, 'NOT_ALL_PLAYERS_READY');
+    }
+
+    if (room.trackMap && !validateTrackMap(room.trackMap).ok) {
+      return commandError(command.commandId, room.seq, 'TRACK_MAP_INVALID');
     }
 
     const startedAt = new Date(now).toISOString();
@@ -479,6 +491,8 @@ function createMatchState(room: RoomState, startedAt: string): MatchState {
     roomCode: room.code,
     phase: 'live',
     lapTarget: room.lapTarget,
+    trackId: room.trackId,
+    trackName: room.trackName,
     trackMap: room.trackMap,
     startedAt,
     finishedAt: null,
@@ -607,7 +621,40 @@ function normalizeRoomCode(roomCode: string | undefined): string | null {
   return normalized && /^\d{4}$/.test(normalized) ? normalized : null;
 }
 
-function normalizeTrackMap(trackMap: string | null | undefined): string | null {
+function normalizeTrackSelection(
+  trackId: string | null | undefined,
+  trackName: string | null | undefined,
+  trackMap: string | null | undefined
+): { ok: true; trackId: string | null; trackName: string | null; trackMap: string | null } | { ok: false; errorCode: NonNullable<CommandResult['errorCode']> } {
   const normalized = trackMap?.trim();
+  if (!normalized) {
+    return {
+      ok: true,
+      trackId: null,
+      trackName: null,
+      trackMap: null
+    };
+  }
+
+  const validation = validateTrackMap(normalized);
+  if (!validation.ok) {
+    return { ok: false, errorCode: validation.errors[0] ?? 'TRACK_MAP_INVALID' };
+  }
+
+  return {
+    ok: true,
+    trackId: normalizeTrackIdentity(trackId),
+    trackName: normalizeTrackName(trackName),
+    trackMap: validation.normalizedTrackMap
+  };
+}
+
+function normalizeTrackIdentity(trackId: string | null | undefined): string | null {
+  const normalized = trackId?.trim();
   return normalized ? normalized : null;
+}
+
+function normalizeTrackName(trackName: string | null | undefined): string | null {
+  const normalized = trackName?.trim();
+  return normalized ? normalized.slice(0, 40) : null;
 }

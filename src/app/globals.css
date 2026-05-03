@@ -231,6 +231,20 @@ a {
   min-width: 0;
 }
 
+.track-picker-helper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.track-editor-entry {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+
 .compact-actions {
   gap: 10px;
 }
@@ -248,6 +262,201 @@ a {
 
 .result-driver-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.track-editor-console {
+  width: 100%;
+  max-width: 1080px;
+  min-width: 0;
+  margin: 0 auto;
+}
+
+.track-editor-console-shell {
+  overflow: clip;
+}
+
+.track-editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+  gap: 14px;
+  min-width: 0;
+}
+
+.track-editor-main {
+  gap: 12px;
+}
+
+.track-editor-main-shell {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr) 168px;
+  gap: 12px;
+  align-items: stretch;
+  min-height: 0;
+}
+
+.track-editor-mobile-rail {
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.track-editor-tool-rail {
+  align-content: center;
+}
+
+.track-editor-tool-group {
+  display: grid;
+  gap: 8px;
+}
+
+.track-editor-stage-console {
+  display: grid;
+  min-width: 0;
+}
+
+.track-editor-actions {
+  flex-wrap: wrap;
+}
+
+.track-editor-tool-button,
+.track-editor-save-button,
+.track-editor-panel-button {
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.track-editor-tool-button {
+  border: 1px solid var(--line-bright);
+  border-radius: 10px;
+  background: rgba(243, 245, 238, 0.96);
+  color: #111;
+  font-weight: 700;
+}
+
+.track-editor-tool-button-active {
+  border-color: rgba(255, 211, 77, 0.72);
+  background: var(--accent);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.22);
+}
+
+.track-editor-panel-button,
+.track-editor-library-close {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+.track-editor-stage-shell {
+  position: relative;
+  min-height: clamp(360px, 56vh, 680px);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 211, 77, 0.16), transparent 48%),
+    #07090b;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.track-editor-stage,
+.track-editor-canvas {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  display: block;
+}
+
+.track-editor-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: var(--muted);
+  background: rgba(7, 9, 11, 0.82);
+}
+
+.track-editor-hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.track-editor-hint span {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 5px 8px;
+}
+
+.track-editor-hint-compact {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.track-editor-hint-compact span {
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+
+.track-editor-status-rail {
+  align-content: stretch;
+  grid-template-rows: auto auto auto auto 1fr;
+}
+
+.track-editor-name-field {
+  gap: 4px;
+}
+
+.track-editor-name-input {
+  min-height: 36px;
+  padding: 8px 10px;
+}
+
+.track-editor-status-copy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.track-editor-message {
+  font-size: 11px;
+}
+
+.track-editor-library {
+  gap: 10px;
+}
+
+.track-editor-library-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.track-editor-library-title {
+  display: grid;
+  gap: 4px;
+}
+
+.track-editor-library[hidden] {
+  display: none;
+}
+
+.track-editor-intro {
+  max-width: 72ch;
+}
+
+.track-editor-back-link {
+  flex: 0 0 auto;
 }
 
 .race-page-head {
@@ -451,6 +660,49 @@ a {
   color: var(--muted);
 }
 
+.track-grid-board {
+  display: grid;
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+  gap: 4px;
+  width: min(100%, 640px);
+  aspect-ratio: 1;
+  align-self: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px) 0 0 / 20% 20%,
+    #07090b;
+  padding: 8px;
+}
+
+.track-grid-cell {
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #111;
+  font-size: 12px;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.track-grid-cell.is-road {
+  border-color: rgba(255, 211, 77, 0.52);
+  background: #d8d2be;
+}
+
+.track-grid-cell.is-finish {
+  background:
+    repeating-linear-gradient(45deg, #f7f8f4 0 6px, #111 6px 12px),
+    #f7f8f4;
+  color: var(--accent);
+  text-shadow: 0 1px 2px #000;
+}
+
 .empty-grid {
   min-height: 150px;
   display: grid;
@@ -520,7 +772,14 @@ a {
 
 .primary-action,
 .secondary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 126px;
+  border-radius: 8px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
 }
 
 .primary-action {
@@ -1054,6 +1313,71 @@ a {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
+
+  .track-editor-console {
+    max-width: 1120px;
+  }
+
+  .track-editor-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .track-editor-main-shell {
+    grid-template-columns: 74px minmax(0, 1fr) 122px;
+    gap: 10px;
+    min-height: 0;
+  }
+
+  .track-editor-mobile-rail {
+    gap: 6px;
+  }
+
+  .track-editor-tool-group {
+    gap: 6px;
+  }
+
+  .track-editor-tool-button,
+  .track-editor-save-button,
+  .track-editor-panel-button {
+    min-height: 36px;
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
+  .track-editor-stage-console {
+    align-items: stretch;
+  }
+
+  .track-editor-stage-shell {
+    min-height: clamp(240px, 52vh, 360px);
+    aspect-ratio: 1.18;
+  }
+
+  .track-editor-status-rail {
+    grid-template-rows: 34px 34px auto 42px 1fr;
+    align-content: start;
+  }
+
+  .track-editor-name-input {
+    min-height: 34px;
+    font-size: 12px;
+  }
+
+  .track-editor-status-copy,
+  .track-editor-hint-compact,
+  .track-editor-message {
+    font-size: 11px;
+  }
+
+  .track-editor-library {
+    padding: 10px;
+  }
+
+  .track-grid-board {
+    gap: 3px;
+    padding: 6px;
+  }
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .app-shell {
@@ -1204,4 +1528,126 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .start-hint {
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .result-driver-grid {
   gap: 6px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-main-shell {
+  grid-template-columns: 62px minmax(0, 1fr) 104px;
+  gap: 6px;
+  padding: 8px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-tool-button,
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-save-button,
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-panel-button {
+  min-height: 30px;
+  padding: 0 6px;
+  font-size: 10px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-console-shell {
+  gap: 6px;
+  padding: 8px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-console-shell .console-topline {
+  gap: 6px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-console-shell .console-title-group {
+  gap: 1px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-console-shell .panel-kicker {
+  font-size: 9px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-console-shell .console-screen-title {
+  font-size: 16px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-intro {
+  font-size: 9px;
+  line-height: 1.2;
+  max-width: 48ch;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-back-link {
+  min-width: 92px;
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-mobile-rail {
+  gap: 4px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-tool-group {
+  gap: 4px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-status-rail {
+  grid-template-rows: 30px 30px auto 36px 1fr;
+  gap: 4px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-name-field {
+  gap: 3px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-name-input {
+  min-height: 30px;
+  padding: 6px 8px;
+  font-size: 10px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-status-copy,
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-hint-compact,
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-message,
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-name-field span {
+  font-size: 9px;
+  line-height: 1.15;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-hint-compact {
+  gap: 4px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-hint-compact span {
+  padding: 4px 6px;
+  border-radius: 8px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-save-button {
+  min-height: 36px;
+  font-size: 11px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-stage-shell {
+  min-height: clamp(180px, 42vh, 250px);
+  aspect-ratio: 1.08;
+  border-radius: 12px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-library {
+  max-height: calc(var(--viewport-visible-height) - max(16px, var(--safe-top)) - max(16px, var(--safe-bottom)) - 24px);
+  overflow: auto;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-library-head {
+  gap: 8px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-library-close {
+  min-width: 56px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-grid-board {
+  gap: 2px;
+  padding: 5px;
 }

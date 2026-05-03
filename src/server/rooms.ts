@@ -4,6 +4,7 @@ import { getPublicRuntimeMode } from '@/config/env';
 export interface HallRoomSummary {
   code: string;
   lapTarget: number;
+  trackName: string | null;
   playerCount: number;
   expiresAt: string;
 }
@@ -22,7 +23,7 @@ export async function listWaitingRooms(): Promise<HallRoomSummary[]> {
   const supabase = createClient(url, anonKey);
   const { data, error } = await supabase
     .from('racing_rooms')
-    .select('code, lap_target, expires_at, racing_room_players(player_id)')
+    .select('code, lap_target, track_name, expires_at, racing_room_players(player_id)')
     .eq('status', 'waiting')
     .gt('expires_at', new Date().toISOString())
     .order('created_at', { ascending: false })
@@ -33,6 +34,7 @@ export async function listWaitingRooms(): Promise<HallRoomSummary[]> {
   return data.map((room) => ({
     code: room.code,
     lapTarget: room.lap_target,
+    trackName: room.track_name,
     playerCount: Array.isArray(room.racing_room_players) ? room.racing_room_players.length : 0,
     expiresAt: room.expires_at
   }));

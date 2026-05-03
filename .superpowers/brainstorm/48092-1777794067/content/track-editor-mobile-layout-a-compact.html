@@ -1,0 +1,56 @@
+<h2>A 方案修正版</h2>
+<p class="subtitle">按钮缩小并集中到左右窄栏，中央地图台优先。目标仍然是一屏内完成全部核心编辑操作。</p>
+
+<div class="mockup">
+  <div class="mockup-header">A-compact · 双侧窄控制台 + 中央固定地图台</div>
+  <div class="mockup-body" style="padding:18px;background:#101317;">
+    <div style="display:grid;grid-template-columns:72px minmax(0,1fr) 116px;gap:10px;align-items:stretch;min-height:278px;">
+      <div style="display:grid;grid-template-rows:repeat(4,36px);gap:6px;align-content:center;">
+        <div class="mock-button" style="display:grid;place-items:center;height:36px;font-size:12px;">画路</div>
+        <div class="mock-button" style="display:grid;place-items:center;height:36px;font-size:12px;background:#30363d;">擦除</div>
+        <div class="mock-button" style="display:grid;place-items:center;height:36px;font-size:12px;background:#30363d;">新建</div>
+        <div class="mock-button" style="display:grid;place-items:center;height:36px;font-size:12px;background:#30363d;">列表</div>
+      </div>
+
+      <div style="border:1px solid rgba(255,255,255,0.15);border-radius:18px;background:radial-gradient(circle at 50% 40%, rgba(255,211,77,0.18), transparent 45%), #161b20;padding:12px;display:grid;">
+        <div style="border:1px dashed rgba(255,255,255,0.28);border-radius:14px;display:grid;place-items:center;color:#a7b0b7;text-align:center;font-size:14px;line-height:1.4;">
+          固定比例地图台
+          <br>
+          单指画路 / 双指拖拽 / 缩放
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-rows:34px 34px 1fr 42px;gap:6px;">
+        <div class="mock-input" style="display:grid;place-items:center;height:34px;font-size:12px;">赛道名称</div>
+        <div style="border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:8px;color:#a7b0b7;font-size:12px;display:grid;place-items:center;">12 格 · 可保存</div>
+        <div style="border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:8px;color:#a7b0b7;font-size:11px;line-height:1.35;">
+          提示缩成短句
+          <br>
+          避免操作台膨胀
+        </div>
+        <div class="mock-button" style="display:grid;place-items:center;height:42px;font-size:13px;">保存</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>这版的核心取舍</h4>
+      <ul>
+        <li>工具键压到 36px 高，适合横屏移动端连续点按，不再像主 CTA 那样抢视觉。</li>
+        <li>名称、状态、提示、保存集中到右侧窄栏，地图台保持最大可视面积。</li>
+        <li>“我的赛道”保持非同屏，后续改成覆盖抽屉或单独入口。</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>实现落点</h4>
+      <ul>
+        <li>移动端单独重排 `TrackEditorClient` 的 DOM 分组。</li>
+        <li>在 `globals.css` 增加横屏移动端专用断点和更紧凑的控件尺寸。</li>
+        <li>保留编辑器运行时拖拽/缩放逻辑，不改 3D 编辑器核心交互。</li>
+      </ul>
+    </div>
+  </div>
+</div>

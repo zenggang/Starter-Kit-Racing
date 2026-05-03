@@ -37,7 +37,9 @@ export type RacingErrorCode =
   | 'MATCH_PROGRESS_REGRESSION'
   | 'MATCH_FINISH_DUPLICATE'
   | 'MATCH_SYNC_REQUIRED'
-  | 'MATCH_TICKET_ROOM_MISMATCH';
+  | 'MATCH_TICKET_ROOM_MISMATCH'
+  | 'TRACK_NOT_FOUND'
+  | TrackMapErrorCode;
 
 export type RoomCommandType =
   | 'room.create'
@@ -101,6 +103,8 @@ export interface MatchState {
   roomCode: string;
   phase: MatchPhase;
   lapTarget: number;
+  trackId?: string | null;
+  trackName?: string | null;
   trackMap: string | null;
   startedAt: string;
   finishedAt: string | null;
@@ -158,6 +162,8 @@ export interface RoomState {
   hostPlayerId: string;
   status: RoomStatus;
   lapTarget: number;
+  trackId?: string | null;
+  trackName?: string | null;
   trackMap: string | null;
   createdAt: string;
   startedAt: string | null;
@@ -253,3 +259,4 @@ export function createCommandResult(
     ...fields
   };
 }
+import type { TrackMapErrorCode } from '../../shared/trackMapValidation';

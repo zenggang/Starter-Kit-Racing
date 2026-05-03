@@ -64,6 +64,7 @@ export function ResultClient({ code }: { code: string }) {
               结果 <span className="room-code-head">{code}</span>
             </strong>
             <p className="muted">连接状态：{connectionState === 'connected' ? '已连接' : '连接中'}</p>
+            <p className="muted">赛道：{match?.trackName ?? room?.trackName ?? '默认赛道'}</p>
             {winnerTimeMs !== null ? <p className="muted">冠军用时：{formatRaceDuration(winnerTimeMs)}</p> : null}
           </div>
           {match?.winnerPlayerId ? <span className="status-pill">已完赛</span> : null}

@@ -1,0 +1,97 @@
+<h2>移动端赛道编辑布局</h2>
+<p class="subtitle">目标：横屏一屏内完成画路、擦除、新建、保存；地图固定在中间操作台，支持拖拽和平移。</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">A · 双侧控制台 + 中央固定地图台</div>
+        <div class="mockup-body" style="padding:16px;background:#101317;">
+          <div style="display:grid;grid-template-columns:88px minmax(0,1fr) 128px;gap:12px;align-items:stretch;min-height:250px;">
+            <div style="display:grid;grid-template-rows:repeat(4,minmax(0,1fr));gap:8px;">
+              <div class="mock-button" style="display:grid;place-items:center;">画路</div>
+              <div class="mock-button" style="display:grid;place-items:center;background:#30363d;">擦除</div>
+              <div class="mock-button" style="display:grid;place-items:center;background:#30363d;">新建</div>
+              <div class="mock-button" style="display:grid;place-items:center;background:#30363d;">列表</div>
+            </div>
+            <div style="border:1px solid rgba(255,255,255,0.15);border-radius:18px;background:radial-gradient(circle at 50% 40%, rgba(255,211,77,0.18), transparent 45%), #161b20;padding:14px;display:grid;">
+              <div style="border:1px dashed rgba(255,255,255,0.28);border-radius:14px;display:grid;place-items:center;color:#a7b0b7;text-align:center;font-size:14px;line-height:1.4;">
+                固定比例地图台
+                <br>
+                单指画路 / 双指拖拽 / 缩放
+              </div>
+            </div>
+            <div style="display:grid;grid-template-rows:auto auto 1fr auto;gap:8px;">
+              <div class="mock-input" style="display:grid;place-items:center;height:44px;">赛道名称</div>
+              <div style="border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px;color:#a7b0b7;font-size:13px;">12 格 · 可保存</div>
+              <div style="border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px;color:#a7b0b7;font-size:12px;line-height:1.35;">
+                操作提示压缩成两行
+                <br>
+                避免占住地图区域
+              </div>
+              <div class="mock-button" style="display:grid;place-items:center;height:52px;">保存</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A 方案</h3>
+      <p>左侧只放高频工具，中央地图固定尺寸，右侧放名称、状态、保存。结构最稳，最像掌机操作台。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">B · 顶部状态条 + 底部工具坞 + 中央地图台</div>
+        <div class="mockup-body" style="padding:16px;background:#101317;">
+          <div style="display:grid;grid-template-rows:54px minmax(0,1fr) 70px;gap:12px;min-height:250px;">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 120px 88px;gap:8px;">
+              <div class="mock-input" style="display:grid;place-items:center;">赛道名称</div>
+              <div style="border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px;color:#a7b0b7;font-size:13px;display:grid;place-items:center;">12 格</div>
+              <div class="mock-button" style="display:grid;place-items:center;">保存</div>
+            </div>
+            <div style="border:1px solid rgba(255,255,255,0.15);border-radius:18px;background:radial-gradient(circle at 50% 40%, rgba(255,211,77,0.18), transparent 45%), #161b20;padding:14px;display:grid;">
+              <div style="border:1px dashed rgba(255,255,255,0.28);border-radius:14px;display:grid;place-items:center;color:#a7b0b7;text-align:center;font-size:14px;line-height:1.4;">
+                固定比例地图台
+                <br>
+                单指画路 / 双指拖拽 / 缩放
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;">
+              <div class="mock-button" style="display:grid;place-items:center;">画路</div>
+              <div class="mock-button" style="display:grid;place-items:center;background:#30363d;">擦除</div>
+              <div class="mock-button" style="display:grid;place-items:center;background:#30363d;">新建</div>
+              <div class="mock-button" style="display:grid;place-items:center;background:#30363d;">列表</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B 方案</h3>
+      <p>保留更完整的横向视野，底部统一工具坞，视觉更轻，但底部按钮更容易和系统手势区冲突。</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>我建议选 A</h4>
+      <ul>
+        <li>高频动作和状态分区更明确，手指移动路径更短。</li>
+        <li>地图台更容易保持固定尺寸，不会被顶部或底部条挤压变形。</li>
+        <li>后续把“我的赛道”做成侧抽屉或覆盖层也更自然。</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>B 的主要风险</h4>
+      <ul>
+        <li>横屏窄高设备上，地图台高度容易被上下栏吃掉。</li>
+        <li>底部工具坞更接近 iOS/Android 手势区，误触概率更高。</li>
+      </ul>
+    </div>
+  </div>
+</div>

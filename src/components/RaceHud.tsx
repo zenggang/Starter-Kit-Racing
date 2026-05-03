@@ -51,6 +51,7 @@ export function RaceHud({
         <strong>{current ? `${current.completedLaps}/${match.lapTarget}` : `0/${match.lapTarget}`}</strong>
         <span className="muted">当前第 {currentLapNumber} 圈 · 本圈进度 {currentLapProgress}%</span>
         <span className="muted">比赛计时：{formatRaceDuration(currentTimerMs)}</span>
+        <span className="muted">赛道：{match.trackName ?? '默认赛道'}</span>
         {finishCountdownMs !== null ? <span className="muted">终点倒计时：{formatRaceDuration(finishCountdownMs)}</span> : null}
         <span className="muted">阶段：{match.phase === 'finished' ? '已完赛' : '比赛中'}</span>
       </section>

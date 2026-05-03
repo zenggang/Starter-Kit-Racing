@@ -7,6 +7,7 @@ import { CreateRoomForm } from './CreateRoomForm';
 import { HallRoomList } from './HallRoomList';
 import { JoinRoomForm } from './JoinRoomForm';
 import { requestCoordinatorTicket, sendBridgeCommand } from '@/realtime/sessionClient';
+import type { RacingTrackSummary } from '@/server/tracks';
 import type { HallRoomSummary } from '@/server/rooms';
 import { createCommand } from '@/realtime/sessionReducer';
 import { formatRacingError } from '@/realtime/errorMessages';
@@ -19,6 +20,8 @@ export function HallClient() {
   const router = useRouter();
   const { session, rememberRoom, updateNickname } = usePlayerSession();
   const [rooms, setRooms] = useState<HallRoomSummary[]>([]);
+  const [tracks, setTracks] = useState<RacingTrackSummary[]>([]);
+  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [nickname, setNickname] = useState('');
@@ -55,6 +58,33 @@ export function HallClient() {
       window.clearInterval(refreshTimer);
     };
   }, []);
+
+  useEffect(() => {
+    if (!session?.playerId) return;
+
+    let cancelled = false;
+    const playerId = session.playerId;
+
+    async function refreshTracks() {
+      try {
+        const response = await fetch(`/api/tracks?playerId=${encodeURIComponent(playerId)}`);
+        const body = await response.json();
+        if (!cancelled) {
+          setTracks(body.tracks ?? []);
+        }
+      } catch {
+        if (!cancelled) {
+          setTracks([]);
+        }
+      }
+    }
+
+    void refreshTracks();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.playerId]);
 
   useEffect(() => {
     if (session?.nickname) {
@@ -111,7 +141,14 @@ export function HallClient() {
         </div>
         {errorCode ? <p className="error-banner">{formatRacingError(errorCode)}</p> : null}
         <div className="hall-console-grid">
-          <CreateRoomForm player={session} disabled={busy} onCreate={(command) => sendHallCommand('new', command)} />
+          <CreateRoomForm
+            player={session}
+            tracks={tracks}
+            selectedTrackId={selectedTrackId}
+            disabled={busy}
+            onSelectTrack={setSelectedTrackId}
+            onCreate={(command) => sendHallCommand('new', command)}
+          />
           <JoinRoomForm player={session} disabled={busy} onJoin={sendHallCommand} />
           <HallRoomList rooms={rooms} onJoin={(code) => session && sendHallCommand(code, createCommand('room.join', session.playerId))} />
         </div>

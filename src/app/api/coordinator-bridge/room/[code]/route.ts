@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerCoordinatorConfig } from '@/config/env';
 import { syncCoordinatorReadModels } from '@/server/readModelWriter';
 import { verifyCoordinatorTicket } from '@/server/coordinatorTicket';
+import { resolveCreateRoomTrackPayload } from '@/server/tracks';
 
 export const runtime = 'nodejs';
 
@@ -23,7 +24,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ cod
   const isCreate = payload && typeof payload === 'object' && (payload as { type?: string }).type === 'room.create';
   const commandType = payload && typeof payload === 'object' ? (payload as { type?: string }).type : undefined;
   const coordinatorPath = isCreate ? '/rooms' : `/rooms/${encodeURIComponent(code.toUpperCase())}/commands`;
-  const coordinatorCommand = injectCoordinatorAuth(payload, ticket);
+  const coordinatorCommand = await injectCoordinatorAuth(payload, ticket);
+  if ('ok' in coordinatorCommand && coordinatorCommand.ok === false) {
+    return NextResponse.json(coordinatorCommand, { status: coordinatorCommand.errorCode === 'TRACK_NOT_FOUND' ? 404 : 400 });
+  }
 
   const response = await fetch(`${config.url.replace(/\/$/, '')}${coordinatorPath}`, {
     method: 'POST',
@@ -53,12 +57,26 @@ export async function POST(request: Request, { params }: { params: Promise<{ cod
   });
 }
 
-function injectCoordinatorAuth(payload: unknown, ticket: NonNullable<ReturnType<typeof verifyCoordinatorTicket>>) {
+async function injectCoordinatorAuth(payload: unknown, ticket: NonNullable<ReturnType<typeof verifyCoordinatorTicket>>) {
   const command = payload && typeof payload === 'object' ? { ...(payload as Record<string, unknown>) } : {};
-  const commandPayload = command.payload && typeof command.payload === 'object' ? { ...(command.payload as Record<string, unknown>) } : {};
+  let commandPayload = command.payload && typeof command.payload === 'object' ? { ...(command.payload as Record<string, unknown>) } : {};
 
   if ((command.type === 'room.create' || command.type === 'room.join') && !commandPayload.nickname) {
     commandPayload.nickname = ticket.nickname;
+  }
+
+  if (command.type === 'room.create') {
+    const trackPayload = await resolveCreateRoomTrackPayload(ticket.playerId, commandPayload);
+    if (!trackPayload.ok) {
+      return {
+        type: 'command.result' as const,
+        ok: false as const,
+        seq: 0,
+        commandId: typeof command.commandId === 'string' ? command.commandId : undefined,
+        errorCode: trackPayload.errorCode
+      };
+    }
+    commandPayload = trackPayload.value;
   }
 
   return {

@@ -46,6 +46,7 @@ export function RoomLobbyPanel({
             房间 <span className="room-code-head">{roomCode}</span>
           </strong>
           <p className="muted">连接状态：{connectionState === 'connected' ? '已连接' : '连接中'}</p>
+          <p className="muted">赛道：{room.trackName ?? '默认赛道'}</p>
         </div>
         <span className="status-pill">{room.status === 'waiting' ? '等待中' : '比赛中'}</span>
       </div>

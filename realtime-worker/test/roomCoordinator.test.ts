@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { RoomCoordinator } from '../src/RoomCoordinator';
 import { InMemoryRoomStorage } from '../src/storage';
 import type { AuthTicket, RoomCommandEnvelope } from '../src/protocol';
+import { encodeTrackCells } from '../../shared/trackMapValidation';
 
 const START = Date.parse('2026-04-26T00:00:00.000Z');
 
@@ -36,6 +37,17 @@ function createCoordinator() {
   });
 }
 
+const VALID_TRACK_MAP = encodeTrackCells([
+  [0, 0, 'track-corner', 16],
+  [1, 0, 'track-finish', 16],
+  [2, 0, 'track-corner', 0],
+  [2, 1, 'track-straight', 0],
+  [2, 2, 'track-corner', 22],
+  [1, 2, 'track-straight', 16],
+  [0, 2, 'track-corner', 10],
+  [0, 1, 'track-straight', 0]
+]);
+
 describe('RoomCoordinator Phase 1 lifecycle', () => {
   it('creates a waiting room with host player and 60 minute expiration', async () => {
     const coordinator = createCoordinator();
@@ -56,6 +68,53 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
         color: null
       }
     ]);
+  });
+
+  it('stores a validated custom track snapshot on room create and match start', async () => {
+    const coordinator = createCoordinator();
+
+    const created = await coordinator.execute(
+      command('room.create', 'host-1', {
+        nickname: 'Host',
+        trackId: 'track-1',
+        trackName: '短环线',
+        trackMap: VALID_TRACK_MAP
+      })
+    );
+
+    expect(created.ok).toBe(true);
+    expect(created.room).toMatchObject({
+      trackId: 'track-1',
+      trackName: '短环线',
+      trackMap: VALID_TRACK_MAP
+    });
+
+    await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
+    await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
+    const started = await coordinator.execute(command('room.start', 'host-1', {}));
+
+    expect(started.match).toMatchObject({
+      trackId: 'track-1',
+      trackName: '短环线',
+      trackMap: VALID_TRACK_MAP
+    });
+  });
+
+  it('rejects invalid custom track maps before creating a room', async () => {
+    const coordinator = createCoordinator();
+
+    const result = await coordinator.execute(
+      command('room.create', 'host-1', {
+        nickname: 'Host',
+        trackName: '坏地图',
+        trackMap: 'not-a-track'
+      })
+    );
+
+    expect(result).toMatchObject({
+      ok: false,
+      errorCode: 'TRACK_MAP_INVALID'
+    });
   });
 
   it('rejects invalid auth tickets before mutating room state', async () => {

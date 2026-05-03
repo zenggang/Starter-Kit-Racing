@@ -25,7 +25,18 @@ const ERROR_MESSAGES: Record<RacingErrorCode, string> = {
   MATCH_PROGRESS_REGRESSION: '比赛进度回退，已要求重新同步',
   MATCH_FINISH_DUPLICATE: '这名车手已经完成比赛',
   MATCH_SYNC_REQUIRED: '比赛状态需要重新同步',
-  MATCH_TICKET_ROOM_MISMATCH: '联机凭证与当前房间不匹配'
+  MATCH_TICKET_ROOM_MISMATCH: '联机凭证与当前房间不匹配',
+  TRACK_NOT_FOUND: '赛道不存在或不属于当前车手',
+  TRACK_MAP_INVALID: '赛道数据无效，请重新编辑后保存',
+  TRACK_MAP_TOO_SMALL: '赛道太短，至少需要 8 个路块',
+  TRACK_MAP_TOO_LARGE: '赛道太大，最多支持 192 个路块',
+  TRACK_MAP_COORDS_OUT_OF_RANGE: '赛道超出可编辑范围',
+  TRACK_MAP_DUPLICATE_CELL: '赛道存在重复路块',
+  TRACK_MAP_FINISH_MISSING: '赛道缺少起点/终点',
+  TRACK_MAP_FINISH_DUPLICATE: '赛道只能有一个起点/终点',
+  TRACK_MAP_NOT_CONNECTED: '赛道路块没有全部连通',
+  TRACK_MAP_NOT_CLOSED_LOOP: '赛道必须形成完整闭环',
+  TRACK_MAP_UNSUPPORTED_TILE: '赛道包含不支持的路块'
 };
 
 /**
