@@ -174,7 +174,7 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
   }, [connectionState, player, roomCode, sendCommand, ticket]);
 
   useEffect(() => {
-    if (!player || !ticket || transportMode !== 'bridge') return;
+    if (!player || !ticket || connectionState !== 'connected') return;
 
     let cancelled = false;
     const bridgeTicket = ticket;
@@ -196,7 +196,7 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
       cancelled = true;
       window.clearInterval(syncTimer);
     };
-  }, [player, roomCode, ticket, transportMode]);
+  }, [connectionState, player, roomCode, ticket]);
 
   useEffect(() => {
     if (!player || !ticket || ticket.mode !== 'socket' || transportMode !== 'bridge') return;

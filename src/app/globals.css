@@ -1530,6 +1530,46 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .result-driver-gr
   gap: 6px;
 }
 
+html[data-browser-shell='wechat'][data-browser-compact='true'] .race-leaderboard {
+  top: max(6px, var(--safe-top));
+  right: max(6px, var(--safe-right));
+  width: min(228px, calc(100% - 118px));
+  max-width: calc(100% - max(6px, var(--safe-left)) - max(6px, var(--safe-right)));
+  gap: 4px;
+  padding: 8px;
+  background: rgba(8, 11, 14, 0.34);
+  backdrop-filter: blur(8px);
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .race-leaderboard-head {
+  gap: 6px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .race-leaderboard-head strong {
+  display: none;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .race-leaderboard-list {
+  gap: 4px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .race-leaderboard-row {
+  gap: 6px;
+  padding-top: 4px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .race-leaderboard-row strong {
+  max-width: 88px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .race-leaderboard-row span {
+  font-size: 10px;
+}
+
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-grid {
   grid-template-columns: minmax(0, 1fr);
   gap: 6px;

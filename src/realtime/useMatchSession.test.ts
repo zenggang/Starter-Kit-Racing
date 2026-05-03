@@ -244,11 +244,18 @@ describe('useMatchSession', () => {
 
     expect(result.current.transportMode).toBe('socket');
 
+    vi.mocked(sendBridgeCommand).mockClear();
+
     await act(async () => {
       await vi.advanceTimersByTimeAsync(5_000);
+      await Promise.resolve();
     });
 
-    expect(vi.mocked(sendBridgeCommand).mock.calls.length).toBeLessThanOrEqual(2);
+    expect(sendBridgeCommand).toHaveBeenCalledWith(
+      '5035',
+      expect.objectContaining({ mode: 'socket' }),
+      expect.objectContaining({ type: 'match.sync' })
+    );
   });
 
   it('routes room rematch through bridge even when the race socket is already open', async () => {
