@@ -169,4 +169,85 @@ describe('useMatchSession', () => {
       expect.objectContaining({ type: 'match.sync' })
     );
   });
+
+  it('retries socket in the background and upgrades back once a later probe opens', async () => {
+    const attempts: Array<{
+      listeners: Map<string, Array<(...args: unknown[]) => void>>;
+      socket: WebSocket & { readyState: number; send: ReturnType<typeof vi.fn> };
+    }> = [];
+    vi.mocked(requestCoordinatorTicket).mockResolvedValue({
+      token: 'signed-ticket',
+      url: 'https://starter-kit-racing.example.workers.dev',
+      mode: 'socket'
+    });
+    vi.mocked(openCoordinatorSocket).mockImplementation(() => {
+      const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
+      const socket = {
+        close: vi.fn(),
+        send: vi.fn(),
+        readyState: WebSocket.CONNECTING,
+        addEventListener: vi.fn((type: string, listener: (...args: unknown[]) => void) => {
+          listeners.set(type, [...(listeners.get(type) ?? []), listener]);
+        })
+      } as unknown as WebSocket & { readyState: number; send: ReturnType<typeof vi.fn> };
+
+      attempts.push({ listeners, socket });
+      return socket;
+    });
+
+    let sequence = 0;
+    vi.mocked(sendBridgeCommand).mockImplementation(async (_roomCode, _ticket, command) => {
+      sequence += 1;
+
+      return {
+        type: 'command.result',
+        seq: sequence,
+        ok: true,
+        commandId: command.commandId,
+        room: finishedRoom,
+        match: finishedMatch
+      };
+    });
+
+    const { result } = renderHook(() => useMatchSession('5035', player));
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(result.current.connectionState).toBe('connected');
+    expect(result.current.transportMode).toBe('bridge');
+
+    vi.mocked(sendBridgeCommand).mockClear();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5_000);
+      await Promise.resolve();
+    });
+
+    expect(vi.mocked(openCoordinatorSocket).mock.calls.length).toBeGreaterThanOrEqual(2);
+
+    await act(async () => {
+      const latest = attempts[attempts.length - 1];
+      latest.socket.readyState = WebSocket.OPEN;
+      latest.listeners.get('open')?.forEach((listener) => listener(new Event('open')));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(result.current.transportMode).toBe('socket');
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5_000);
+    });
+
+    expect(vi.mocked(sendBridgeCommand).mock.calls.length).toBeLessThanOrEqual(1);
+  });
 });

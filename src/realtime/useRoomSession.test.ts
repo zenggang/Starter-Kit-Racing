@@ -254,4 +254,75 @@ describe('useRoomSession bridge sync', () => {
       expect.objectContaining({ type: 'sync.request' })
     );
   });
+
+  it('retries socket in the background and switches back once a later probe opens', async () => {
+    const attempts: Array<{
+      listeners: Map<string, Array<(...args: unknown[]) => void>>;
+      socket: WebSocket & { readyState: number; send: ReturnType<typeof vi.fn> };
+    }> = [];
+    vi.mocked(requestCoordinatorTicket).mockResolvedValue({
+      token: 'signed-ticket',
+      url: 'https://starter-kit-racing.example.workers.dev',
+      mode: 'socket'
+    });
+    vi.mocked(openCoordinatorSocket).mockImplementation(() => {
+      const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
+      const socket = {
+        close: vi.fn(),
+        send: vi.fn(),
+        readyState: WebSocket.CONNECTING,
+        addEventListener: vi.fn((type: string, listener: (...args: unknown[]) => void) => {
+          listeners.set(type, [...(listeners.get(type) ?? []), listener]);
+        })
+      } as unknown as WebSocket & { readyState: number; send: ReturnType<typeof vi.fn> };
+
+      attempts.push({ listeners, socket });
+      return socket;
+    });
+    vi.mocked(sendBridgeCommand).mockResolvedValue({
+      type: 'command.result',
+      seq: 1,
+      ok: true,
+      room: readyRoom
+    });
+
+    const { result } = renderHook(() => useRoomSession('ABCD12', player));
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(result.current.connectionState).toBe('connected');
+    expect(sendBridgeCommand).toHaveBeenCalled();
+
+    vi.mocked(sendBridgeCommand).mockClear();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5_000);
+      await Promise.resolve();
+    });
+
+    expect(vi.mocked(openCoordinatorSocket).mock.calls.length).toBeGreaterThanOrEqual(2);
+
+    await act(async () => {
+      const latest = attempts[attempts.length - 1];
+      latest.socket.readyState = WebSocket.OPEN;
+      latest.listeners.get('open')?.forEach((listener) => listener(new Event('open')));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5_000);
+    });
+
+    expect(vi.mocked(sendBridgeCommand).mock.calls.length).toBeLessThanOrEqual(1);
+  });
 });

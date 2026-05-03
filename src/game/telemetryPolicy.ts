@@ -1,7 +1,7 @@
 import type { TransportMode } from '@/realtime/protocol';
 
 const SOCKET_RACE_TELEMETRY_INTERVAL_MS = 100;
-const BRIDGE_RACE_TELEMETRY_INTERVAL_MS = 1_500;
+const BRIDGE_RACE_TELEMETRY_INTERVAL_MS = 600;
 
 /**
  * Race telemetry only powers coordinator ranking and finish detection today, so
