@@ -175,16 +175,30 @@ export class RoomCoordinator {
       return commandError(command.commandId, room.seq, 'PLAYER_NOT_IN_ROOM');
     }
 
-    if (room.players[playerIndex].isHost) {
+    const timestamp = new Date(now).toISOString();
+    const departing = room.players[playerIndex];
+    room.players.splice(playerIndex, 1);
+
+    /**
+     * A room should only disappear once it is truly empty. If other racers are
+     * still waiting inside, the coordinator promotes the next seat to host so
+     * the room can keep its lifecycle intact instead of stranding everyone.
+     */
+    if (room.players.length === 0) {
       room.status = 'closed';
-      room.closedAt = new Date(now).toISOString();
-      room.closedReason = 'host_left';
-      room.players[playerIndex].status = 'disconnected';
-      room.players[playerIndex].lastSeenAt = room.closedAt;
+      room.closedAt = timestamp;
+      room.closedReason = 'room_empty';
       return this.mutate(command.commandId, room);
     }
 
-    room.players.splice(playerIndex, 1);
+    if (departing.isHost) {
+      room.players.forEach((player) => {
+        player.isHost = false;
+      });
+      room.players[0].isHost = true;
+      room.hostPlayerId = room.players[0].playerId;
+    }
+
     return this.mutate(command.commandId, room);
   }
 

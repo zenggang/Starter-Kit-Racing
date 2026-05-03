@@ -189,6 +189,43 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     ]);
   });
 
+  it('promotes the next racer to host when the current host exits an occupied room', async () => {
+    const coordinator = createCoordinator();
+
+    await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
+    await coordinator.execute(command('room.join', 'player-2', { nickname: 'Guest' }));
+
+    const left = await coordinator.execute(command('room.leave', 'host-1', {}));
+
+    expect(left.ok).toBe(true);
+    expect(left.room).toMatchObject({
+      status: 'waiting',
+      hostPlayerId: 'player-2',
+      closedReason: null
+    });
+    expect(left.room?.players).toEqual([
+      expect.objectContaining({
+        playerId: 'player-2',
+        isHost: true
+      })
+    ]);
+  });
+
+  it('automatically closes the room after the last racer exits', async () => {
+    const coordinator = createCoordinator();
+
+    await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
+
+    const left = await coordinator.execute(command('room.leave', 'host-1', {}));
+
+    expect(left.ok).toBe(true);
+    expect(left.room).toMatchObject({
+      status: 'closed',
+      closedReason: 'room_empty'
+    });
+    expect(left.room?.players).toEqual([]);
+  });
+
   it('tracks match progress, finalizes results, and allows the host to rematch', async () => {
     const coordinator = createCoordinator();
 

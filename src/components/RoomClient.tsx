@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { RoomLobbyPanel } from './RoomLobbyPanel';
 import { useRoomSession } from '@/realtime/useRoomSession';
@@ -33,10 +33,32 @@ export function RoomClient({ code }: { code: string }) {
     }
   }, [currentPlayer, router, snapshot]);
 
+  async function handleLeaveRoom() {
+    if (!session) return;
+
+    /**
+     * Leaving the lobby is an explicit user action, so the UI waits for the
+     * authoritative coordinator result before returning to the hall. This
+     * avoids leaving the page while the room state is still unresolved.
+     */
+    const result = await sendCommand(createCommand('room.leave', session.playerId));
+    if (result.ok) {
+      router.replace('/');
+    }
+  }
+
   return (
     <section className="race-layout console-screen">
       {lastErrorCode ? <p className="error-banner">{formatRacingError(lastErrorCode)}</p> : null}
-      <RoomLobbyPanel room={snapshot} player={session} roomCode={code} connectionState={connectionState} disabled={connectionState !== 'connected'} onCommand={sendCommand} />
+      <RoomLobbyPanel
+        room={snapshot}
+        player={session}
+        roomCode={code}
+        connectionState={connectionState}
+        disabled={connectionState !== 'connected'}
+        onCommand={sendCommand}
+        onLeave={handleLeaveRoom}
+      />
     </section>
   );
 }

@@ -87,6 +87,10 @@ class SupabaseReadModelWriter implements ReadModelWriter {
     ]);
 
     await this.request(`racing_room_players?room_id=eq.${encodeURIComponent(room.id)}`, 'DELETE');
+    if (room.players.length === 0) {
+      return;
+    }
+
     await this.request(
       'racing_room_players',
       'POST',

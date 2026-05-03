@@ -15,7 +15,8 @@ export function RoomLobbyPanel({
   roomCode,
   connectionState,
   disabled,
-  onCommand
+  onCommand,
+  onLeave
 }: {
   room: RoomState | null;
   player: PlayerSession | null;
@@ -23,6 +24,7 @@ export function RoomLobbyPanel({
   connectionState: 'idle' | 'connecting' | 'connected' | 'error';
   disabled?: boolean;
   onCommand(command: ReturnType<typeof createCommand>): void;
+  onLeave(): void;
 }) {
   const current = room?.players.find((candidate) => candidate.playerId === player?.playerId) ?? null;
   const takenColors = room?.players.map((candidate) => candidate.color).filter((color): color is PlayerColor => Boolean(color)) ?? [];
@@ -110,6 +112,11 @@ export function RoomLobbyPanel({
             {isHost ? (
               <button type="button" className="primary-action" disabled={disabled || !canStart} onClick={() => onCommand(createCommand('room.start', player.playerId))}>
                 发车
+              </button>
+            ) : null}
+            {current ? (
+              <button type="button" className="secondary-action" disabled={disabled} onClick={onLeave}>
+                退出房间
               </button>
             ) : null}
             {room.status === 'racing' ? (

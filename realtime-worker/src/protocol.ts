@@ -120,7 +120,7 @@ export interface RoomState {
   finishedAt: string | null;
   closedAt: string | null;
   expiresAt: string;
-  closedReason: 'not_started_timeout' | 'finished_timeout' | 'host_left' | null;
+  closedReason: 'not_started_timeout' | 'finished_timeout' | 'host_left' | 'room_empty' | null;
   matchId: string | null;
   seq: number;
   players: RoomPlayer[];

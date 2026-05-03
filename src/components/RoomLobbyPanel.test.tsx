@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { RoomLobbyPanel } from './RoomLobbyPanel';
 import type { RoomState } from '@/realtime/protocol';
 import type { PlayerSession } from '@/session/playerSession';
@@ -33,6 +33,10 @@ function createRoomPlayer(index: number, overrides: Partial<RoomState['players']
 }
 
 describe('RoomLobbyPanel', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it('keeps a visible four-seat bay even before the lobby fills up', () => {
     const player: PlayerSession = {
       playerId: 'player-1',
@@ -57,7 +61,7 @@ describe('RoomLobbyPanel', () => {
     };
 
     const { container } = render(
-      <RoomLobbyPanel room={room} player={player} roomCode="8966" connectionState="connected" onCommand={vi.fn()} />
+      <RoomLobbyPanel room={room} player={player} roomCode="8966" connectionState="connected" onCommand={vi.fn()} onLeave={vi.fn()} />
     );
 
     expect(container.querySelectorAll('.room-driver-grid .driver-card')).toHaveLength(4);
@@ -88,9 +92,42 @@ describe('RoomLobbyPanel', () => {
     };
 
     const { container } = render(
-      <RoomLobbyPanel room={room} player={player} roomCode="8966" connectionState="connected" onCommand={vi.fn()} />
+      <RoomLobbyPanel room={room} player={player} roomCode="8966" connectionState="connected" onCommand={vi.fn()} onLeave={vi.fn()} />
     );
 
     expect(container.querySelector('.room-driver-grid')).toHaveAttribute('data-roster-density', 'compact');
+  });
+
+  it('renders an explicit leave-room action for the current racer', () => {
+    const onLeave = vi.fn();
+    const player: PlayerSession = {
+      playerId: 'player-1',
+      nickname: '车手1',
+      lastRoomCode: '8966'
+    };
+
+    const room: RoomState = {
+      id: 'room-1',
+      code: '8966',
+      hostPlayerId: 'player-1',
+      status: 'waiting',
+      lapTarget: 3,
+      trackMap: null,
+      createdAt: '2026-05-02T10:00:00.000Z',
+      startedAt: null,
+      finishedAt: null,
+      expiresAt: '2026-05-02T11:00:00.000Z',
+      closedReason: null,
+      matchId: null,
+      players: [createRoomPlayer(1)]
+    };
+
+    render(
+      <RoomLobbyPanel room={room} player={player} roomCode="8966" connectionState="connected" onCommand={vi.fn()} onLeave={onLeave} />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '退出房间' }));
+
+    expect(onLeave).toHaveBeenCalledTimes(1);
   });
 });
