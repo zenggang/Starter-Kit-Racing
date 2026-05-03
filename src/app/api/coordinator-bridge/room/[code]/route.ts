@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerCoordinatorConfig } from '@/config/env';
+import { syncCoordinatorReadModels } from '@/server/readModelWriter';
 import { verifyCoordinatorTicket } from '@/server/coordinatorTicket';
 
 export const runtime = 'nodejs';
@@ -20,6 +21,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ cod
   const { code } = await params;
   const payload = await request.json().catch(() => null);
   const isCreate = payload && typeof payload === 'object' && (payload as { type?: string }).type === 'room.create';
+  const commandType = payload && typeof payload === 'object' ? (payload as { type?: string }).type : undefined;
   const coordinatorPath = isCreate ? '/rooms' : `/rooms/${encodeURIComponent(code.toUpperCase())}/commands`;
   const coordinatorCommand = injectCoordinatorAuth(payload, ticket);
 
@@ -36,11 +38,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ cod
     return NextResponse.json({ ok: false, errorCode: 'COORDINATOR_NOT_READY' }, { status: 503 });
   }
 
-  return new NextResponse(response.body, {
-    status: response.status,
-    headers: {
-      'content-type': response.headers.get('content-type') ?? 'application/json'
-    }
+  const body = await response.json().catch(() => null);
+  if (!body) {
+    return NextResponse.json({ ok: false, errorCode: 'COORDINATOR_NOT_READY' }, { status: 503 });
+  }
+
+  await syncCoordinatorReadModels({ type: commandType }, body).catch(() => {
+    // Hall restoration is a durability convenience; bridge command success
+    // should still reach the browser even if the read-model write fails.
+  });
+
+  return NextResponse.json(body, {
+    status: response.status
   });
 }
 

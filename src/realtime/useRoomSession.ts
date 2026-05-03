@@ -240,8 +240,12 @@ export function useRoomSession(roomCode: string, player: PlayerSession | null) {
         };
       }
 
-      if (activeTransportMode === 'socket' && socketRef.current?.readyState === WebSocket.OPEN) {
-        socketRef.current.send(JSON.stringify(command));
+      const activeSocket = socketRef.current;
+      const socketReady = activeTransportMode === 'socket' && activeSocket?.readyState === WebSocket.OPEN;
+      const shouldUseSocket = socketReady && command.type === 'sync.request';
+
+      if (shouldUseSocket) {
+        activeSocket.send(JSON.stringify(command));
         return {
           type: 'command.result' as const,
           seq: lastSeqRef.current,

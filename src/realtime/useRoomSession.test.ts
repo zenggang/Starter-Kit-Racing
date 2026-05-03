@@ -131,6 +131,8 @@ describe('useRoomSession bridge sync', () => {
     const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
     const socket = {
       close: vi.fn(),
+      send: vi.fn(),
+      readyState: WebSocket.CONNECTING,
       addEventListener: vi.fn((type: string, listener: (...args: unknown[]) => void) => {
         listeners.set(type, [...(listeners.get(type) ?? []), listener]);
       })
@@ -151,6 +153,7 @@ describe('useRoomSession bridge sync', () => {
     });
 
     await act(async () => {
+      (socket as WebSocket & { readyState: number }).readyState = WebSocket.OPEN;
       listeners.get('open')?.forEach((listener) => listener(new Event('open')));
       await Promise.resolve();
     });
@@ -163,6 +166,63 @@ describe('useRoomSession bridge sync', () => {
 
     expect(result.current.connectionState).toBe('connected');
     expect(sendBridgeCommand).not.toHaveBeenCalled();
+  });
+
+  it('routes room lifecycle commands through bridge even when a socket is already open', async () => {
+    const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
+    const socket = {
+      close: vi.fn(),
+      send: vi.fn(),
+      readyState: WebSocket.CONNECTING,
+      addEventListener: vi.fn((type: string, listener: (...args: unknown[]) => void) => {
+        listeners.set(type, [...(listeners.get(type) ?? []), listener]);
+      })
+    } as unknown as WebSocket & { readyState: number; send: ReturnType<typeof vi.fn> };
+
+    vi.mocked(requestCoordinatorTicket).mockResolvedValue({
+      token: 'signed-ticket',
+      url: 'https://starter-kit-racing.example.com',
+      mode: 'socket'
+    });
+    vi.mocked(openCoordinatorSocket).mockReturnValue(socket);
+    vi.mocked(sendBridgeCommand).mockResolvedValue({
+      type: 'command.result',
+      seq: 1,
+      ok: true,
+      room: readyRoom
+    });
+
+    const { result } = renderHook(() => useRoomSession('ABCD12', player));
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      socket.readyState = WebSocket.OPEN;
+      listeners.get('open')?.forEach((listener) => listener(new Event('open')));
+      await Promise.resolve();
+    });
+
+    vi.mocked(sendBridgeCommand).mockClear();
+    socket.send.mockClear();
+
+    await act(async () => {
+      await result.current.sendCommand({
+        commandId: 'room.ready:player-1',
+        type: 'room.ready',
+        playerId: 'player-1',
+        payload: { ready: true }
+      });
+    });
+
+    expect(sendBridgeCommand).toHaveBeenCalledWith(
+      'ABCD12',
+      expect.objectContaining({ mode: 'socket' }),
+      expect.objectContaining({ type: 'room.ready' })
+    );
+    expect(socket.send).not.toHaveBeenCalled();
   });
 
   it('falls back to bridge sync after the socket transport closes', async () => {

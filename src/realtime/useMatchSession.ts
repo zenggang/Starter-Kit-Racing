@@ -129,8 +129,12 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
         };
       }
 
-      if (activeTransportMode === 'socket' && socketRef.current?.readyState === WebSocket.OPEN) {
-        socketRef.current.send(JSON.stringify(command));
+      const activeSocket = socketRef.current;
+      const socketReady = activeTransportMode === 'socket' && activeSocket?.readyState === WebSocket.OPEN;
+      const shouldUseSocket = socketReady && command.type === 'match.progress';
+
+      if (shouldUseSocket) {
+        activeSocket.send(JSON.stringify(command));
         return {
           type: 'command.result' as const,
           seq: lastSeqRef.current,
@@ -139,19 +143,9 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
         };
       }
 
-      if (activeTransportMode === 'bridge' || activeTicket.mode === 'bridge') {
-        const result = await sendBridgeCommand(roomCode, activeTicket, command);
-        dispatch(result);
-        return result;
-      }
-
-      socketRef.current?.send(JSON.stringify(command));
-      return {
-        type: 'command.result' as const,
-        seq: lastSeqRef.current,
-        ok: true,
-        commandId: command.commandId
-      };
+      const result = await sendBridgeCommand(roomCode, activeTicket, command);
+      dispatch(result);
+      return result;
     },
     [roomCode]
   );
