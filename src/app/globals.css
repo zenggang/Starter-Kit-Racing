@@ -286,11 +286,18 @@ a {
   width: 100%;
   max-width: 1080px;
   min-width: 0;
+  min-height: calc(var(--viewport-visible-height) - max(32px, var(--safe-top)) - max(32px, var(--safe-bottom)));
   margin: 0 auto;
 }
 
 .track-editor-console-shell {
   overflow: clip;
+}
+
+/* Keep the editor shell pinned to the top so compact layouts spend height on
+   the map stage instead of inheriting the default centered console posture. */
+.track-editor-screen {
+  align-content: start;
 }
 
 .track-editor-grid {
@@ -306,21 +313,21 @@ a {
 
 .track-editor-main-shell {
   display: grid;
-  grid-template-columns: 86px minmax(0, 1fr) 168px;
+  grid-template-columns: 78px minmax(0, 1fr) 156px;
   gap: 12px;
-  align-items: stretch;
+  align-items: start;
   min-height: 0;
 }
 
 .track-editor-mobile-rail {
   display: grid;
-  align-content: center;
+  align-content: start;
   gap: 10px;
   min-width: 0;
 }
 
 .track-editor-tool-rail {
-  align-content: center;
+  align-content: start;
 }
 
 .track-editor-tool-group {
@@ -371,6 +378,7 @@ a {
   position: relative;
   min-height: clamp(360px, 56vh, 680px);
   overflow: hidden;
+  overscroll-behavior: contain;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
   background:
@@ -385,6 +393,10 @@ a {
   height: 100%;
   min-height: inherit;
   display: block;
+  touch-action: none;
+  overscroll-behavior: contain;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .track-editor-loading {
@@ -1496,8 +1508,8 @@ a {
   }
 
   .track-editor-main-shell {
-    grid-template-columns: 74px minmax(0, 1fr) 122px;
-    gap: 10px;
+    grid-template-columns: 66px minmax(0, 1fr) 108px;
+    gap: 8px;
     min-height: 0;
   }
 
@@ -1522,8 +1534,8 @@ a {
   }
 
   .track-editor-stage-shell {
-    min-height: clamp(240px, 52vh, 360px);
-    aspect-ratio: 1.18;
+    min-height: clamp(244px, 54vh, 360px);
+    aspect-ratio: 1.22;
   }
 
   .track-editor-status-rail {
@@ -1819,30 +1831,34 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .race-leaderboard
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-grid {
   grid-template-columns: minmax(0, 1fr);
-  gap: 6px;
+  gap: 4px;
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-main-shell {
-  grid-template-columns: 62px minmax(0, 1fr) 104px;
-  gap: 6px;
-  padding: 8px;
+  grid-template-columns: 54px minmax(0, 1fr) 92px;
+  gap: 4px;
+  padding: 6px;
+  align-items: start;
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-tool-button,
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-save-button,
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-panel-button {
-  min-height: 30px;
+  min-height: 28px;
   padding: 0 6px;
   font-size: 10px;
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-console-shell {
-  gap: 6px;
-  padding: 8px;
+  gap: 4px;
+  padding: 6px;
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-console-shell .console-topline {
-  gap: 6px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 4px 8px;
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-console-shell .console-title-group {
@@ -1858,15 +1874,13 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-con
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-intro {
-  font-size: 9px;
-  line-height: 1.2;
-  max-width: 48ch;
+  display: none;
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-back-link {
-  min-width: 92px;
-  min-height: 30px;
-  padding: 0 10px;
+  min-width: 84px;
+  min-height: 28px;
+  padding: 0 8px;
   font-size: 11px;
 }
 
@@ -1879,8 +1893,8 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-too
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-status-rail {
-  grid-template-rows: 30px 30px auto 36px 1fr;
-  gap: 4px;
+  grid-template-rows: auto auto auto 34px 1fr;
+  gap: 3px;
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-name-field {
@@ -1916,8 +1930,8 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-sav
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-stage-shell {
-  min-height: clamp(180px, 42vh, 250px);
-  aspect-ratio: 1.08;
+  min-height: clamp(188px, 48vh, 260px);
+  aspect-ratio: 1.14;
   border-radius: 12px;
 }
 

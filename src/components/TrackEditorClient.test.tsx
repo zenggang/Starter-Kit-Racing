@@ -135,6 +135,11 @@ describe('TrackEditorClient', () => {
       'track-editor-intro'
     );
     expect(screen.getByRole('link', { name: '返回大厅' })).toHaveClass('secondary-action', 'track-editor-back-link');
+    expect(screen.getByRole('link', { name: '返回大厅' }).closest('section')).toHaveClass(
+      'race-layout',
+      'console-screen',
+      'track-editor-screen'
+    );
     expect(screen.getByRole('group', { name: '赛道编辑工具' }).closest('section')).toHaveClass(
       'track-editor-main-shell'
     );

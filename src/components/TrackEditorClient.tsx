@@ -194,7 +194,7 @@ export function TrackEditorClient() {
   }
 
   return (
-    <section className="race-layout console-screen">
+    <section className="race-layout console-screen track-editor-screen">
       <div className="race-panel track-editor-console track-editor-console-shell stack">
         <div className="console-topline">
           <div className="console-title-group">

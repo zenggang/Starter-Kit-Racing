@@ -100,6 +100,7 @@ export async function mountTrackEditorRuntime( container, options = {} ) {
 	renderer.toneMapping = THREE.ACESFilmicToneMapping;
 	renderer.toneMappingExposure = 1.0;
 	renderer.domElement.className = 'track-editor-canvas';
+	renderer.domElement.style.touchAction = 'none';
 	container.appendChild( renderer.domElement );
 
 	const scene = new THREE.Scene();
@@ -694,8 +695,21 @@ export async function mountTrackEditorRuntime( container, options = {} ) {
 
 	}
 
+	// In-app browsers can try to hand the same gesture to the page scroll
+	// container unless the editor canvas explicitly claims the touch sequence.
+	function consumeTouchPointer( event ) {
+
+		if ( event.pointerType === 'touch' && event.cancelable ) {
+
+			event.preventDefault();
+
+		}
+
+	}
+
 	function onPointerDown( event ) {
 
+		consumeTouchPointer( event );
 		renderer.domElement.setPointerCapture( event.pointerId );
 		pointers.set( event.pointerId, { x: event.clientX, y: event.clientY } );
 
@@ -749,6 +763,7 @@ export async function mountTrackEditorRuntime( container, options = {} ) {
 
 	function onPointerMove( event ) {
 
+		consumeTouchPointer( event );
 		pointers.set( event.pointerId, { x: event.clientX, y: event.clientY } );
 
 		if ( pointers.size === 2 && isPanning ) {
@@ -812,6 +827,7 @@ export async function mountTrackEditorRuntime( container, options = {} ) {
 
 	function onPointerUp( event ) {
 
+		consumeTouchPointer( event );
 		pointers.delete( event.pointerId );
 
 		if ( pointers.size === 0 ) {
@@ -834,7 +850,18 @@ export async function mountTrackEditorRuntime( container, options = {} ) {
 
 	function onPointerCancel( event ) {
 
+		consumeTouchPointer( event );
 		pointers.delete( event.pointerId );
+
+		if ( pointers.size === 0 ) {
+
+			isPanning = false;
+			isDrawing = false;
+			isErasing = false;
+			lastDrawCell = null;
+			renderer.domElement.style.cursor = spaceDown ? 'grab' : '';
+
+		}
 
 	}
 
