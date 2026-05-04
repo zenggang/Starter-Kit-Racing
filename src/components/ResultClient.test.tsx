@@ -182,6 +182,16 @@ describe('ResultClient', () => {
     expect(container.querySelector('.result-console')).toHaveAttribute('data-result-count', '4');
   });
 
+  it('keeps the result actions inside the summary rail on the right side', () => {
+    const { container } = render(<ResultClient code="8966" />);
+
+    const controls = container.querySelector('.result-console-controls');
+    expect(controls).not.toBeNull();
+    expect(controls?.querySelector('.status-pill')).not.toBeNull();
+    expect(controls?.querySelector('.result-console-actions')).not.toBeNull();
+    expect(container.querySelector('.result-console > .result-console-actions')).toBeNull();
+  });
+
   it('sends room.leave before returning a guest to the hall from the result page', async () => {
     mockedRoom = {
       ...mockedRoom,

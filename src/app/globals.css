@@ -260,6 +260,24 @@ a {
   margin: 0 auto;
 }
 
+.result-console-topline {
+  align-items: flex-start;
+}
+
+.result-console-controls {
+  display: grid;
+  justify-items: end;
+  align-content: start;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-width: fit-content;
+}
+
+.result-console-actions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
 .result-driver-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -1207,6 +1225,17 @@ a {
     align-items: stretch;
     flex-direction: column;
   }
+
+  .result-console-controls {
+    width: 100%;
+    justify-items: stretch;
+    gap: 10px;
+  }
+
+  .result-console-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
 }
 
 @media (orientation: landscape) and (max-height: 540px) {
@@ -1686,6 +1715,11 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .
   gap: 8px;
 }
 
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .result-console-controls {
+  gap: 6px;
+  justify-items: end;
+}
+
 html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .console-title-group {
   gap: 1px;
 }
@@ -1707,9 +1741,16 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .
   gap: 6px;
 }
 
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .result-console-actions {
+  flex-direction: column;
+  align-items: stretch;
+}
+
 html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .race-actions .primary-action,
 html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .race-actions .secondary-action {
   min-height: 32px;
+  width: 100%;
+  min-width: 92px;
   font-size: 14px;
 }
 

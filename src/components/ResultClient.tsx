@@ -87,7 +87,7 @@ export function ResultClient({ code }: { code: string }) {
       {lastErrorCode ? <p className="error-banner">{formatRacingError(lastErrorCode)}</p> : null}
 
       <div className="race-panel result-console stack" data-result-count={String(sortedPlayers.length)}>
-        <div className="console-topline">
+        <div className="console-topline result-console-topline">
           <div className="console-title-group">
             <span className="panel-kicker">终点线</span>
             <strong className="console-screen-title">
@@ -97,7 +97,25 @@ export function ResultClient({ code }: { code: string }) {
             <p className="muted">赛道：{match?.trackName ?? room?.trackName ?? '默认赛道'}</p>
             {winnerTimeMs !== null ? <p className="muted">冠军用时：{formatRaceDuration(winnerTimeMs)}</p> : null}
           </div>
-          {match?.winnerPlayerId ? <span className="status-pill">已完赛</span> : null}
+          <div className="result-console-controls">
+            {match?.winnerPlayerId ? <span className="status-pill">已完赛</span> : null}
+            {/**
+             * Keep post-race actions inside the summary rail so desktop layouts
+             * use the available header whitespace instead of pushing controls
+             * below the ranking board, while mobile rules can still collapse
+             * the buttons underneath when the viewport gets tight.
+             */}
+            <div className="race-actions compact-actions result-console-actions">
+              <button type="button" className="secondary-action" disabled={busy} onClick={returnToHall}>
+                返回大厅
+              </button>
+              {session && room?.hostPlayerId === session.playerId ? (
+                <button type="button" className="primary-action" disabled={busy || connectionState !== 'connected'} onClick={rematch}>
+                  重新发车
+                </button>
+              ) : null}
+            </div>
+          </div>
         </div>
 
         <div className="console-section-head">
@@ -119,17 +137,6 @@ export function ResultClient({ code }: { code: string }) {
             </div>
           ))}
         </section>
-
-        <div className="race-actions compact-actions">
-          <button type="button" className="secondary-action" disabled={busy} onClick={returnToHall}>
-            返回大厅
-          </button>
-          {session && room?.hostPlayerId === session.playerId ? (
-            <button type="button" className="primary-action" disabled={busy || connectionState !== 'connected'} onClick={rematch}>
-              重新发车
-            </button>
-          ) : null}
-        </div>
       </div>
     </section>
   );
