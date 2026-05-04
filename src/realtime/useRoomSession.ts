@@ -266,6 +266,11 @@ export function useRoomSession(roomCode: string, player: PlayerSession | null) {
     void sendCommand(createCommand('sync.request', player.playerId, {}));
   }, [connectionState, player, sendCommand, transportMode]);
 
+  useEffect(() => {
+    if (!state.needsSync || !player || !ticket) return;
+    void sendCommand(createCommand('sync.request', player.playerId, {}));
+  }, [player, sendCommand, state.needsSync, ticket]);
+
   return {
     snapshot: state.snapshot,
     connectionState,
