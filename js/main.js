@@ -12,6 +12,7 @@ import { SmokeTrails } from './Particles.js';
 import { DriftMarks } from './DriftMarks.js';
 import { GameAudio } from './Audio.js';
 import { RemoteVehicles } from './RemoteVehicles.js';
+import { resolveRuntimeGraphicsProfile } from './runtimeProfile.js';
 
 const modelNames = [
 	'vehicle-truck-yellow', 'vehicle-truck-green', 'vehicle-truck-purple', 'vehicle-truck-red',
@@ -48,6 +49,32 @@ function createEmptyRuntimeSnapshot() {
 }
 
 /**
+ * WebGL renderer setup and resize handlers both need a real drawable size.
+ * Some mobile browsers report transient zeros while their chrome animates, so
+ * this helper clamps every dimension to at least one pixel.
+ */
+function measureRuntimeViewport( container ) {
+
+	return {
+		width: Math.max( 1, Math.round( container.clientWidth || window.innerWidth || 1 ) ),
+		height: Math.max( 1, Math.round( container.clientHeight || window.innerHeight || 1 ) ),
+	};
+
+}
+
+/**
+ * High-DPI mobile browsers can easily over-allocate framebuffers during route
+ * transitions. Capping the runtime pixel ratio preserves gameplay while keeping
+ * render-target churn below the threshold that tends to crash Safari WebView.
+ */
+function resolveRuntimePixelRatio( maxPixelRatio ) {
+
+	const devicePixelRatio = window.devicePixelRatio || 1;
+	return Math.min( Math.max( devicePixelRatio, 1 ), maxPixelRatio );
+
+}
+
+/**
  * Mounts the legacy Three.js racing runtime into a caller-owned container. The
  * coordinator-backed React shell controls when this runtime exists and only
  * samples plain snapshots from it. The runtime keeps owning local vehicle
@@ -58,29 +85,51 @@ export async function mountRacingRuntime( container, options = {} ) {
 
 	const assetBaseUrl = options.assetBaseUrl || '';
 	const mapParam = readTrackMapOption( options );
+	const graphicsProfile = resolveRuntimeGraphicsProfile( {
+		userAgent: navigator.userAgent,
+		hasCustomTrack: typeof mapParam === 'string' && mapParam.length > 0,
+	} );
 	const vehicleColor = typeof options.vehicleColor === 'string' && options.vehicleColor.length > 0 ? options.vehicleColor : 'yellow';
-	const width = container.clientWidth || window.innerWidth;
-	const height = container.clientHeight || window.innerHeight;
+	const { width, height } = measureRuntimeViewport( container );
 	let animationFrame = 0;
 	let destroyed = false;
+	let resizeFrame = 0;
 
 	registerAll();
 
-	const renderer = new THREE.WebGLRenderer( { antialias: true, outputBufferType: THREE.HalfFloatType } );
+	const rendererOptions = { antialias: true };
+
+	if ( graphicsProfile.enablePostProcessing ) {
+
+		rendererOptions.outputBufferType = THREE.HalfFloatType;
+
+	}
+
+	const renderer = new THREE.WebGLRenderer( rendererOptions );
 	renderer.setSize( width, height, false );
-	renderer.setPixelRatio( window.devicePixelRatio );
+	renderer.setPixelRatio( resolveRuntimePixelRatio( graphicsProfile.maxPixelRatio ) );
 	renderer.shadowMap.enabled = true;
 	renderer.toneMapping = THREE.ACESFilmicToneMapping;
 	renderer.toneMappingExposure = 1.0;
 
-	const bloomPass = new UnrealBloomPass( new THREE.Vector2( width, height ) );
-	bloomPass.strength = 0.02;
-	bloomPass.radius = 0.02;
-	bloomPass.threshold = 0.5;
+	let bloomPass = null;
 
-	if ( typeof renderer.setEffects === 'function' ) {
+	if ( graphicsProfile.enablePostProcessing && typeof renderer.setEffects === 'function' ) {
 
-		renderer.setEffects( [ bloomPass ] );
+		try {
+
+			bloomPass = new UnrealBloomPass( new THREE.Vector2( width, height ) );
+			bloomPass.strength = 0.02;
+			bloomPass.radius = 0.02;
+			bloomPass.threshold = 0.5;
+			renderer.setEffects( [ bloomPass ] );
+
+		} catch ( error ) {
+
+			console.warn( 'Post-processing is unavailable on this device, continuing without bloom.', error );
+			bloomPass = null;
+
+		}
 
 	}
 
@@ -105,8 +154,9 @@ export async function mountRacingRuntime( container, options = {} ) {
 
 	const models = await loadModels( assetBaseUrl );
 
-	if ( destroyed ) {
+	if ( destroyed || options.abortSignal?.aborted ) {
 
+		renderer.domElement.remove();
 		renderer.dispose();
 		return {
 			destroy() {},
@@ -155,16 +205,28 @@ export async function mountRacingRuntime( container, options = {} ) {
 
 	buildTrack( scene, models, customCells );
 
-	const probeHeight = 6;
-	const probes = new LightProbeGrid(
-		hw * 2, probeHeight, hd * 2,
-		Math.max( 4, Math.round( hw / 4 ) ),
-		2,
-		Math.max( 4, Math.round( hd / 4 ) ),
-	);
-	probes.position.set( bounds.centerX, probeHeight / 2, bounds.centerZ );
-	probes.bake( renderer, scene, { cubemapSize: 32, near: 0.1, far: groundSize } );
-	scene.add( probes );
+	if ( graphicsProfile.enableLightProbeBake ) {
+
+		try {
+
+			const probeHeight = 6;
+			const probes = new LightProbeGrid(
+				hw * 2, probeHeight, hd * 2,
+				Math.max( 4, Math.round( hw / 4 ) ),
+				2,
+				Math.max( 4, Math.round( hd / 4 ) ),
+			);
+			probes.position.set( bounds.centerX, probeHeight / 2, bounds.centerZ );
+			probes.bake( renderer, scene, { cubemapSize: 32, near: 0.1, far: groundSize } );
+			scene.add( probes );
+
+		} catch ( error ) {
+
+			console.warn( 'Light probe baking failed, continuing with direct lights only.', error );
+
+		}
+
+	}
 
 	const worldSettings = createWorldSettings();
 	worldSettings.gravity = [ 0, - 9.81, 0 ];
@@ -248,19 +310,32 @@ export async function mountRacingRuntime( container, options = {} ) {
 		}
 	};
 
+	const applyResize = () => {
+
+		resizeFrame = 0;
+		if ( destroyed ) return;
+
+		const nextViewport = measureRuntimeViewport( container );
+		renderer.setPixelRatio( resolveRuntimePixelRatio( graphicsProfile.maxPixelRatio ) );
+		renderer.setSize( nextViewport.width, nextViewport.height, false );
+		bloomPass?.setSize( nextViewport.width, nextViewport.height );
+		cam.resize( nextViewport.width, nextViewport.height );
+
+	};
+
 	const onResize = () => {
 
-		const nextWidth = container.clientWidth || window.innerWidth;
-		const nextHeight = container.clientHeight || window.innerHeight;
-		renderer.setPixelRatio( window.devicePixelRatio );
-		renderer.setSize( nextWidth, nextHeight, false );
-		bloomPass.setSize( nextWidth, nextHeight );
-		cam.resize( nextWidth, nextHeight );
+		if ( destroyed || resizeFrame !== 0 ) return;
+		resizeFrame = requestAnimationFrame( applyResize );
 
 	};
 
 	window.addEventListener( 'resize', onResize );
-	window.visualViewport?.addEventListener( 'resize', onResize );
+	if ( graphicsProfile.observeVisualViewport ) {
+
+		window.visualViewport?.addEventListener( 'resize', onResize );
+
+	}
 	window.addEventListener( 'orientationchange', onResize );
 	const resizeObserver = new ResizeObserver( () => onResize() );
 	resizeObserver.observe( container );
@@ -323,8 +398,13 @@ export async function mountRacingRuntime( container, options = {} ) {
 
 			destroyed = true;
 			cancelAnimationFrame( animationFrame );
+			cancelAnimationFrame( resizeFrame );
 			window.removeEventListener( 'resize', onResize );
-			window.visualViewport?.removeEventListener( 'resize', onResize );
+			if ( graphicsProfile.observeVisualViewport ) {
+
+				window.visualViewport?.removeEventListener( 'resize', onResize );
+
+			}
 			window.removeEventListener( 'orientationchange', onResize );
 			resizeObserver.disconnect();
 			controls.dispose();

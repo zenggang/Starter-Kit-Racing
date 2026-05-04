@@ -32,6 +32,7 @@ declare module '../../js/main.js' {
     trackMap?: string | null;
     useQueryMap?: boolean;
     vehicleColor?: 'yellow' | 'green' | 'purple' | 'red';
+    abortSignal?: AbortSignal;
   }
 
   export interface RacingRuntimeHandle {

@@ -43,6 +43,7 @@ interface RuntimeMountOptions {
   roomCode?: string;
   trackMap?: string | null;
   vehicleColor?: 'yellow' | 'green' | 'purple' | 'red';
+  abortSignal?: AbortSignal;
 }
 
 /**
@@ -72,6 +73,9 @@ export function RacingRuntimeHost({
   useEffect(() => {
     let runtime: RuntimeHandle | null = null;
     let cancelled = false;
+    const abortController = new AbortController();
+
+    setError(null);
 
     async function mount() {
       if (!containerRef.current) return;
@@ -82,7 +86,8 @@ export function RacingRuntimeHost({
           assetBaseUrl: '/racing/',
           roomCode,
           trackMap,
-          vehicleColor
+          vehicleColor,
+          abortSignal: abortController.signal
         });
 
         if (cancelled) {
@@ -95,7 +100,9 @@ export function RacingRuntimeHost({
         runtime.updateRemoteVehicles(remoteVehiclesRef.current);
         onRuntimeReady?.(runtime);
       } catch (nextError) {
-        setError(nextError instanceof Error ? nextError.message : 'RUNTIME_MOUNT_FAILED');
+        if (!cancelled) {
+          setError(nextError instanceof Error ? nextError.message : 'RUNTIME_MOUNT_FAILED');
+        }
       }
     }
 
@@ -103,6 +110,7 @@ export function RacingRuntimeHost({
 
     return () => {
       cancelled = true;
+      abortController.abort();
       onRuntimeReady?.(null);
       runtimeRef.current = null;
       runtime?.destroy();
