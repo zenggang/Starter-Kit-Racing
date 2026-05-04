@@ -307,6 +307,104 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     expect(left.room?.players).toEqual([]);
   });
 
+  it('keeps a finished room open when a guest returns to the hall', async () => {
+    const runtime = createMutableCoordinator();
+    const coordinator = runtime.coordinator;
+
+    await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
+    await coordinator.execute(command('room.join', 'player-2', { nickname: 'Guest' }));
+    await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
+    await coordinator.execute(command('room.chooseColor', 'player-2', { color: 'green' }));
+    await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
+    await coordinator.execute(command('room.ready', 'player-2', { ready: true }));
+    await coordinator.execute(command('room.start', 'host-1', {}));
+    runtime.advance(COUNTDOWN_MS);
+    await coordinator.execute(command('match.sync', 'host-1', {}, 'match.sync:host-1', runtime.now()));
+    await coordinator.execute(
+      command('match.progress', 'host-1', {
+        checkpoint: 0,
+        completedLaps: 3,
+        lapProgress: 1,
+        position: { x: 8, y: 0.5, z: 4 },
+        heading: 0.1,
+        speed: 1.2,
+        finished: true
+      }, 'match.progress:host-finish', runtime.now())
+    );
+    await coordinator.execute(
+      command('match.progress', 'player-2', {
+        checkpoint: 0,
+        completedLaps: 3,
+        lapProgress: 1,
+        position: { x: 4, y: 0.5, z: 5 },
+        heading: 0.3,
+        speed: 1.0,
+        finished: true
+      }, 'match.progress:guest-finish', runtime.now())
+    );
+
+    const left = await coordinator.execute(command('room.leave', 'player-2', {}));
+
+    expect(left.ok).toBe(true);
+    expect(left.room).toMatchObject({
+      status: 'finished',
+      hostPlayerId: 'host-1',
+      closedReason: null
+    });
+    expect(left.room?.players.map((player) => player.playerId)).toEqual(['host-1']);
+  });
+
+  it('closes a finished room for everyone when the host returns to the hall', async () => {
+    const runtime = createMutableCoordinator();
+    const coordinator = runtime.coordinator;
+
+    await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
+    await coordinator.execute(command('room.join', 'player-2', { nickname: 'Guest' }));
+    await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
+    await coordinator.execute(command('room.chooseColor', 'player-2', { color: 'green' }));
+    await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
+    await coordinator.execute(command('room.ready', 'player-2', { ready: true }));
+    await coordinator.execute(command('room.start', 'host-1', {}));
+    runtime.advance(COUNTDOWN_MS);
+    await coordinator.execute(command('match.sync', 'host-1', {}, 'match.sync:host-1', runtime.now()));
+    await coordinator.execute(
+      command('match.progress', 'host-1', {
+        checkpoint: 0,
+        completedLaps: 3,
+        lapProgress: 1,
+        position: { x: 8, y: 0.5, z: 4 },
+        heading: 0.1,
+        speed: 1.2,
+        finished: true
+      }, 'match.progress:host-finish', runtime.now())
+    );
+    await coordinator.execute(
+      command('match.progress', 'player-2', {
+        checkpoint: 0,
+        completedLaps: 3,
+        lapProgress: 1,
+        position: { x: 4, y: 0.5, z: 5 },
+        heading: 0.3,
+        speed: 1.0,
+        finished: true
+      }, 'match.progress:guest-finish', runtime.now())
+    );
+
+    const left = await coordinator.execute(command('room.leave', 'host-1', {}));
+
+    expect(left.ok).toBe(true);
+    expect(left.room).toMatchObject({
+      status: 'closed',
+      closedReason: 'host_left'
+    });
+    expect(left.room?.players).toEqual([
+      expect.objectContaining({
+        playerId: 'player-2',
+        isHost: false
+      })
+    ]);
+  });
+
   it('tracks match progress, finalizes results, and allows the host to rematch', async () => {
     const runtime = createMutableCoordinator();
     const coordinator = runtime.coordinator;

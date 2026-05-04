@@ -273,6 +273,7 @@ describe('RaceClient remote vehicle projection', () => {
     expect(screen.getByText('12')).toBeInTheDocument();
     expect(screen.getByText('比赛计时：00:00.000')).toBeInTheDocument();
     expect(racingRuntimeHostProps?.inputLocked).toBe(true);
+    expect(screen.getByText('12')).not.toHaveAttribute('data-ghost');
 
     await vi.advanceTimersByTimeAsync(250);
     expect(sendCommandSpy).not.toHaveBeenCalled();

@@ -36,6 +36,14 @@ export function ResultClient({ code }: { code: string }) {
     if (room?.status === 'waiting') {
       router.replace(`/room/${room.code}`);
     }
+
+    /**
+     * The result screen stays subscribed to room lifecycle updates so a host
+     * teardown can evict every remaining racer back to the hall immediately.
+     */
+    if (room?.status === 'closed') {
+      router.replace('/hall');
+    }
   }, [room, router]);
 
   async function rematch() {
@@ -46,6 +54,28 @@ export function ResultClient({ code }: { code: string }) {
       const result = await sendCommand(createMatchCommand('room.rematch', session.playerId, {}));
       if (result.ok && result.room) {
         router.push(`/room/${result.room.code}`);
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function returnToHall() {
+    if (!session) {
+      router.replace('/hall');
+      return;
+    }
+
+    setBusy(true);
+
+    try {
+      /**
+       * Finished-room exits must still go through the coordinator so guests are
+       * removed from the roster and host exits can close the room for everyone.
+       */
+      const result = await sendCommand(createMatchCommand('room.leave', session.playerId, {}));
+      if (result.ok) {
+        router.replace('/hall');
       }
     } finally {
       setBusy(false);
@@ -91,7 +121,7 @@ export function ResultClient({ code }: { code: string }) {
         </section>
 
         <div className="race-actions compact-actions">
-          <button type="button" className="secondary-action" onClick={() => router.push('/hall')}>
+          <button type="button" className="secondary-action" disabled={busy} onClick={returnToHall}>
             返回大厅
           </button>
           {session && room?.hostPlayerId === session.playerId ? (

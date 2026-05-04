@@ -224,7 +224,7 @@ export function RaceClient({ code }: { code: string }) {
         >
           <div className="race-countdown-card">
             <span className="panel-kicker">比赛即将开始</span>
-            <strong className="race-countdown-number" data-ghost={countdownDisplay.label}>
+            <strong className="race-countdown-number">
               {countdownDisplay.label}
             </strong>
             <span className="race-countdown-caption">{countdownDisplay.caption}</span>
