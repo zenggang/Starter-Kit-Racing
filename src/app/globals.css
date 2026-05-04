@@ -1673,6 +1673,69 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .result-driver-gr
   gap: 6px;
 }
 
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console {
+  gap: 8px;
+  min-height: calc(var(--viewport-visible-height) - max(16px, var(--safe-top)) - max(16px, var(--safe-bottom)));
+  justify-content: flex-start;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .console-topline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .console-title-group {
+  gap: 1px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .console-title-group .muted {
+  font-size: 9px;
+  line-height: 1.1;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .console-title-group .muted:first-of-type {
+  display: none;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .console-section-head {
+  gap: 1px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .race-actions {
+  gap: 6px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .race-actions .primary-action,
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console .race-actions .secondary-action {
+  min-height: 32px;
+  font-size: 14px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console[data-result-count='4'] .result-driver-grid {
+  gap: 5px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console[data-result-count='4'] .result-driver-grid .driver-card {
+  min-height: 60px;
+  padding: 8px;
+  gap: 4px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console[data-result-count='4'] .result-driver-grid .driver-card strong {
+  font-size: 14px;
+  line-height: 1;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console[data-result-count='4'] .result-driver-grid .driver-meta {
+  gap: 2px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .result-console[data-result-count='4'] .result-driver-grid .driver-role {
+  padding: 2px 6px;
+}
+
 html[data-browser-shell='wechat'][data-browser-compact='true'] .race-leaderboard {
   top: max(6px, var(--safe-top));
   right: max(6px, var(--safe-right));

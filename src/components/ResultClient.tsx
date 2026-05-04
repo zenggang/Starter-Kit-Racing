@@ -86,7 +86,7 @@ export function ResultClient({ code }: { code: string }) {
     <section className="race-layout console-screen">
       {lastErrorCode ? <p className="error-banner">{formatRacingError(lastErrorCode)}</p> : null}
 
-      <div className="race-panel result-console stack">
+      <div className="race-panel result-console stack" data-result-count={String(sortedPlayers.length)}>
         <div className="console-topline">
           <div className="console-title-group">
             <span className="panel-kicker">终点线</span>

@@ -2,6 +2,7 @@ import {
   DEFAULT_LAP_TARGET,
   FINISHED_ROOM_TTL_MS,
   MATCH_START_COUNTDOWN_MS,
+  PLAYER_COLORS,
   WAITING_ROOM_TTL_MS,
   commandError,
   isAuthTicketValid,
@@ -181,6 +182,9 @@ export class RoomCoordinator {
       existing.status = existing.ready ? 'ready' : 'joined';
       existing.lastSeenAt = timestamp;
     } else {
+      if (room.players.length >= PLAYER_COLORS.length) {
+        return commandError(command.commandId, room.seq, 'ROOM_FULL');
+      }
       room.players.push(createPlayer(command.playerId, command.payload.nickname, false, timestamp));
     }
 

@@ -177,6 +177,22 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     );
   });
 
+  it('rejects new joins once the four-seat room is full', async () => {
+    const coordinator = createCoordinator();
+
+    await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
+    await coordinator.execute(command('room.join', 'player-2', { nickname: 'Guest 2' }));
+    await coordinator.execute(command('room.join', 'player-3', { nickname: 'Guest 3' }));
+    await coordinator.execute(command('room.join', 'player-4', { nickname: 'Guest 4' }));
+
+    const overflowJoin = await coordinator.execute(command('room.join', 'player-5', { nickname: 'Guest 5' }));
+
+    expect(overflowJoin).toMatchObject({
+      ok: false,
+      errorCode: 'ROOM_FULL'
+    });
+  });
+
   it('returns specific validation errors for lap targets and colors', async () => {
     const coordinator = createCoordinator();
 

@@ -3,6 +3,7 @@ import type { RacingErrorCode } from './protocol';
 const ERROR_MESSAGES: Record<RacingErrorCode, string> = {
   ROOM_NOT_FOUND: '房间不存在或已经过期',
   ROOM_CLOSED: '房间已经关闭',
+  ROOM_FULL: '房间已满，最多 4 名车手',
   ROOM_NOT_WAITING: '比赛已经进入赛道，不能继续调整大厅',
   ROOM_EXPIRED: '房间等待超时，请重新创建',
   COLOR_TAKEN: '这辆车已经被其他车手选走',

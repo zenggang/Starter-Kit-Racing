@@ -179,6 +179,7 @@ describe('ResultClient', () => {
     const { container } = render(<ResultClient code="8966" />);
 
     expect(container.querySelector('.result-driver-grid')).toHaveAttribute('data-roster-density', 'compact');
+    expect(container.querySelector('.result-console')).toHaveAttribute('data-result-count', '4');
   });
 
   it('sends room.leave before returning a guest to the hall from the result page', async () => {

@@ -16,6 +16,7 @@ export type PlayerColor = (typeof PLAYER_COLORS)[number];
 export type RacingErrorCode =
   | 'ROOM_NOT_FOUND'
   | 'ROOM_CLOSED'
+  | 'ROOM_FULL'
   | 'ROOM_NOT_WAITING'
   | 'ROOM_NOT_FINISHED'
   | 'ROOM_EXPIRED'
