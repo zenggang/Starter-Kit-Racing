@@ -102,6 +102,21 @@ export function TrackEditorClient() {
     void refreshTracks(session.playerId);
   }, [session?.playerId]);
 
+  useEffect(() => {
+    if (!isTrackLibraryOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsTrackLibraryOpen(false);
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isTrackLibraryOpen]);
+
   async function refreshTracks(playerId: string) {
     const response = await fetch(`/api/tracks?playerId=${encodeURIComponent(playerId)}`);
     const body = await response.json();
@@ -275,36 +290,51 @@ export function TrackEditorClient() {
               {message ? <p className="muted track-editor-message">{message}</p> : null}
             </div>
           </section>
-
-          <aside
-            id="track-editor-library-panel"
-            className={isTrackLibraryOpen ? 'console-room-list stack track-editor-library is-open' : 'console-room-list stack track-editor-library'}
-            hidden={!isTrackLibraryOpen}
-          >
-            <div className="console-section-head track-editor-library-head">
-              <div className="track-editor-library-title">
-                <span className="panel-kicker">我的赛道</span>
-                <strong className="console-block-title">赛道列表</strong>
-              </div>
-              <button type="button" className="track-editor-tool-button track-editor-library-close" onClick={closeTrackLibrary}>
-                关闭
-              </button>
-            </div>
-            {tracks.length === 0 ? <p className="muted">还没有保存过自定义赛道。</p> : null}
-            {tracks.map((track) => (
-              <div key={track.id} className="room-list-item">
-                <strong>{track.name}</strong>
-                <span>{track.cellCount} 格</span>
-                <button type="button" className="secondary-action" onClick={() => loadTrack(track)}>
-                  编辑
-                </button>
-                <button type="button" className="secondary-action" disabled={busy} onClick={() => deleteTrack(track.id)}>
-                  删除
-                </button>
-              </div>
-            ))}
-          </aside>
         </div>
+
+        {isTrackLibraryOpen ? (
+          <div className="track-editor-library-backdrop" onClick={closeTrackLibrary}>
+            <aside
+              id="track-editor-library-panel"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="track-editor-library-title"
+              className="console-room-list stack track-editor-library is-open"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="console-section-head track-editor-library-head">
+                <div className="track-editor-library-title">
+                  <span className="panel-kicker">我的赛道</span>
+                  <strong id="track-editor-library-title" className="console-block-title">
+                    赛道列表
+                  </strong>
+                </div>
+                <button type="button" className="track-editor-tool-button track-editor-library-close" onClick={closeTrackLibrary}>
+                  关闭
+                </button>
+              </div>
+
+              {tracks.length === 0 ? <p className="muted track-editor-library-empty">还没有保存过自定义赛道。</p> : null}
+
+              {tracks.map((track) => (
+                <div key={track.id} className="track-editor-library-item">
+                  <div className="track-editor-library-item-copy">
+                    <strong>{track.name}</strong>
+                    <span>{track.cellCount} 格</span>
+                  </div>
+                  <div className="track-editor-library-item-actions">
+                    <button type="button" className="secondary-action" onClick={() => loadTrack(track)}>
+                      编辑
+                    </button>
+                    <button type="button" className="secondary-action" disabled={busy} onClick={() => deleteTrack(track.id)}>
+                      删除
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </aside>
+          </div>
+        ) : null}
       </div>
     </section>
   );

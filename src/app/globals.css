@@ -308,6 +308,7 @@ a {
 }
 
 .track-editor-main {
+  grid-column: 1 / -1;
   gap: 12px;
 }
 
@@ -462,7 +463,30 @@ a {
 }
 
 .track-editor-library {
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(620px, calc(var(--viewport-visible-height) - max(32px, var(--safe-top)) - max(32px, var(--safe-bottom))));
   gap: 10px;
+  overflow: auto;
+  border-color: rgba(255, 255, 255, 0.14);
+  background:
+    linear-gradient(180deg, rgba(255, 211, 77, 0.07), transparent 18%),
+    rgba(12, 15, 19, 0.98);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+.track-editor-library-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding:
+    max(16px, var(--safe-top))
+    max(16px, var(--safe-right))
+    max(16px, var(--safe-bottom))
+    max(16px, var(--safe-left));
+  background: rgba(5, 7, 10, 0.68);
+  backdrop-filter: blur(12px);
 }
 
 .track-editor-library-head {
@@ -477,8 +501,41 @@ a {
   gap: 4px;
 }
 
-.track-editor-library[hidden] {
-  display: none;
+.track-editor-library-empty {
+  margin: 0;
+}
+
+.track-editor-library-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.track-editor-library-item-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.track-editor-library-item-copy strong {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+}
+
+.track-editor-library-item-copy span {
+  color: var(--muted);
+}
+
+.track-editor-library-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .track-editor-intro {
@@ -1555,7 +1612,17 @@ a {
   }
 
   .track-editor-library {
+    width: min(520px, calc(100vw - 24px));
     padding: 10px;
+  }
+
+  .track-editor-library-item {
+    gap: 10px;
+    padding-top: 10px;
+  }
+
+  .track-editor-library-item-copy strong {
+    font-size: 16px;
   }
 
   .track-grid-board {
@@ -1936,8 +2003,17 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-sta
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-library {
-  max-height: calc(var(--viewport-visible-height) - max(16px, var(--safe-top)) - max(16px, var(--safe-bottom)) - 24px);
+  width: min(420px, calc(100vw - 18px));
+  max-height: calc(var(--viewport-visible-height) - max(16px, var(--safe-top)) - max(16px, var(--safe-bottom)) - 12px);
   overflow: auto;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-library-backdrop {
+  padding:
+    max(8px, var(--safe-top))
+    max(8px, var(--safe-right))
+    max(8px, var(--safe-bottom))
+    max(8px, var(--safe-left));
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-library-head {
@@ -1946,6 +2022,30 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-lib
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-library-close {
   min-width: 56px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-library-item {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding-top: 8px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-library-item-copy {
+  gap: 2px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-library-item-copy strong {
+  font-size: 16px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-library-item-actions {
+  justify-content: stretch;
+  gap: 6px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .track-editor-library-item-actions .secondary-action {
+  min-width: 0;
+  flex: 1 1 0;
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .track-grid-board {

@@ -93,6 +93,7 @@ describe('TrackEditorClient', () => {
     });
 
     expect(screen.getByRole('button', { name: '我的赛道' })).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '关闭' })).not.toBeInTheDocument();
   });
 
@@ -114,12 +115,12 @@ describe('TrackEditorClient', () => {
     render(<TrackEditorClient />);
 
     const libraryTrigger = await screen.findByRole('button', { name: '我的赛道' });
-    expect(screen.getByRole('complementary', { hidden: true })).toHaveAttribute('hidden');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
     fireEvent.click(libraryTrigger);
 
     expect(screen.getByRole('button', { name: '我的赛道' })).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByRole('complementary')).not.toHaveAttribute('hidden');
+    expect(screen.getByRole('dialog', { name: '赛道列表' })).toBeInTheDocument();
     expect(await screen.findByText('山路')).toBeInTheDocument();
   });
 
