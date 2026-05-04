@@ -1,0 +1,15 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e39]
+  - main [ref=e110]:
+    - generic [ref=e111]:
+      - generic [ref=e112]:
+        - paragraph [ref=e113]: 在线赛车
+        - heading "发车大厅" [level=1] [ref=e114]
+        - paragraph [ref=e115]: 手机优先的在线赛车房间，选车、准备、发车，一屏完成。
+      - generic [ref=e116]:
+        - generic [ref=e117]: 在线模式
+        - heading "进入维修区" [level=2] [ref=e118]
+        - paragraph [ref=e119]: 创建房间或输入房间码，等车手集结后再发车。
+        - link "进入大厅" [ref=e120] [cursor=pointer]:
+          - /url: /hall
+          - button "进入大厅" [ref=e121]

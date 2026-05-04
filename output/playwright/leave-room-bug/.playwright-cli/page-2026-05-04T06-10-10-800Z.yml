@@ -1,0 +1,43 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]: 维修区
+          - strong [ref=e8]: 赛车大厅
+          - paragraph [ref=e9]: 所有操作集中在主控台内完成。
+        - generic [ref=e10]:
+          - generic [ref=e11]: 车手昵称
+          - textbox "车手昵称" [ref=e12]:
+            - /placeholder: 输入昵称
+            - text: Racer8D2E
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - generic [ref=e15]:
+            - generic [ref=e16]: 新比赛
+            - strong [ref=e17]: 创建房间
+          - paragraph [ref=e18]: 选择赛道后立即生成 4 位数字房间码。
+          - generic [ref=e19]:
+            - generic [ref=e20]: 比赛赛道
+            - combobox "比赛赛道" [ref=e21]:
+              - option "默认赛道" [selected]
+          - generic [ref=e22]:
+            - paragraph [ref=e23]: 使用内置默认赛道
+            - link "创建/管理赛道" [ref=e24] [cursor=pointer]:
+              - /url: /track-editor
+          - button "创建房间" [ref=e25] [cursor=pointer]
+        - generic [ref=e26]:
+          - generic [ref=e27]:
+            - generic [ref=e28]: 加入比赛
+            - strong [ref=e29]: 输入房间码
+          - generic [ref=e30]:
+            - generic [ref=e31]: 房间码
+            - textbox "房间码" [ref=e32]:
+              - /placeholder: "1234"
+          - button "加入房间" [disabled] [ref=e33]
+        - generic [ref=e34]:
+          - generic [ref=e35]:
+            - generic [ref=e36]: 候场列表
+            - strong [ref=e37]: 暂无等待中的房间
+          - paragraph [ref=e38]: 直接创建房间，分享 4 位数字房间码即可开始。
+  - alert [ref=e39]

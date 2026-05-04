@@ -1,6 +1,6 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RoomClient } from './RoomClient';
 
 const replaceSpy = vi.fn();
@@ -82,6 +82,10 @@ vi.mock('@/realtime/useRoomSession', () => ({
 }));
 
 describe('RoomClient', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   beforeEach(() => {
     replaceSpy.mockClear();
     pushSpy.mockClear();
@@ -156,5 +160,83 @@ describe('RoomClient', () => {
       expect(replaceSpy).toHaveBeenCalledWith('/');
     });
     expect(pushSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not auto-rejoin after the current racer explicitly leaves the room', async () => {
+    mockedSnapshot = {
+      ...mockedSnapshot,
+      hostPlayerId: 'host-1',
+      status: 'waiting',
+      closedReason: null,
+      players: [
+        {
+          playerId: 'host-1',
+          nickname: '房主',
+          color: 'yellow',
+          status: 'ready',
+          ready: true,
+          isHost: true,
+          lastSeenAt: '2026-05-02T10:00:00.000Z'
+        },
+        {
+          playerId: 'player-1',
+          nickname: '爸爸',
+          color: null,
+          status: 'joined',
+          ready: false,
+          isHost: false,
+          lastSeenAt: '2026-05-02T10:00:00.000Z'
+        }
+      ]
+    };
+
+    const { rerender } = render(<RoomClient code="8966" />);
+
+    await waitFor(() => {
+      expect(sendCommandSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'room.join',
+          playerId: 'player-1'
+        })
+      );
+    });
+
+    sendCommandSpy.mockClear();
+    sendCommandSpy.mockResolvedValueOnce({
+      type: 'command.result',
+      seq: 3,
+      ok: true,
+      room: {
+        ...mockedSnapshot,
+        players: mockedSnapshot.players.filter((player) => player.playerId !== 'player-1')
+      }
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '退出房间' }));
+
+    await waitFor(() => {
+      expect(sendCommandSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'room.leave',
+          playerId: 'player-1'
+        })
+      );
+    });
+
+    mockedSnapshot = {
+      ...mockedSnapshot,
+      players: mockedSnapshot.players.filter((player) => player.playerId !== 'player-1')
+    };
+    rerender(<RoomClient code="8966" />);
+
+    await waitFor(() => {
+      expect(replaceSpy).toHaveBeenCalledWith('/');
+    });
+    expect(sendCommandSpy).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'room.join',
+        playerId: 'player-1'
+      })
+    );
   });
 });

@@ -13,10 +13,12 @@ export function RoomClient({ code }: { code: string }) {
   const { session, rememberRoom } = usePlayerSession();
   const { snapshot, connectionState, lastErrorCode, sendCommand } = useRoomSession(code, session);
   const joinedRef = useRef(false);
+  const leavingRef = useRef(false);
   const currentPlayer = snapshot?.players.find((candidate) => candidate.playerId === session?.playerId) ?? null;
 
   useEffect(() => {
     if (!session || connectionState !== 'connected') return;
+    if (leavingRef.current) return;
     if (joinedRef.current && currentPlayer) return;
     joinedRef.current = true;
     rememberRoom(code);
@@ -39,6 +41,7 @@ export function RoomClient({ code }: { code: string }) {
 
   async function handleLeaveRoom() {
     if (!session) return;
+    leavingRef.current = true;
 
     /**
      * Leaving the lobby is an explicit user action, so the UI waits for the
@@ -48,7 +51,10 @@ export function RoomClient({ code }: { code: string }) {
     const result = await sendCommand(createCommand('room.leave', session.playerId));
     if (result.ok) {
       router.replace('/');
+      return;
     }
+
+    leavingRef.current = false;
   }
 
   return (
