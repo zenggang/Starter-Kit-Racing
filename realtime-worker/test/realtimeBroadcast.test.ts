@@ -73,6 +73,46 @@ const match: MatchState = {
 };
 
 describe('realtime broadcast fanout', () => {
+  it('fans authoritative match.sync countdown promotions out as match events', () => {
+    const peer = {
+      send: vi.fn()
+    };
+
+    const command: RoomCommandEnvelope = {
+      commandId: 'match.sync:host-1',
+      type: 'match.sync',
+      playerId: 'host-1',
+      authTicket: {
+        playerId: 'host-1',
+        roomCode: '8693',
+        issuedAt: 1,
+        expiresAt: 2
+      },
+      payload: {}
+    };
+    const result: CommandResult = {
+      type: 'command.result',
+      commandId: 'match.sync:host-1',
+      ok: true,
+      seq: 10,
+      room,
+      match: {
+        ...match,
+        phase: 'live'
+      }
+    };
+
+    broadcastRealtimeEvent([peer], command, result, null);
+
+    expect(peer.send).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(peer.send.mock.calls[0][0] as string)).toMatchObject({
+      type: 'match.event',
+      match: {
+        phase: 'live'
+      }
+    });
+  });
+
   it('fans bridge-triggered room events out to every connected socket peer', () => {
     const peerA = {
       send: vi.fn()

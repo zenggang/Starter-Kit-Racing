@@ -5,6 +5,7 @@ import { RacingRuntimeHost } from './RacingRuntimeHost';
 
 const mountRacingRuntimeSpy = vi.fn();
 const updateRemoteVehiclesSpy = vi.fn();
+const setInputLockedSpy = vi.fn();
 const destroySpy = vi.fn();
 
 vi.stubGlobal('React', React);
@@ -17,6 +18,7 @@ describe('RacingRuntimeHost remote vehicles', () => {
   beforeEach(() => {
     mountRacingRuntimeSpy.mockReset();
     updateRemoteVehiclesSpy.mockReset();
+    setInputLockedSpy.mockReset();
     destroySpy.mockReset();
     mountRacingRuntimeSpy.mockResolvedValue({
       destroy: destroySpy,
@@ -26,7 +28,8 @@ describe('RacingRuntimeHost remote vehicles', () => {
         speed: 0,
         driftIntensity: 0
       })),
-      updateRemoteVehicles: updateRemoteVehiclesSpy
+      updateRemoteVehicles: updateRemoteVehiclesSpy,
+      setInputLocked: setInputLockedSpy
     });
   });
 
@@ -83,7 +86,8 @@ describe('RacingRuntimeHost remote vehicles', () => {
         speed: 0,
         driftIntensity: 0
       })),
-      updateRemoteVehicles: updateRemoteVehiclesSpy
+      updateRemoteVehicles: updateRemoteVehiclesSpy,
+      setInputLocked: setInputLockedSpy
     };
     const secondMount = Promise.resolve(secondRuntime);
 

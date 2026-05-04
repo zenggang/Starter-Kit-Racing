@@ -33,12 +33,24 @@ export class RoomCoordinatorDurableObject extends DurableObject<Env> {
   async execute(command: RoomCommandEnvelope, sourceSocket: WebSocket | null = null): Promise<CommandResult> {
     const result = await this.coordinator.execute(command);
     await this.syncReadModels(command, result);
+    await this.syncLifecycleAlarm(result);
     broadcastRealtimeEvent(this.ctx.getWebSockets(), command, result, sourceSocket);
     return result;
   }
 
   async snapshot(): Promise<RoomSnapshot | null> {
     return this.coordinator.snapshot();
+  }
+
+  async alarm(): Promise<void> {
+    const result = await this.coordinator.advanceLifecycle();
+    if (!result?.ok || !result.room || !result.match) {
+      return;
+    }
+
+    await this.syncLifecycleReadModels(result);
+    await this.syncLifecycleAlarm(result);
+    broadcastRealtimeEvent(this.ctx.getWebSockets(), createLifecycleSyncCommand(result.room.hostPlayerId, result.room.code), result, null);
   }
 
   async fetch(request: Request): Promise<Response> {
@@ -111,6 +123,38 @@ export class RoomCoordinatorDurableObject extends DurableObject<Env> {
       await this.readModelWriter.syncRoom(result.room);
       await this.readModelWriter.syncMatch(result.room, result.match);
     }
+  }
+
+  private async syncLifecycleReadModels(result: CommandResult): Promise<void> {
+    if (!result.ok || !result.room || !result.match) {
+      return;
+    }
+
+    if (result.match.phase === 'finished' || result.match.phase === 'aborted') {
+      await this.readModelWriter.syncRoom(result.room);
+      await this.readModelWriter.syncMatch(result.room, result.match);
+      return;
+    }
+
+    await this.readModelWriter.syncMatch(result.room, result.match);
+  }
+
+  private async syncLifecycleAlarm(result: CommandResult): Promise<void> {
+    if (!result.ok || !result.room) {
+      return;
+    }
+
+    if (result.match?.phase === 'countdown') {
+      await this.ctx.storage.setAlarm(Date.parse(result.match.startedAt));
+      return;
+    }
+
+    if (result.match?.phase === 'live' && result.match.finishDeadlineAt) {
+      await this.ctx.storage.setAlarm(Date.parse(result.match.finishDeadlineAt));
+      return;
+    }
+
+    await this.ctx.storage.deleteAlarm();
   }
 }
 
@@ -226,6 +270,21 @@ function authError(): Response {
   };
 
   return Response.json(body, { status: 401, headers: JSON_HEADERS });
+}
+
+function createLifecycleSyncCommand(playerId: string, roomCode: string): RoomCommandEnvelope<Record<string, never>> {
+  return {
+    commandId: `lifecycle:${roomCode}`,
+    type: 'match.sync',
+    playerId,
+    authTicket: {
+      playerId,
+      roomCode,
+      issuedAt: 0,
+      expiresAt: Number.MAX_SAFE_INTEGER
+    },
+    payload: {}
+  };
 }
 
 function jsonError(message: string, status: number): Response {

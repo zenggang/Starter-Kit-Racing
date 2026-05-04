@@ -21,7 +21,7 @@ export function buildRealtimeEvent(command: RoomCommandEnvelope, result: Command
       : null;
   }
 
-  if (command.type === 'match.sync' && result.match?.phase === 'finished') {
+  if (command.type === 'match.sync' && result.match) {
     return {
       type: 'match.event',
       seq: result.seq,

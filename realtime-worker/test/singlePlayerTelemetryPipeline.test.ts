@@ -5,6 +5,7 @@ import { InMemoryRoomStorage } from '../src/storage';
 import type { AuthTicket, RoomCommandEnvelope } from '../src/protocol';
 
 const START = Date.parse('2026-05-02T00:00:00.000Z');
+const COUNTDOWN_MS = 15_000;
 
 function ticket(playerId: string, now = START): AuthTicket {
   return {
@@ -32,8 +33,9 @@ function command<TPayload>(
 
 describe('single-player telemetry pipeline', () => {
   it('turns runtime path samples into advancing match progress and a finished result', async () => {
+    let now = START;
     const coordinator = new RoomCoordinator(new InMemoryRoomStorage(), {
-      now: () => START,
+      now: () => now,
       roomCodeGenerator: () => 'DEMO12',
       matchIdGenerator: () => 'match-demo-1'
     });
@@ -44,6 +46,8 @@ describe('single-player telemetry pipeline', () => {
     await coordinator.execute(command('room.ready', 'player-1', { ready: true }));
     await coordinator.execute(command('room.start', 'player-1', {}));
     await coordinator.execute(command('match.join', 'player-1', {}));
+    now += COUNTDOWN_MS;
+    await coordinator.execute(command('match.sync', 'player-1', {}, 'match.sync:player-1', now));
 
     const model = buildTrackProgressModel(null);
     let state = createInitialRaceProgressState();
@@ -64,7 +68,7 @@ describe('single-player telemetry pipeline', () => {
           1
         );
         state = telemetry.state;
-        lastResult = await coordinator.execute(command('match.progress', 'player-1', telemetry.payload, `progress-${loop}-${index}`));
+        lastResult = await coordinator.execute(command('match.progress', 'player-1', telemetry.payload, `progress-${loop}-${index}`, now));
 
         if (lastResult.match?.phase === 'finished') {
           break;

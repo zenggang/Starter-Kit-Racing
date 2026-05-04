@@ -32,6 +32,7 @@ declare module '../../js/main.js' {
     trackMap?: string | null;
     useQueryMap?: boolean;
     vehicleColor?: 'yellow' | 'green' | 'purple' | 'red';
+    inputLocked?: boolean;
     abortSignal?: AbortSignal;
   }
 
@@ -39,6 +40,7 @@ declare module '../../js/main.js' {
     destroy(): void;
     getSnapshot(): RacingRuntimeSnapshot;
     updateRemoteVehicles(vehicles: RacingRemoteVehicleTelemetry[]): void;
+    setInputLocked(locked: boolean): void;
   }
 
   export function mountRacingRuntime(

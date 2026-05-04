@@ -74,6 +74,31 @@ const finishedMatch: MatchState = {
   ]
 };
 
+const countdownRoom: RoomState = {
+  ...finishedRoom,
+  status: 'racing',
+  finishedAt: null
+};
+
+const countdownMatch: MatchState = {
+  ...finishedMatch,
+  phase: 'countdown',
+  startedAt: '2026-05-02T00:00:12.000Z',
+  finishedAt: null,
+  finishDeadlineAt: null,
+  winnerPlayerId: null,
+  players: [
+    {
+      ...finishedMatch.players[0],
+      presence: 'connected',
+      finishedAt: null,
+      completedLaps: 0,
+      lapProgress: 0,
+      totalProgress: 0
+    }
+  ]
+};
+
 describe('useMatchSession', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -88,6 +113,52 @@ describe('useMatchSession', () => {
     vi.clearAllMocks();
     vi.runOnlyPendingTimers();
     vi.useRealTimers();
+  });
+
+  it('schedules an extra bridge match.sync exactly when countdown reaches the official start time', async () => {
+    vi.setSystemTime(new Date('2026-05-02T00:00:00.000Z'));
+
+    let sequence = 0;
+    vi.mocked(sendBridgeCommand).mockImplementation(async (_roomCode, _ticket, command) => {
+      sequence += 1;
+
+      const liveMatch =
+        command.type === 'match.sync' && Date.now() >= Date.parse(countdownMatch.startedAt)
+          ? {
+              ...countdownMatch,
+              phase: 'live' as const
+            }
+          : countdownMatch;
+
+      return {
+        type: 'command.result',
+        seq: sequence,
+        ok: true,
+        commandId: command.commandId,
+        room: countdownRoom,
+        match: liveMatch
+      };
+    });
+
+    renderHook(() => useMatchSession('5035', player));
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    vi.mocked(sendBridgeCommand).mockClear();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(12_000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    const matchSyncCalls = vi.mocked(sendBridgeCommand).mock.calls.filter(([, , command]) => command.type === 'match.sync');
+    expect(matchSyncCalls.length).toBeGreaterThanOrEqual(3);
   });
 
   it('sends match.join only once after bridge connect', async () => {

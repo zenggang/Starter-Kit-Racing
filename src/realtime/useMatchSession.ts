@@ -199,6 +199,38 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
   }, [connectionState, player, roomCode, ticket]);
 
   useEffect(() => {
+    if (!player || !ticket || connectionState !== 'connected' || transportMode !== 'bridge') {
+      return;
+    }
+
+    if (state.match?.phase !== 'countdown') {
+      return;
+    }
+
+    const countdownStartAtMs = Date.parse(state.match.startedAt);
+    if (!Number.isFinite(countdownStartAtMs)) {
+      return;
+    }
+
+    const delayMs = Math.max(0, countdownStartAtMs - Date.now());
+    let cancelled = false;
+    const playerId = player.playerId;
+
+    const timer = window.setTimeout(() => {
+      void sendCommand(createMatchCommand('match.sync', playerId, {})).then(() => {
+        if (cancelled) {
+          return;
+        }
+      });
+    }, delayMs);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [connectionState, player, sendCommand, state.match?.id, state.match?.phase, state.match?.startedAt, ticket, transportMode]);
+
+  useEffect(() => {
     if (!player || !ticket || ticket.mode !== 'socket' || transportMode !== 'bridge') return;
 
     let cancelled = false;

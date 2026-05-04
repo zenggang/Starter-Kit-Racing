@@ -2,11 +2,12 @@ import type { TrackMapErrorCode } from '../../shared/trackMapValidation';
 
 export const ROOM_STATUSES = ['waiting', 'racing', 'finished', 'closed'] as const;
 export const PLAYER_COLORS = ['yellow', 'green', 'purple', 'red'] as const;
-export const MATCH_PHASES = ['live', 'finished', 'aborted'] as const;
+export const MATCH_PHASES = ['countdown', 'live', 'finished', 'aborted'] as const;
 export const MATCH_PRESENCE = ['pending', 'connected', 'disconnected', 'finished'] as const;
 export const DEFAULT_LAP_TARGET = 3;
 export const WAITING_ROOM_TTL_MS = 60 * 60 * 1000;
 export const FINISHED_ROOM_TTL_MS = 60 * 60 * 1000;
+export const MATCH_START_COUNTDOWN_MS = 15 * 1000;
 
 export type RoomStatus = (typeof ROOM_STATUSES)[number];
 export type PlayerColor = (typeof PLAYER_COLORS)[number];

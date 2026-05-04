@@ -43,6 +43,14 @@ export function RaceHud({
   const currentLapProgress = current ? Math.round(current.lapProgress * 100) : 0;
   const currentTimerMs = current?.finishedAt ? getPlayerRaceTimeMs(match, current) : getRaceElapsedMs(match, nowMs);
   const finishCountdownMs = getFinishDeadlineRemainingMs(match, nowMs);
+  const stageLabel =
+    match.phase === 'countdown'
+      ? '发车倒计时'
+      : match.phase === 'finished'
+        ? '已完赛'
+        : current?.finishedAt
+          ? '等待结算'
+          : '比赛中';
 
   return (
     <>
@@ -53,7 +61,8 @@ export function RaceHud({
         <span className="muted">比赛计时：{formatRaceDuration(currentTimerMs)}</span>
         <span className="muted">赛道：{match.trackName ?? '默认赛道'}</span>
         {finishCountdownMs !== null ? <span className="muted">终点倒计时：{formatRaceDuration(finishCountdownMs)}</span> : null}
-        <span className="muted">阶段：{match.phase === 'finished' ? '已完赛' : '比赛中'}</span>
+        <span className="muted">阶段：{stageLabel}</span>
+        {current?.finishedAt && match.phase !== 'finished' ? <strong className="race-finish-waiting">已完赛，等待其他玩家/等待结算</strong> : null}
       </section>
 
       <section className="race-overlay race-leaderboard">

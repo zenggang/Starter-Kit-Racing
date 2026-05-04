@@ -286,7 +286,8 @@ export async function mountRacingRuntime( container, options = {} ) {
 	scene.add( cam.debug );
 	cam.smoothedDesired.copy( vehicle.spherePos );
 
-	const controls = new Controls( { container } );
+	let inputLocked = Boolean( options.inputLocked );
+	const controls = new Controls( { container, locked: inputLocked } );
 	const particles = new SmokeTrails( scene, { assetBaseUrl } );
 	const driftMarks = new DriftMarks( scene );
 	const remoteVehicles = new RemoteVehicles( scene, models );
@@ -354,6 +355,11 @@ export async function mountRacingRuntime( container, options = {} ) {
 
 		updateWorld( world, contactListener, dt );
 		vehicle.update( dt, input );
+		if ( inputLocked ) {
+
+			vehicle.stabilizeMotion();
+
+		}
 
 		dirLight.position.set(
 			vehicle.spherePos.x + 11.4,
@@ -392,6 +398,17 @@ export async function mountRacingRuntime( container, options = {} ) {
 		updateRemoteVehicles( vehicles ) {
 
 			remoteVehicles.setVehicles( vehicles );
+
+		},
+		setInputLocked( locked ) {
+
+			inputLocked = Boolean( locked );
+			controls.setLocked( inputLocked );
+			if ( inputLocked ) {
+
+				vehicle.stabilizeMotion();
+
+			}
 
 		},
 		destroy() {

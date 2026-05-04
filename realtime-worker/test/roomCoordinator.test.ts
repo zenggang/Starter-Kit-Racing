@@ -5,6 +5,7 @@ import type { AuthTicket, RoomCommandEnvelope } from '../src/protocol';
 import { encodeTrackCells } from '../../shared/trackMapValidation';
 
 const START = Date.parse('2026-04-26T00:00:00.000Z');
+const COUNTDOWN_MS = 15_000;
 
 function ticket(playerId: string, now = START): AuthTicket {
   return {
@@ -35,6 +36,22 @@ function createCoordinator() {
     now: () => START,
     roomCodeGenerator: () => '1234'
   });
+}
+
+function createMutableCoordinator(initialNow = START) {
+  let now = initialNow;
+  const coordinator = new RoomCoordinator(new InMemoryRoomStorage(), {
+    now: () => now,
+    roomCodeGenerator: () => '1234'
+  });
+
+  return {
+    coordinator,
+    now: () => now,
+    advance(ms: number) {
+      now += ms;
+    }
+  };
 }
 
 const VALID_TRACK_MAP = encodeTrackCells([
@@ -190,6 +207,8 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     expect(started.ok).toBe(true);
     expect(started.room?.status).toBe('racing');
     expect(started.room?.startedAt).toBe(new Date(START).toISOString());
+    expect(started.match?.phase).toBe('countdown');
+    expect(started.match?.startedAt).toBe(new Date(START + COUNTDOWN_MS).toISOString());
     expect(started.match?.players).toEqual([
       expect.objectContaining({
         playerId: 'host-1',
@@ -216,6 +235,8 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     expect(started.ok).toBe(true);
     expect(started.room?.status).toBe('racing');
     expect(started.room?.startedAt).toBe(new Date(START).toISOString());
+    expect(started.match?.phase).toBe('countdown');
+    expect(started.match?.startedAt).toBe(new Date(START + COUNTDOWN_MS).toISOString());
     expect(started.match?.players).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ playerId: 'host-1', color: 'yellow' }),
@@ -287,7 +308,8 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
   });
 
   it('tracks match progress, finalizes results, and allows the host to rematch', async () => {
-    const coordinator = createCoordinator();
+    const runtime = createMutableCoordinator();
+    const coordinator = runtime.coordinator;
 
     await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
     await coordinator.execute(command('room.join', 'player-2', { nickname: 'Guest' }));
@@ -297,11 +319,14 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     await coordinator.execute(command('room.ready', 'player-2', { ready: true }));
     const started = await coordinator.execute(command('room.start', 'host-1', {}));
 
-    expect(started.match?.phase).toBe('live');
+    expect(started.match?.phase).toBe('countdown');
     expect(started.match?.players).toHaveLength(2);
 
     await coordinator.execute(command('match.join', 'host-1', {}));
     await coordinator.execute(command('match.join', 'player-2', {}));
+    runtime.advance(COUNTDOWN_MS);
+    const live = await coordinator.execute(command('match.sync', 'host-1', {}, 'match.sync:host-1', runtime.now()));
+    expect(live.match?.phase).toBe('live');
 
     const hostProgress = await coordinator.execute(
       command('match.progress', 'host-1', {
@@ -311,7 +336,7 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
         position: { x: 1, y: 0.5, z: 2 },
         heading: 0,
         speed: 0.8
-      })
+      }, 'match.progress:host-1', runtime.now())
     );
 
     expect(hostProgress.match?.players.find((player) => player.playerId === 'host-1')).toMatchObject({
@@ -329,7 +354,7 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
         heading: 0.5,
         speed: 1.1,
         finished: true
-      })
+      }, 'match.progress:host-finish', runtime.now())
     );
 
     const finished = await coordinator.execute(
@@ -341,7 +366,7 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
         heading: 0.3,
         speed: 1.0,
         finished: true
-      })
+      }, 'match.progress:guest-finish', runtime.now())
     );
 
     expect(finished.room?.status).toBe('finished');
@@ -367,13 +392,16 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
   });
 
   it('recovers from a stale full-lap packet and accepts lower same-lap progress again', async () => {
-    const coordinator = createCoordinator();
+    const runtime = createMutableCoordinator();
+    const coordinator = runtime.coordinator;
 
     await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
     await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
     await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
     await coordinator.execute(command('room.start', 'host-1', {}));
     await coordinator.execute(command('match.join', 'host-1', {}));
+    runtime.advance(COUNTDOWN_MS);
+    await coordinator.execute(command('match.sync', 'host-1', {}, 'match.sync:host-1', runtime.now()));
 
     const staleFullLap = await coordinator.execute(
       command('match.progress', 'host-1', {
@@ -383,7 +411,7 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
         position: { x: 10, y: 0.5, z: 10 },
         heading: 0.2,
         speed: 0.9
-      })
+      }, 'match.progress:host-stale', runtime.now())
     );
 
     expect(staleFullLap.ok).toBe(true);
@@ -401,7 +429,7 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
         position: { x: 12, y: 0.5, z: 14 },
         heading: 0.4,
         speed: 1.1
-      })
+      }, 'match.progress:host-recovered', runtime.now())
     );
 
     expect(recovered.ok).toBe(true);
@@ -428,6 +456,9 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     await coordinator.execute(command('room.ready', 'host-1', { ready: true }, 'room.ready:host-1', now));
     await coordinator.execute(command('room.ready', 'player-2', { ready: true }, 'room.ready:player-2', now));
     await coordinator.execute(command('room.start', 'host-1', {}, 'room.start:host-1', now));
+    now += COUNTDOWN_MS;
+    const live = await coordinator.execute(command('match.sync', 'host-1', {}, 'match.sync:host-1', now));
+    expect(live.match?.phase).toBe('live');
 
     now += 5_000;
     const leaderFinished = await coordinator.execute(
@@ -478,7 +509,8 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
   });
 
   it('completes a full single-player online race and reopens the room for rematch', async () => {
-    const coordinator = createCoordinator();
+    const runtime = createMutableCoordinator();
+    const coordinator = runtime.coordinator;
 
     await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
     await coordinator.execute(command('room.setLapTarget', 'host-1', { lapTarget: 2 }));
@@ -488,9 +520,12 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     const started = await coordinator.execute(command('room.start', 'host-1', {}));
     expect(started.ok).toBe(true);
     expect(started.room?.status).toBe('racing');
+    expect(started.match?.phase).toBe('countdown');
     expect(started.match?.players).toHaveLength(1);
 
     await coordinator.execute(command('match.join', 'host-1', {}));
+    runtime.advance(COUNTDOWN_MS);
+    await coordinator.execute(command('match.sync', 'host-1', {}, 'match.sync:host-1', runtime.now()));
 
     const finished = await coordinator.execute(
       command('match.progress', 'host-1', {
@@ -501,7 +536,7 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
         heading: 0.2,
         speed: 1,
         finished: true
-      })
+      }, 'match.progress:host-finish', runtime.now())
     );
 
     expect(finished.room).toMatchObject({
@@ -530,6 +565,29 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
       matchId: null
     });
     expect(rematch.match).toBeUndefined();
+  });
+
+  it('promotes countdown matches to live once the authoritative start time is reached', async () => {
+    const runtime = createMutableCoordinator();
+    const coordinator = runtime.coordinator;
+
+    await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
+    await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
+    await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
+
+    const started = await coordinator.execute(command('room.start', 'host-1', {}));
+
+    expect(started.match?.phase).toBe('countdown');
+    expect(started.match?.startedAt).toBe(new Date(START + COUNTDOWN_MS).toISOString());
+
+    runtime.advance(COUNTDOWN_MS - 1);
+    const stillCountdown = await coordinator.execute(command('match.sync', 'host-1', {}, 'match.sync:host-prelive', runtime.now()));
+    expect(stillCountdown.match?.phase).toBe('countdown');
+
+    runtime.advance(1);
+    const live = await coordinator.execute(command('match.sync', 'host-1', {}, 'match.sync:host-live', runtime.now()));
+    expect(live.match?.phase).toBe('live');
+    expect(live.match?.startedAt).toBe(new Date(START + COUNTDOWN_MS).toISOString());
   });
 
   it('closes waiting rooms that pass the 60 minute expiration window', async () => {

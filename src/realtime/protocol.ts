@@ -1,9 +1,10 @@
 export const ROOM_STATUSES = ['waiting', 'racing', 'finished', 'closed'] as const;
 export const PLAYER_STATUSES = ['joined', 'ready', 'disconnected'] as const;
-export const MATCH_PHASES = ['live', 'finished', 'aborted'] as const;
+export const MATCH_PHASES = ['countdown', 'live', 'finished', 'aborted'] as const;
 export const MATCH_PRESENCE = ['pending', 'connected', 'disconnected', 'finished'] as const;
 export const TRANSPORT_MODES = ['socket', 'bridge'] as const;
 export const PLAYER_COLORS = ['yellow', 'green', 'purple', 'red'] as const;
+export const MATCH_START_COUNTDOWN_MS = 15 * 1000;
 
 export type RoomStatus = (typeof ROOM_STATUSES)[number];
 export type PlayerStatus = (typeof PLAYER_STATUSES)[number];

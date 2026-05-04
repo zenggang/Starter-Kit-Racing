@@ -318,6 +318,30 @@ export class Vehicle {
 
 	}
 
+	/**
+	 * Countdown and post-finish lock both need the local car to stop behaving
+	 * like an actively driven rigid body. The online shell still owns the policy
+	 * decision, but this helper gives it one small, explicit way to quickly
+	 * settle the vehicle without teaching React about crashcat internals.
+	 */
+	stabilizeMotion() {
+
+		if ( this.rigidBody ) {
+
+			rigidBody.setLinearVelocity( this.physicsWorld, this.rigidBody, [ 0, 0, 0 ] );
+			rigidBody.setAngularVelocity( this.physicsWorld, this.rigidBody, [ 0, 0, 0 ] );
+
+		}
+
+		this.sphereVel.set( 0, 0, 0 );
+		this.modelVelocity.set( 0, 0, 0 );
+		this.linearSpeed = 0;
+		this.angularSpeed = 0;
+		this.acceleration = 0;
+		this.driftIntensity = 0;
+
+	}
+
 	alignWithY( quaternion, newY ) {
 
 		_zAxis.set( 0, 0, 1 ).applyQuaternion( quaternion );

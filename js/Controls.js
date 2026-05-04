@@ -5,6 +5,7 @@ export class Controls {
 		this.keys = {};
 		this.x = 0;
 		this.z = 0;
+		this.locked = Boolean( options.locked );
 		this.target = options.target || window;
 		this.container = options.container || document.body;
 		this._listeners = [];
@@ -118,7 +119,21 @@ export class Controls {
 
 	}
 
+	setLocked( locked ) {
+
+		this.locked = Boolean( locked );
+
+	}
+
 	update() {
+
+		if ( this.locked ) {
+
+			this.x = 0;
+			this.z = 0;
+			return { x: 0, z: 0, touchActive: false };
+
+		}
 
 		let x = 0, z = 0;
 
@@ -131,7 +146,7 @@ export class Controls {
 
 		// Gamepad
 
-		const gamepads = navigator.getGamepads();
+		const gamepads = typeof navigator.getGamepads === 'function' ? navigator.getGamepads() : [];
 
 		for ( const gp of gamepads ) {
 

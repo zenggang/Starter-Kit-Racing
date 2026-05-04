@@ -36,6 +36,7 @@ export interface RuntimeHandle {
   destroy(): void;
   getSnapshot(): RuntimeSnapshot;
   updateRemoteVehicles(vehicles: RemoteVehicleTelemetry[]): void;
+  setInputLocked(locked: boolean): void;
 }
 
 interface RuntimeMountOptions {
@@ -43,6 +44,7 @@ interface RuntimeMountOptions {
   roomCode?: string;
   trackMap?: string | null;
   vehicleColor?: 'yellow' | 'green' | 'purple' | 'red';
+  inputLocked?: boolean;
   abortSignal?: AbortSignal;
 }
 
@@ -54,6 +56,7 @@ export function RacingRuntimeHost({
   roomCode,
   trackMap,
   vehicleColor,
+  inputLocked = false,
   remoteVehicles,
   onRuntimeReady,
   children
@@ -61,12 +64,14 @@ export function RacingRuntimeHost({
   roomCode: string;
   trackMap: string | null;
   vehicleColor: RuntimeMountOptions['vehicleColor'];
+  inputLocked?: boolean;
   remoteVehicles?: RemoteVehicleTelemetry[];
   onRuntimeReady?: (runtime: RuntimeHandle | null) => void;
   children?: React.ReactNode;
 }) {
   const containerRef = useRef<HTMLElement | null>(null);
   const runtimeRef = useRef<RuntimeHandle | null>(null);
+  const inputLockedRef = useRef(inputLocked);
   const remoteVehiclesRef = useRef<RemoteVehicleTelemetry[]>(remoteVehicles ?? []);
   const [error, setError] = useState<string | null>(null);
 
@@ -98,6 +103,7 @@ export function RacingRuntimeHost({
 
         runtimeRef.current = runtime;
         runtime.updateRemoteVehicles(remoteVehiclesRef.current);
+        runtime.setInputLocked(inputLockedRef.current);
         onRuntimeReady?.(runtime);
       } catch (nextError) {
         if (!cancelled) {
@@ -121,6 +127,11 @@ export function RacingRuntimeHost({
     remoteVehiclesRef.current = remoteVehicles ?? [];
     runtimeRef.current?.updateRemoteVehicles(remoteVehiclesRef.current);
   }, [remoteVehicles]);
+
+  useEffect(() => {
+    inputLockedRef.current = inputLocked;
+    runtimeRef.current?.setInputLocked(inputLocked);
+  }, [inputLocked]);
 
   return (
     <main className="racing-runtime" ref={containerRef}>

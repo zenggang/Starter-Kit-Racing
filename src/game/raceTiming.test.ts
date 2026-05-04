@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatRaceDuration, getFinishDeadlineRemainingMs, getPlayerRaceTimeMs } from './raceTiming';
+import { formatRaceDuration, getFinishDeadlineRemainingMs, getPlayerRaceTimeMs, getRaceElapsedMs } from './raceTiming';
 import type { MatchPlayerState, MatchState } from '@/realtime/protocol';
 
 const basePlayer: MatchPlayerState = {
@@ -48,6 +48,17 @@ describe('race timing helpers', () => {
 
     expect(getPlayerRaceTimeMs(baseMatch, finishedPlayer)).toBe(72_345);
     expect(getPlayerRaceTimeMs(baseMatch, basePlayer)).toBeNull();
+  });
+
+  it('holds the live race clock at zero during countdown before the official start time', () => {
+    const countdownMatch = {
+      ...baseMatch,
+      phase: 'countdown' as const,
+      startedAt: '2026-05-02T00:00:12.000Z'
+    };
+
+    expect(getRaceElapsedMs(countdownMatch, Date.parse('2026-05-02T00:00:00.000Z'))).toBe(0);
+    expect(getRaceElapsedMs(countdownMatch, Date.parse('2026-05-02T00:00:12.500Z'))).toBe(500);
   });
 
   it('returns the remaining finish countdown once the leader has opened the timeout window', () => {

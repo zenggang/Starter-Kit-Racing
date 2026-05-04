@@ -1,6 +1,7 @@
 import {
   DEFAULT_LAP_TARGET,
   FINISHED_ROOM_TTL_MS,
+  MATCH_START_COUNTDOWN_MS,
   WAITING_ROOM_TTL_MS,
   commandError,
   isAuthTicketValid,
@@ -69,7 +70,7 @@ export class RoomCoordinator {
       return commandError(command.commandId, room.seq, 'AUTH_TICKET_INVALID');
     }
 
-    await this.finalizeMatchIfDeadlineReached(room, now);
+    await this.syncLifecycleTransitions(room, now);
 
     if (command.type === 'sync.request') {
       return this.success(command.commandId, room);
@@ -117,7 +118,20 @@ export class RoomCoordinator {
 
   async snapshot(): Promise<RoomSnapshot | null> {
     const room = await this.storage.loadRoom();
+    if (room) {
+      await this.syncLifecycleTransitions(room, this.now());
+    }
     return room ? { type: 'room.snapshot', seq: room.seq, room: stripActiveMatch(room) } : null;
+  }
+
+  async advanceLifecycle(): Promise<CommandResult | null> {
+    const room = await this.storage.loadRoom();
+    if (!room) {
+      return null;
+    }
+
+    const changed = await this.syncLifecycleTransitions(room, this.now());
+    return changed ? this.success(undefined, room) : null;
   }
 
   private async createRoom(command: RoomCommandEnvelope<CreateRoomPayload>, now: number): Promise<CommandResult> {
@@ -300,12 +314,13 @@ export class RoomCoordinator {
     }
 
     const startedAt = new Date(now).toISOString();
+    const matchStartedAt = new Date(now + MATCH_START_COUNTDOWN_MS).toISOString();
     room.players = eligiblePlayers;
     room.status = 'racing';
     room.startedAt = startedAt;
     room.finishedAt = null;
     room.matchId = this.matchIdGenerator();
-    room.activeMatch = createMatchState(room, startedAt);
+    room.activeMatch = createMatchState(room, matchStartedAt);
     return this.mutate(command.commandId, room);
   }
 
@@ -441,19 +456,17 @@ export class RoomCoordinator {
     return Date.parse(room.expiresAt) <= now;
   }
 
-  private async finalizeMatchIfDeadlineReached(room: RoomState, now: number): Promise<void> {
-    const match = room.activeMatch;
-    if (!match || room.status !== 'racing' || match.phase !== 'live' || !match.finishDeadlineAt) {
-      return;
+  private async syncLifecycleTransitions(room: RoomState, now: number): Promise<boolean> {
+    const countdownPromoted = promoteCountdownMatchIfReady(room, now);
+    const finishDeadlineReached = finalizeMatchIfDeadlineReached(room, now);
+
+    if (!countdownPromoted && !finishDeadlineReached) {
+      return false;
     }
 
-    if (Date.parse(match.finishDeadlineAt) > now) {
-      return;
-    }
-
-    finalizeFinishedMatch(room, now);
     room.seq += 1;
     await this.storage.saveRoom(room);
+    return true;
   }
 
   private async mutate(commandId: string | undefined, room: RoomState): Promise<CommandResult> {
@@ -491,7 +504,7 @@ function createMatchState(room: RoomState, startedAt: string): MatchState {
   return {
     id: room.matchId as string,
     roomCode: room.code,
-    phase: 'live',
+    phase: 'countdown',
     lapTarget: room.lapTarget,
     trackId: room.trackId,
     trackName: room.trackName,
@@ -518,6 +531,34 @@ function createMatchState(room: RoomState, startedAt: string): MatchState {
       finishedAt: null
     }))
   };
+}
+
+function promoteCountdownMatchIfReady(room: RoomState, now: number): boolean {
+  const match = room.activeMatch;
+  if (!match || room.status !== 'racing' || match.phase !== 'countdown') {
+    return false;
+  }
+
+  if (Date.parse(match.startedAt) > now) {
+    return false;
+  }
+
+  match.phase = 'live';
+  return true;
+}
+
+function finalizeMatchIfDeadlineReached(room: RoomState, now: number): boolean {
+  const match = room.activeMatch;
+  if (!match || room.status !== 'racing' || match.phase !== 'live' || !match.finishDeadlineAt) {
+    return false;
+  }
+
+  if (Date.parse(match.finishDeadlineAt) > now) {
+    return false;
+  }
+
+  finalizeFinishedMatch(room, now);
+  return true;
 }
 
 function normalizeProgress(

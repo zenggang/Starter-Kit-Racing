@@ -27,9 +27,11 @@ export function RaceClient({ code }: { code: string }) {
   const sendCommandRef = useRef(sendCommand);
   const trackModelRef = useRef<ReturnType<typeof buildTrackProgressModel> | null>(null);
   const playerIdRef = useRef<string | null>(session?.playerId ?? null);
+  const currentPlayerFinishedAtRef = useRef<string | null>(null);
   const lapTargetRef = useRef<number | null>(match?.lapTarget ?? null);
   const matchPhaseRef = useRef(match?.phase ?? null);
   const [runtimeReady, setRuntimeReady] = useState(false);
+  const [countdownNowMs, setCountdownNowMs] = useState(() => Date.now());
   const handleRuntimeReady = useCallback((runtime: RuntimeHandle | null) => {
     runtimeRef.current = runtime;
     setRuntimeReady(Boolean(runtime));
@@ -93,9 +95,29 @@ export function RaceClient({ code }: { code: string }) {
   }, [match?.lapTarget, match?.phase]);
 
   useEffect(() => {
+    currentPlayerFinishedAtRef.current = currentPlayer?.finishedAt ?? null;
+  }, [currentPlayer?.finishedAt]);
+
+  useEffect(() => {
     progressRef.current = createInitialRaceProgressState();
     telemetryInFlightRef.current = false;
   }, [match?.id]);
+
+  useEffect(() => {
+    if (match?.phase !== 'countdown') {
+      setCountdownNowMs(Date.now());
+      return;
+    }
+
+    setCountdownNowMs(Date.now());
+    const timer = window.setInterval(() => {
+      setCountdownNowMs(Date.now());
+    }, 100);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [match?.id, match?.phase]);
 
   useEffect(() => {
     if (room?.status === 'finished' || match?.phase === 'finished') {
@@ -122,6 +144,7 @@ export function RaceClient({ code }: { code: string }) {
       const runtime = runtimeRef.current;
       const activeTrackModel = trackModelRef.current;
       const activePlayerId = playerIdRef.current;
+      const activePlayerFinishedAt = currentPlayerFinishedAtRef.current;
       const lapTarget = lapTargetRef.current;
 
       if (
@@ -130,6 +153,7 @@ export function RaceClient({ code }: { code: string }) {
         telemetryInFlightRef.current ||
         !activeTrackModel ||
         !activePlayerId ||
+        activePlayerFinishedAt !== null ||
         lapTarget === null ||
         connectionStateRef.current !== 'connected' ||
         matchPhaseRef.current !== 'live'
@@ -181,16 +205,65 @@ export function RaceClient({ code }: { code: string }) {
     );
   }
 
+  const inputLocked = match.phase === 'countdown' || Boolean(currentPlayer.finishedAt && match.phase !== 'finished');
+  const countdownDisplay = match.phase === 'countdown' ? getCountdownDisplay(match.startedAt, countdownNowMs) : null;
+
   return (
     <RacingRuntimeHost
       roomCode={code}
       trackMap={effectiveMatch.trackMap}
       vehicleColor={currentPlayer.color}
+      inputLocked={inputLocked}
       remoteVehicles={remoteVehicles}
       onRuntimeReady={handleRuntimeReady}
     >
+      {countdownDisplay ? (
+        <div
+          className={`race-overlay race-countdown-overlay race-countdown-${countdownDisplay.mode}`}
+          data-testid="race-countdown-overlay"
+        >
+          <div className="race-countdown-card">
+            <span className="panel-kicker">比赛即将开始</span>
+            <strong className="race-countdown-number" data-ghost={countdownDisplay.label}>
+              {countdownDisplay.label}
+            </strong>
+            <span className="race-countdown-caption">{countdownDisplay.caption}</span>
+          </div>
+        </div>
+      ) : null}
       <RaceHud match={effectiveMatch} currentPlayerId={session.playerId} model={trackModel} />
       {lastErrorCode ? <p className="race-overlay error-banner race-error-banner">{formatRacingError(lastErrorCode)}</p> : null}
     </RacingRuntimeHost>
   );
+}
+
+function getCountdownDisplay(startedAt: string, nowMs: number): { label: string; mode: 'prep' | 'hero' | 'go'; caption: string } | null {
+  const officialStartMs = Date.parse(startedAt);
+  if (!Number.isFinite(officialStartMs)) {
+    return null;
+  }
+
+  const remainingMs = officialStartMs - nowMs;
+  if (remainingMs <= 0) {
+    return {
+      label: 'GO!',
+      mode: 'go',
+      caption: '全员发车'
+    };
+  }
+
+  const remainingSeconds = Math.ceil(remainingMs / 1000);
+  if (remainingSeconds <= 5) {
+    return {
+      label: String(remainingSeconds),
+      mode: 'hero',
+      caption: '全员锁定发车格'
+    };
+  }
+
+  return {
+    label: String(remainingSeconds),
+    mode: 'prep',
+    caption: '全员锁定发车格'
+  };
 }
