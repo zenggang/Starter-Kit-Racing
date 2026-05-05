@@ -1,5 +1,27 @@
 # Racing Multiplayer Ghost Cars And Custom Tracks
 
+## Implementation Status
+
+Status as of 2026-05-04: implemented and verified in the current codebase. The
+historical sections below describe the original spec, but the active app now has
+visual-only ghost cars, shared track validation, `/track-editor`, player-owned
+`racing_tracks`, room creation with custom track snapshots, room/race/result
+track names, custom track runtime loading, minimap, leaderboard, and socket-first
+transport with bridge fallback.
+
+Current primary files:
+
+- `js/RemoteVehicles.js`
+- `js/main.js`
+- `src/game/RacingRuntimeHost.tsx`
+- `src/components/RaceClient.tsx`
+- `src/components/RaceHud.tsx`
+- `src/components/TrackEditorClient.tsx`
+- `shared/trackMapValidation.ts`
+- `src/server/tracks.ts`
+- `realtime-worker/src/RoomCoordinator.ts`
+- `supabase/migrations/202605030001_racing_tracks.sql`
+
 ## Context
 
 - Background:

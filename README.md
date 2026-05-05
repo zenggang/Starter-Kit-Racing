@@ -6,43 +6,54 @@ A JavaScript/Three.js port of [Kenney's Starter Kit Racing](https://github.com/K
 
 ## Online shell
 
-Phase 1 adds a mobile-first Next.js shell for online room lifecycle work:
+The current app is a mobile-first online racing shell around the original
+Three.js runtime:
 
 - `/` selects local demo mode when Supabase public env is missing.
-- `/hall` creates and joins coordinator-backed rooms.
-- `/room/[code]` handles color, ready and host start.
-- `/race/[code]` mounts the existing Three.js racing runtime into the app shell.
+- `/hall` creates and joins coordinator-backed rooms, including default or saved custom track selection.
+- `/room/[code]` handles color, ready, lap target, host start, and current track display.
+- `/race/[code]` mounts the Three.js runtime, shows the authoritative start countdown, reports race telemetry, renders ghost cars, and drives the HUD/minimap.
+- `/result/[code]` shows coordinator-approved race results and supports host rematch.
+- `/track-editor` creates, validates, saves, edits, and deletes player-owned custom tracks.
 
-The original static `index.html` and `editor.html` remain as compatibility entry points while the online shell is migrated.
+The original static `index.html` and `editor.html` remain as compatibility entry
+points for local runtime/editor access.
 
 ## Realtime boundary
 
 The current online stack deliberately splits authority instead of treating Supabase as a live race bus:
 
 - `coordinator` owns room truth, match truth, command ordering, timeout transitions, rank calculation, and finish/winner decisions.
-- `bridge` and server routes sign tickets, proxy authenticated commands, and are the right place to persist coordinator-approved room or result snapshots with server-only credentials.
+- WebSocket is the primary live transport. The same-origin `bridge` remains the fallback for command forwarding and snapshot recovery.
+- Server routes sign tickets, proxy authenticated bridge commands, resolve custom track ownership, and persist coordinator-approved room or match snapshots with server-only credentials.
 - `Supabase` is the durable read-model layer. It restores waiting rooms for `/hall` and stores historical match/results snapshots that must survive refreshes or rematches.
 
 High-frequency `match.progress` telemetry should stay in coordinator memory or transport messages. Do not write every frame into Postgres.
 
 ## Supabase durable models
 
-The repository currently uses two different durability shapes:
+The repository currently uses three durability shapes:
 
 - `racing_rooms` and `racing_room_players` are the public waiting-room read model consumed by the hall list.
-- `racing_matches` and `racing_match_results` are the durable result model for one race start plus each player's final ordering/progress snapshot.
+- `racing_tracks` is the player-owned custom track library used by the editor and room creation flow.
+- `racing_matches` and `racing_match_results` are the durable match/result model for one race start plus each player's final ordering/progress snapshot.
 
-At the moment, the hall list already reads `racing_rooms`, while result persistence is schema/documentation groundwork for the next coordinator or bridge write path. See `supabase/README.md` for table responsibilities and RLS expectations.
+Server and worker writers persist coordinator-approved room lifecycle snapshots,
+match headers, and final match results. See `supabase/README.md` for table
+responsibilities, phase semantics, and RLS expectations.
 
 ## Environment
 
 Copy `.env.example` and keep the split explicit:
 
 - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are browser-safe and only power public hall reads plus online-mode detection.
-- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are server/worker-only and should be used when persisting room lifecycle or match result rows.
+- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are server/worker-only and are used for room lifecycle, custom track library, match header, and final result writes.
+- `COORDINATOR_URL` selects the Cloudflare coordinator endpoint. Valid coordinator URLs are offered to the browser as socket-first transport.
 - `COORDINATOR_SHARED_SECRET` stays server-only for ticket signing and bridge forwarding.
 
-If the Cloudflare worker later writes durable result rows directly, mirror the same server-only Supabase writer variables into the worker secret store rather than exposing them to the browser bundle.
+If the Cloudflare worker writes durable rows directly, mirror the same server-only
+Supabase writer variables into the worker secret store rather than exposing them
+to the browser bundle.
 
 ## Development
 
@@ -59,7 +70,9 @@ npm run test
 npm run build
 ```
 
-See `docs/runbooks/phase-1-online-room-lifecycle.md` for Supabase, coordinator and mobile smoke verification.
+See `docs/runbooks/phase-1-online-room-lifecycle.md` for Supabase, coordinator,
+desktop/mobile, default-track, custom-track, countdown, ghost-car, result, and
+rematch smoke verification.
 
 ## Credits
 

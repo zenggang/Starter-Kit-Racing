@@ -42,7 +42,8 @@ comment on table public.racing_room_players is
 create table if not exists public.racing_matches (
   id uuid primary key default gen_random_uuid(),
   room_id uuid not null references public.racing_rooms(id) on delete cascade,
-  phase text not null check (phase in ('live', 'finished', 'aborted')),
+  room_code text not null,
+  phase text not null check (phase in ('countdown', 'live', 'finished', 'aborted')),
   lap_target integer not null check (lap_target between 1 and 10),
   track_map text null,
   started_at timestamptz not null,

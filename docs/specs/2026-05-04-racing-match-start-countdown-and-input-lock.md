@@ -1,5 +1,29 @@
 # Racing Match Start Countdown And Input Lock
 
+## Implementation Status
+
+Status as of 2026-05-04: implemented and verified in the current codebase. The
+historical sections below describe the original spec, but the active app now
+creates `countdown` matches on `room.start`, promotes them through the Durable
+Object lifecycle alarm or `match.sync`, renders the central countdown overlay,
+keeps the race timer at zero during countdown, locks local input during
+countdown and after the current player receives authoritative `finishedAt`, and
+keeps bridge clients synchronized with a countdown-end `match.sync`.
+
+Current primary files:
+
+- `realtime-worker/src/protocol.ts`
+- `realtime-worker/src/RoomCoordinator.ts`
+- `realtime-worker/src/index.ts`
+- `src/realtime/protocol.ts`
+- `src/realtime/useMatchSession.ts`
+- `src/components/RaceClient.tsx`
+- `src/components/RaceHud.tsx`
+- `src/game/raceTiming.ts`
+- `src/game/RacingRuntimeHost.tsx`
+- `js/Controls.js`
+- `js/main.js`
+
 ## Context
 
 - Background:
