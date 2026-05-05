@@ -174,6 +174,26 @@ a {
   min-width: 0;
 }
 
+.room-console-topline {
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.room-console-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.room-console-screen-title {
+  font-size: clamp(18px, 2.3vw, 22px);
+  line-height: 1;
+}
+
 .console-screen-title {
   font-size: 34px;
   line-height: 0.94;
@@ -247,6 +267,240 @@ a {
 
 .compact-actions {
   gap: 10px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.room-lobby-layout {
+  grid-template-columns: minmax(0, 1.2fr) minmax(272px, 0.8fr);
+  align-items: stretch;
+}
+
+.room-lobby-screen {
+  align-content: start;
+  gap: 4px;
+}
+
+.room-lobby-main,
+.room-lobby-sidebar {
+  min-width: 0;
+}
+
+.room-lobby-main {
+  gap: 6px;
+}
+
+.room-lobby-sidebar {
+  gap: 4px;
+  height: 100%;
+}
+
+.room-roster-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 32px;
+}
+
+.color-picker-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.color-picker-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.color-picker-current {
+  color: rgba(247, 248, 244, 0.88);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.color-grid-compact {
+  grid-template-columns: repeat(4, 16px);
+  gap: 5px;
+}
+
+.color-swatch-compact {
+  position: relative;
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  min-height: 16px;
+  padding: 0;
+  border-width: 1px;
+  border-radius: 5px;
+  box-shadow: none;
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    opacity 120ms ease;
+  opacity: 0.52;
+}
+
+.color-swatch-compact[aria-pressed='true'] {
+  border-color: rgba(247, 248, 244, 0.96);
+  box-shadow:
+    0 0 0 2px rgba(244, 196, 48, 0.34),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.38);
+  transform: scale(1.16);
+  opacity: 1;
+}
+
+.color-swatch-compact[aria-pressed='true']::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.room-driver-grid {
+  gap: 4px;
+}
+
+.room-driver-grid .driver-card {
+  min-height: 60px;
+  padding: 7px 8px;
+  gap: 3px;
+}
+
+.room-driver-grid .driver-card strong {
+  font-size: 16px;
+}
+
+.room-driver-grid .driver-meta {
+  gap: 2px;
+}
+
+.room-driver-grid .driver-card span:not(.driver-role):not(.driver-color-chip) {
+  font-size: 11px;
+}
+
+.room-driver-grid[data-roster-density='compact'] {
+  gap: 3px;
+}
+
+.room-driver-grid[data-roster-density='compact'] .driver-card {
+  min-height: 52px;
+  padding: 6px 8px;
+  gap: 2px;
+}
+
+.room-driver-grid[data-roster-density='compact'] .driver-card strong {
+  font-size: 14px;
+}
+
+.driver-card-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.driver-color-chip {
+  display: inline-block;
+  width: 12px;
+  min-width: 12px;
+  height: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.26) inset;
+}
+
+.room-track-preview {
+  gap: 2px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.room-track-preview-head {
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.room-track-preview-svg {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 108px;
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(13, 17, 21, 0.92), rgba(8, 11, 14, 0.98));
+}
+
+.room-track-preview-line {
+  fill: none;
+  stroke: rgba(247, 248, 244, 0.74);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.room-track-preview-start {
+  fill: var(--accent);
+}
+
+.room-lap-panel {
+  padding-block: 6px;
+  gap: 6px;
+  align-items: center;
+}
+
+.room-lap-target {
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+.room-lap-panel .step-button {
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 9px;
+}
+
+.room-lap-panel .lap-readout {
+  min-width: 62px;
+  font-size: 18px;
+}
+
+.room-actions-panel {
+  gap: 0;
+  padding-block: 6px;
+}
+
+.room-actions-panel .compact-actions {
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.room-actions-panel .primary-action,
+.room-actions-panel .secondary-action {
+  min-width: 0;
+  flex: 1 1 0;
+  min-height: 38px;
+  padding: 0 8px;
+  font-size: 14px;
 }
 
 .room-driver-grid {
@@ -1330,6 +1584,12 @@ a {
     align-content: center;
   }
 
+  .room-lobby-screen {
+    align-content: start;
+    min-height: calc(var(--viewport-visible-height) - max(20px, var(--safe-top)) - max(20px, var(--safe-bottom)));
+    gap: 4px;
+  }
+
   .race-home-copy,
   .race-page-head {
     gap: 4px;
@@ -1395,6 +1655,11 @@ a {
     gap: 12px;
   }
 
+  .room-console-topline {
+    align-items: flex-start;
+    gap: 6px;
+  }
+
   .console-title-group {
     gap: 3px;
   }
@@ -1402,6 +1667,14 @@ a {
   .console-screen-title {
     font-size: 22px;
     line-height: 1;
+  }
+
+  .room-console-title-row {
+    gap: 8px;
+  }
+
+  .room-console-screen-title {
+    font-size: 18px;
   }
 
   .console-block-title {
@@ -1412,6 +1685,11 @@ a {
   .room-console-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
+  }
+
+  .room-lobby-layout {
+    grid-template-columns: minmax(0, 1.14fr) minmax(232px, 0.86fr);
+    gap: 4px;
   }
 
   .console-action-card,
@@ -1471,9 +1749,86 @@ a {
     gap: 8px;
   }
 
+  .color-grid-compact {
+    grid-template-columns: repeat(4, 16px);
+    gap: 5px;
+  }
+
   .color-swatch {
     min-height: 40px;
     padding: 5px 6px;
+  }
+
+  .color-swatch-compact {
+    width: 16px;
+    min-width: 16px;
+    height: 16px;
+    min-height: 16px;
+    padding: 0;
+  }
+
+  .room-roster-head {
+    min-height: 28px;
+    gap: 4px;
+  }
+
+  .color-picker-label {
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  .color-picker-current {
+    font-size: 9px;
+  }
+
+  .room-driver-grid {
+    gap: 3px;
+  }
+
+  .room-driver-grid .driver-card,
+  .driver-grid[data-roster-density='compact'] .room-driver-grid .driver-card {
+    min-height: 48px;
+    padding: 6px 7px;
+    gap: 2px;
+  }
+
+  .room-driver-grid .driver-card strong {
+    font-size: 13px;
+  }
+
+  .room-driver-grid .driver-card span:not(.driver-role):not(.driver-color-chip) {
+    font-size: 10px;
+  }
+
+  .driver-color-chip {
+    width: 10px;
+    min-width: 10px;
+    height: 10px;
+  }
+
+  .room-track-preview-svg {
+    min-height: 96px;
+  }
+
+  .room-lap-panel .step-button {
+    min-width: 30px;
+    min-height: 30px;
+  }
+
+  .room-lap-panel .lap-readout {
+    min-width: 52px;
+    font-size: 16px;
+  }
+
+  .room-actions-panel .compact-actions {
+    flex-wrap: nowrap;
+  }
+
+  .room-actions-panel .primary-action,
+  .room-actions-panel .secondary-action {
+    min-height: 32px;
+    font-size: 12px;
+    padding: 0 6px;
   }
 
   .compact-actions {
@@ -1737,14 +2092,41 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .room-console-gri
   gap: 8px;
 }
 
+html[data-browser-shell='wechat'][data-browser-compact='true'] .room-console-screen-title {
+  font-size: 16px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .room-lobby-layout {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 4px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .room-roster-head {
+  min-height: 24px;
+  gap: 4px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .color-picker-inline {
+  gap: 4px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .color-picker-label {
+  font-size: 9px;
+  gap: 3px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .color-picker-current {
+  font-size: 8px;
+}
+
 html[data-browser-shell='wechat'][data-browser-compact='true'] .driver-grid[data-roster-density='compact'] .driver-card,
 html[data-browser-shell='wechat'][data-browser-compact='true'] .room-driver-grid .driver-card {
-  min-height: 60px;
-  padding: 8px;
+  min-height: 44px;
+  padding: 5px 6px;
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .driver-card strong {
-  font-size: 14px;
+  font-size: 12px;
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .driver-role,
@@ -1757,9 +2139,60 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .color-grid {
   gap: 6px;
 }
 
+html[data-browser-shell='wechat'][data-browser-compact='true'] .color-grid-compact {
+  grid-template-columns: repeat(4, 12px);
+  gap: 3px;
+}
+
 html[data-browser-shell='wechat'][data-browser-compact='true'] .color-swatch {
   min-height: 32px;
   padding: 4px 5px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .color-swatch-compact {
+  width: 12px;
+  min-width: 12px;
+  height: 12px;
+  min-height: 12px;
+  padding: 0;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .room-track-preview {
+  gap: 6px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .room-track-preview-copy {
+  display: none;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .room-track-preview-svg {
+  min-height: 82px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .driver-color-chip {
+  width: 9px;
+  min-width: 9px;
+  height: 9px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .room-actions-panel .compact-actions {
+  gap: 4px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .room-actions-panel .primary-action,
+html[data-browser-shell='wechat'][data-browser-compact='true'] .room-actions-panel .secondary-action {
+  min-height: 30px;
+  font-size: 11px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .room-lap-panel .step-button {
+  min-width: 28px;
+  min-height: 28px;
+}
+
+html[data-browser-shell='wechat'][data-browser-compact='true'] .room-lap-panel .lap-readout {
+  min-width: 46px;
+  font-size: 15px;
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .primary-action,

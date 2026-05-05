@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { RoomLobbyPanel } from './RoomLobbyPanel';
 import { useRoomSession } from '@/realtime/useRoomSession';
+import { PLAYER_COLORS } from '@/realtime/protocol';
 import { formatRacingError } from '@/realtime/errorMessages';
 import { createCommand } from '@/realtime/sessionReducer';
 import { usePlayerSession } from '@/session/usePlayerSession';
@@ -14,6 +15,7 @@ export function RoomClient({ code }: { code: string }) {
   const { snapshot, connectionState, lastErrorCode, sendCommand } = useRoomSession(code, session);
   const joinedRef = useRef(false);
   const leavingRef = useRef(false);
+  const autoColorRequestRef = useRef<string | null>(null);
   const currentPlayer = snapshot?.players.find((candidate) => candidate.playerId === session?.playerId) ?? null;
 
   useEffect(() => {
@@ -39,6 +41,34 @@ export function RoomClient({ code }: { code: string }) {
     }
   }, [currentPlayer, router, snapshot]);
 
+  useEffect(() => {
+    if (!session || !snapshot || !currentPlayer) return;
+    if (connectionState !== 'connected' || leavingRef.current) return;
+    if (snapshot.status !== 'waiting' || currentPlayer.color) {
+      autoColorRequestRef.current = null;
+      return;
+    }
+
+    const takenColors = snapshot.players
+      .filter((candidate) => candidate.playerId !== currentPlayer.playerId)
+      .map((candidate) => candidate.color)
+      .filter((color): color is (typeof PLAYER_COLORS)[number] => Boolean(color));
+    const nextColor = PLAYER_COLORS.find((color) => !takenColors.includes(color));
+    if (!nextColor) return;
+
+    const requestKey = `${snapshot.code}:${currentPlayer.playerId}:${nextColor}`;
+    if (autoColorRequestRef.current === requestKey) {
+      return;
+    }
+
+    autoColorRequestRef.current = requestKey;
+    void sendCommand(createCommand('room.chooseColor', session.playerId, { color: nextColor })).then((result) => {
+      if (!result.ok) {
+        autoColorRequestRef.current = null;
+      }
+    });
+  }, [connectionState, currentPlayer, sendCommand, session, snapshot]);
+
   async function handleLeaveRoom() {
     if (!session) return;
     leavingRef.current = true;
@@ -58,7 +88,7 @@ export function RoomClient({ code }: { code: string }) {
   }
 
   return (
-    <section className="race-layout console-screen">
+    <section className="race-layout console-screen room-lobby-screen">
       {lastErrorCode ? <p className="error-banner">{formatRacingError(lastErrorCode)}</p> : null}
       <RoomLobbyPanel
         room={snapshot}

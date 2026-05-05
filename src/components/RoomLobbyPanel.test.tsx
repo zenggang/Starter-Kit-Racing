@@ -10,11 +10,27 @@ vi.mock('next/link', () => ({
 }));
 
 vi.mock('./ColorPicker', () => ({
-  ColorPicker: () => <div data-testid="color-picker" />
+  PLAYER_COLOR_HEX: {
+    yellow: '#f4c430',
+    green: '#52c46b',
+    purple: '#9b6ef3',
+    red: '#ef5350'
+  },
+  PLAYER_COLOR_LABELS: {
+    yellow: '黄色赛车',
+    green: '绿色赛车',
+    purple: '紫色赛车',
+    red: '红色赛车'
+  },
+  ColorPicker: ({ selected, taken, compact, label }: { selected: string | null; taken: string[]; compact?: boolean; label?: string }) => (
+    <div data-testid="color-picker" data-selected={selected ?? ''} data-taken={taken.join(',')} data-compact={compact ? 'true' : 'false'}>
+      {label ? <span>{label}</span> : null}
+    </div>
+  )
 }));
 
 vi.mock('./LapTargetControl', () => ({
-  LapTargetControl: () => <div data-testid="lap-target-control" />
+  LapTargetControl: ({ value }: { value: number }) => <div data-testid="lap-target-control">{value} 圈</div>
 }));
 
 function createRoomPlayer(index: number, overrides: Partial<RoomState['players'][number]> = {}): RoomState['players'][number] {
@@ -98,6 +114,48 @@ describe('RoomLobbyPanel', () => {
     expect(container.querySelector('.room-driver-grid')).toHaveAttribute('data-roster-density', 'compact');
   });
 
+  it('renders the compact landscape room composition with inline color switching and track preview', () => {
+    const player: PlayerSession = {
+      playerId: 'player-1',
+      nickname: '车手1',
+      lastRoomCode: '8966'
+    };
+
+    const room: RoomState = {
+      id: 'room-1',
+      code: '8966',
+      hostPlayerId: 'player-1',
+      status: 'waiting',
+      lapTarget: 3,
+      trackName: '默认赛道',
+      trackMap: null,
+      createdAt: '2026-05-02T10:00:00.000Z',
+      startedAt: null,
+      finishedAt: null,
+      expiresAt: '2026-05-02T11:00:00.000Z',
+      closedReason: null,
+      matchId: null,
+      players: [createRoomPlayer(1), createRoomPlayer(2, { color: null, ready: false, status: 'joined' })]
+    };
+
+    const { container } = render(
+      <RoomLobbyPanel room={room} player={player} roomCode="8966" connectionState="connected" onCommand={vi.fn()} onLeave={vi.fn()} />
+    );
+
+    expect(container.querySelector('.room-lobby-layout')).not.toBeNull();
+    expect(container.querySelector('.room-lobby-main')).not.toBeNull();
+    expect(container.querySelector('.room-lobby-sidebar')).not.toBeNull();
+    expect(container.querySelector('.room-roster-head')).not.toBeNull();
+    expect(container.querySelector('.room-track-preview')).not.toBeNull();
+    expect(screen.getByTestId('color-picker')).toHaveAttribute('data-compact', 'true');
+    expect(screen.getByTestId('color-picker')).toHaveAttribute('data-selected', 'yellow');
+    expect(screen.getByTestId('lap-target-control')).toHaveTextContent('3 圈');
+    expect(screen.getByText('车身颜色')).toBeInTheDocument();
+    expect(screen.getByText('比赛圈数')).toBeInTheDocument();
+    expect(screen.queryByText('发车操作')).toBeNull();
+    expect(screen.queryByText('未选赛车')).toBeNull();
+  });
+
   it('renders an explicit leave-room action for the current racer', () => {
     const onLeave = vi.fn();
     const player: PlayerSession = {
@@ -126,7 +184,7 @@ describe('RoomLobbyPanel', () => {
       <RoomLobbyPanel room={room} player={player} roomCode="8966" connectionState="connected" onCommand={vi.fn()} onLeave={onLeave} />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: '退出房间' }));
+    fireEvent.click(screen.getByRole('button', { name: '退出' }));
 
     expect(onLeave).toHaveBeenCalledTimes(1);
   });

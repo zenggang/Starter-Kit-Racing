@@ -144,6 +144,7 @@ export class RoomCoordinator {
     }
 
     const host = createPlayer(command.playerId, command.payload.nickname, true, timestamp);
+    assignFirstAvailableColor(host, []);
     const room: RoomState = {
       id: crypto.randomUUID(),
       code: roomCode,
@@ -181,11 +182,14 @@ export class RoomCoordinator {
       existing.nickname = command.payload.nickname || existing.nickname;
       existing.status = existing.ready ? 'ready' : 'joined';
       existing.lastSeenAt = timestamp;
+      assignFirstAvailableColor(existing, room.players);
     } else {
       if (room.players.length >= PLAYER_COLORS.length) {
         return commandError(command.commandId, room.seq, 'ROOM_FULL');
       }
-      room.players.push(createPlayer(command.playerId, command.payload.nickname, false, timestamp));
+      const incoming = createPlayer(command.playerId, command.payload.nickname, false, timestamp);
+      assignFirstAvailableColor(incoming, room.players);
+      room.players.push(incoming);
     }
 
     return this.mutate(command.commandId, room);
@@ -502,6 +506,24 @@ function createPlayer(playerId: string, nickname: string, isHost: boolean, times
     joinedAt: timestamp,
     lastSeenAt: timestamp
   };
+}
+
+/**
+ * Lobby colors now behave like seat reservations: when a racer enters the room
+ * for the first time, or returns from an older snapshot that predates this
+ * rule, the coordinator silently assigns the first currently unclaimed color.
+ * Existing explicit choices are never overwritten.
+ */
+function assignFirstAvailableColor(player: RoomPlayer, players: RoomPlayer[]): void {
+  if (player.color) {
+    return;
+  }
+
+  const taken = new Set(
+    players.filter((candidate) => candidate.playerId !== player.playerId).map((candidate) => candidate.color).filter((color): color is NonNullable<RoomPlayer['color']> => Boolean(color))
+  );
+  const nextColor = PLAYER_COLORS.find((color) => !taken.has(color)) ?? null;
+  player.color = nextColor;
 }
 
 function createMatchState(room: RoomState, startedAt: string): MatchState {

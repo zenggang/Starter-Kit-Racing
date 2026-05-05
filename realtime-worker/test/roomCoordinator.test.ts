@@ -82,7 +82,7 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
         nickname: 'Host',
         isHost: true,
         ready: false,
-        color: null
+        color: 'yellow'
       }
     ]);
   });
@@ -153,26 +153,33 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     expect(snapshot.errorCode).toBe('ROOM_NOT_FOUND');
   });
 
-  it('lets players join, choose unique colors, set lap target, and become ready', async () => {
+  it('auto-assigns the first available color during create and join while keeping manual overrides available', async () => {
     const coordinator = createCoordinator();
 
-    await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
+    const created = await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
     const join = await coordinator.execute(command('room.join', 'player-2', { nickname: 'Guest' }));
     const lap = await coordinator.execute(command('room.setLapTarget', 'host-1', { lapTarget: 5 }));
-    const hostColor = await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
-    const guestColor = await coordinator.execute(command('room.chooseColor', 'player-2', { color: 'green' }));
+    const guestManualOverride = await coordinator.execute(command('room.chooseColor', 'player-2', { color: 'purple' }));
+    const rejoin = await coordinator.execute(command('room.join', 'player-2', { nickname: 'Guest Rejoin' }));
     const hostReady = await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
     const guestReady = await coordinator.execute(command('room.ready', 'player-2', { ready: true }));
 
+    expect(created.room?.players).toEqual([expect.objectContaining({ playerId: 'host-1', color: 'yellow' })]);
     expect(join.ok).toBe(true);
+    expect(join.room?.players).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ playerId: 'host-1', color: 'yellow' }),
+        expect.objectContaining({ playerId: 'player-2', color: 'green' })
+      ])
+    );
     expect(lap.room?.lapTarget).toBe(5);
-    expect(hostColor.ok).toBe(true);
-    expect(guestColor.ok).toBe(true);
+    expect(guestManualOverride.ok).toBe(true);
+    expect(rejoin.room?.players).toEqual(expect.arrayContaining([expect.objectContaining({ playerId: 'player-2', color: 'purple' })]));
     expect(hostReady.ok).toBe(true);
     expect(guestReady.room?.players).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ playerId: 'host-1', color: 'yellow', ready: true }),
-        expect.objectContaining({ playerId: 'player-2', color: 'green', ready: true })
+        expect.objectContaining({ playerId: 'player-2', color: 'purple', ready: true })
       ])
     );
   });
@@ -211,11 +218,10 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     expect(takenColor).toMatchObject({ ok: false, errorCode: 'COLOR_TAKEN' });
   });
 
-  it('lets the host start alone after choosing a color and getting ready', async () => {
+  it('lets the host start alone after getting ready because create auto-assigns a color', async () => {
     const coordinator = createCoordinator();
 
     await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
-    await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
     await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
 
     const started = await coordinator.execute(command('room.start', 'host-1', {}));

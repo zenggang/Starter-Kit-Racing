@@ -111,7 +111,7 @@ describe('RoomClient', () => {
     };
     render(<RoomClient code="8966" />);
 
-    fireEvent.click(screen.getByRole('button', { name: '退出房间' }));
+    fireEvent.click(screen.getByRole('button', { name: '退出' }));
 
     await waitFor(() => {
       expect(sendCommandSpy).toHaveBeenCalledWith(
@@ -212,7 +212,7 @@ describe('RoomClient', () => {
       }
     });
 
-    fireEvent.click(screen.getByRole('button', { name: '退出房间' }));
+    fireEvent.click(screen.getByRole('button', { name: '退出' }));
 
     await waitFor(() => {
       expect(sendCommandSpy).toHaveBeenCalledWith(
@@ -238,5 +238,46 @@ describe('RoomClient', () => {
         playerId: 'player-1'
       })
     );
+  });
+
+  it('auto-selects the first available color when the current racer enters without one', async () => {
+    mockedSnapshot = {
+      ...mockedSnapshot,
+      hostPlayerId: 'host-1',
+      status: 'waiting',
+      closedReason: null,
+      players: [
+        {
+          playerId: 'host-1',
+          nickname: '房主',
+          color: 'green',
+          status: 'ready',
+          ready: true,
+          isHost: true,
+          lastSeenAt: '2026-05-02T10:00:00.000Z'
+        },
+        {
+          playerId: 'player-1',
+          nickname: '爸爸',
+          color: null,
+          status: 'joined',
+          ready: false,
+          isHost: false,
+          lastSeenAt: '2026-05-02T10:00:00.000Z'
+        }
+      ]
+    };
+
+    render(<RoomClient code="8966" />);
+
+    await waitFor(() => {
+      expect(sendCommandSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'room.chooseColor',
+          playerId: 'player-1',
+          payload: { color: 'yellow' }
+        })
+      );
+    });
   });
 });

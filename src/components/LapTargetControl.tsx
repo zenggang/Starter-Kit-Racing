@@ -3,14 +3,16 @@
 export function LapTargetControl({
   value,
   disabled,
+  compact,
   onChange
 }: {
   value: number;
   disabled?: boolean;
+  compact?: boolean;
   onChange(value: number): void;
 }) {
   return (
-    <div className="row row-wrap">
+    <div className={compact ? 'row room-lap-target' : 'row row-wrap'}>
       <button type="button" className="step-button" disabled={disabled || value <= 1} onClick={() => onChange(value - 1)} aria-label="减少圈数">
         -
       </button>
