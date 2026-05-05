@@ -316,7 +316,7 @@ a {
 .color-picker-inline {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 16px;
   min-width: 0;
 }
 
@@ -338,19 +338,19 @@ a {
 }
 
 .color-grid-compact {
-  grid-template-columns: repeat(4, 16px);
-  gap: 5px;
+  grid-template-columns: repeat(4, 32px);
+  gap: 15px;
 }
 
 .color-swatch-compact {
   position: relative;
-  width: 16px;
-  min-width: 16px;
-  height: 16px;
-  min-height: 16px;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
   padding: 0;
   border-width: 1px;
-  border-radius: 5px;
+  border-radius: 999px;
   box-shadow: none;
   transition:
     transform 120ms ease,
@@ -365,15 +365,15 @@ a {
   box-shadow:
     0 0 0 2px rgba(244, 196, 48, 0.34),
     inset 0 0 0 1px rgba(255, 255, 255, 0.38);
-  transform: scale(1.16);
+  transform: scale(1.04);
   opacity: 1;
 }
 
 .color-swatch-compact[aria-pressed='true']::after {
   content: '';
   position: absolute;
-  inset: 3px;
-  border-radius: 2px;
+  inset: 7px;
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.3);
 }
 
@@ -1750,8 +1750,8 @@ a {
   }
 
   .color-grid-compact {
-    grid-template-columns: repeat(4, 16px);
-    gap: 5px;
+    grid-template-columns: repeat(4, 24px);
+    gap: 12px;
   }
 
   .color-swatch {
@@ -2107,7 +2107,7 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .room-roster-head
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .color-picker-inline {
-  gap: 4px;
+  gap: 10px;
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .color-picker-label {
@@ -2140,8 +2140,8 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .color-grid {
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .color-grid-compact {
-  grid-template-columns: repeat(4, 12px);
-  gap: 3px;
+  grid-template-columns: repeat(4, 18px);
+  gap: 9px;
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .color-swatch {
@@ -2150,10 +2150,10 @@ html[data-browser-shell='wechat'][data-browser-compact='true'] .color-swatch {
 }
 
 html[data-browser-shell='wechat'][data-browser-compact='true'] .color-swatch-compact {
-  width: 12px;
-  min-width: 12px;
-  height: 12px;
-  min-height: 12px;
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  min-height: 18px;
   padding: 0;
 }
 
