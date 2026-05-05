@@ -30,7 +30,8 @@ export function RoomLobbyPanel({
   const current = room?.players.find((candidate) => candidate.playerId === player?.playerId) ?? null;
   const takenColors = room?.players.map((candidate) => candidate.color).filter((color): color is PlayerColor => Boolean(color)) ?? [];
   const isHost = current?.isHost ?? false;
-  const canStart = Boolean(isHost && current?.ready && current?.color);
+  const everyPlayerReady = Boolean(room?.players.every((candidate) => candidate.ready && candidate.color));
+  const canStart = Boolean(isHost && current?.ready && current?.color && everyPlayerReady);
   const seatSlots = room ? createLobbySeatSlots(room.players) : [];
   const rosterDensity = getRosterDensity(room?.players.length ?? 0, { reserveCapacity: true });
   const roomTrackMap = room?.trackMap ?? null;

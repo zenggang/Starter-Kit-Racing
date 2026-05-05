@@ -267,7 +267,7 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     );
   });
 
-  it('does not let an unready guest block the host from running the single-player path', async () => {
+  it('requires every racer in a multiplayer room to be ready before the host can start', async () => {
     const coordinator = createCoordinator();
 
     await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
@@ -277,18 +277,10 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
 
     const started = await coordinator.execute(command('room.start', 'host-1', {}));
 
-    expect(started.ok).toBe(true);
-    expect(started.match?.players).toEqual([
-      expect.objectContaining({
-        playerId: 'host-1',
-        color: 'yellow'
-      })
-    ]);
-    expect(started.room?.players).toEqual([
-      expect.objectContaining({
-        playerId: 'host-1'
-      })
-    ]);
+    expect(started).toMatchObject({
+      ok: false,
+      errorCode: 'NOT_ALL_PLAYERS_READY'
+    });
   });
 
   it('closes the room for everyone when the current host exits an occupied waiting room', async () => {

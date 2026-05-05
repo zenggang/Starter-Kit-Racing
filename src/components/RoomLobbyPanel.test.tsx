@@ -188,4 +188,34 @@ describe('RoomLobbyPanel', () => {
 
     expect(onLeave).toHaveBeenCalledTimes(1);
   });
+
+  it('keeps the start button disabled until every racer in the room is ready', () => {
+    const player: PlayerSession = {
+      playerId: 'player-1',
+      nickname: '车手1',
+      lastRoomCode: '8966'
+    };
+
+    const room: RoomState = {
+      id: 'room-1',
+      code: '8966',
+      hostPlayerId: 'player-1',
+      status: 'waiting',
+      lapTarget: 3,
+      trackMap: null,
+      createdAt: '2026-05-02T10:00:00.000Z',
+      startedAt: null,
+      finishedAt: null,
+      expiresAt: '2026-05-02T11:00:00.000Z',
+      closedReason: null,
+      matchId: null,
+      players: [createRoomPlayer(1, { ready: true, status: 'ready' }), createRoomPlayer(2, { ready: false, status: 'joined' })]
+    };
+
+    render(
+      <RoomLobbyPanel room={room} player={player} roomCode="8966" connectionState="connected" onCommand={vi.fn()} onLeave={vi.fn()} />
+    );
+
+    expect(screen.getByRole('button', { name: '发车' })).toBeDisabled();
+  });
 });

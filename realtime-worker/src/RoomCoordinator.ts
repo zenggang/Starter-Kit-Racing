@@ -312,8 +312,13 @@ export class RoomCoordinator {
       return commandError(command.commandId, room.seq, 'NOT_ALL_PLAYERS_READY');
     }
 
-    const eligiblePlayers = room.players.filter((player) => player.ready && player.color);
-    if (eligiblePlayers.length === 0) {
+    /**
+     * Waiting-room semantics now require a unanimous ready check for every
+     * racer currently occupying a seat. The host no longer gets the previous
+     * "single-player path" shortcut once a guest has joined but stayed idle.
+     */
+    const everyPlayerReady = room.players.every((player) => player.ready && player.color);
+    if (!everyPlayerReady) {
       return commandError(command.commandId, room.seq, 'NOT_ALL_PLAYERS_READY');
     }
 
@@ -323,7 +328,6 @@ export class RoomCoordinator {
 
     const startedAt = new Date(now).toISOString();
     const matchStartedAt = new Date(now + MATCH_START_COUNTDOWN_MS).toISOString();
-    room.players = eligiblePlayers;
     room.status = 'racing';
     room.startedAt = startedAt;
     room.finishedAt = null;
