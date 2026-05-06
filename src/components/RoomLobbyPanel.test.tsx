@@ -156,6 +156,43 @@ describe('RoomLobbyPanel', () => {
     expect(screen.queryByText('未选赛车')).toBeNull();
   });
 
+  it('lets the current racer switch vehicle type inside the room', () => {
+    const onCommand = vi.fn();
+    const player: PlayerSession = {
+      playerId: 'player-1',
+      nickname: '车手1',
+      lastRoomCode: '8966'
+    };
+
+    const room: RoomState = {
+      id: 'room-1',
+      code: '8966',
+      hostPlayerId: 'player-1',
+      status: 'waiting',
+      lapTarget: 3,
+      trackMap: null,
+      createdAt: '2026-05-02T10:00:00.000Z',
+      startedAt: null,
+      finishedAt: null,
+      expiresAt: '2026-05-02T11:00:00.000Z',
+      closedReason: null,
+      matchId: null,
+      players: [createRoomPlayer(1, { vehicleType: 'truck' })]
+    };
+
+    render(<RoomLobbyPanel room={room} player={player} roomCode="8966" connectionState="connected" onCommand={onCommand} onLeave={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: '摩托' }));
+
+    expect(onCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'room.chooseVehicleType',
+        playerId: 'player-1',
+        payload: { vehicleType: 'motorcycle' }
+      })
+    );
+  });
+
   it('renders an explicit leave-room action for the current racer', () => {
     const onLeave = vi.fn();
     const player: PlayerSession = {

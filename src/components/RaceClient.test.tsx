@@ -162,7 +162,7 @@ function createRaceMatch(): MatchState {
     winnerPlayerId: null,
     players: [
       createMatchPlayer('player-1', '本地车手', 'yellow', { x: 1, y: 0.5, z: 2 }, 0),
-      createMatchPlayer('player-2', '远端绿车', 'green', { x: 3, y: 0.5, z: 4 }, 0.5),
+      createMatchPlayer('player-2', '远端绿车', 'green', { x: 3, y: 0.5, z: 4 }, 0.5, 'connected', 'motorcycle'),
       createMatchPlayer('player-3', '远端紫车', 'purple', { x: 5, y: 0.5, z: 6 }, 1.2, 'disconnected')
     ]
   };
@@ -174,12 +174,14 @@ function createMatchPlayer(
   color: MatchState['players'][number]['color'],
   position: MatchState['players'][number]['position'],
   heading: number,
-  presence: MatchState['players'][number]['presence'] = 'connected'
+  presence: MatchState['players'][number]['presence'] = 'connected',
+  vehicleType: MatchState['players'][number]['vehicleType'] = 'truck'
 ): MatchState['players'][number] {
   return {
     playerId,
     nickname,
     color,
+    vehicleType,
     isHost: playerId === 'player-1',
     presence,
     rank: Number(playerId.at(-1) ?? 1),
@@ -229,6 +231,7 @@ describe('RaceClient remote vehicle projection', () => {
         playerId: 'player-2',
         nickname: '远端绿车',
         color: 'green',
+        vehicleType: 'motorcycle',
         presence: 'connected',
         position: { x: 3, y: 0.5, z: 4 },
         heading: 0.5,
@@ -239,6 +242,7 @@ describe('RaceClient remote vehicle projection', () => {
         playerId: 'player-3',
         nickname: '远端紫车',
         color: 'purple',
+        vehicleType: 'truck',
         presence: 'disconnected',
         position: { x: 5, y: 0.5, z: 6 },
         heading: 1.2,

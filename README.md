@@ -64,6 +64,18 @@ npm install
 npm run dev
 ```
 
+本地联机环境有两种启动方式，二者都只覆盖当前进程环境变量，不会修改 `.env.local` 或线上配置：
+
+```bash
+# 本地 Next + 本地 Cloudflare Worker/Durable Object coordinator
+npm run dev:local-worker
+
+# 本地 Next + .env.local 中配置的线上 coordinator
+npm run dev:online-worker
+```
+
+`dev:local-worker` 会同时启动 `http://localhost:3000` 和 `http://localhost:8787`，并禁用当前进程的 Supabase 服务端写入，避免本地 worker 房间污染线上读模型。
+
 常用验证命令：
 
 ```bash
@@ -141,6 +153,22 @@ If the Cloudflare worker writes directly to Supabase, mirror the same server-onl
 npm install
 npm run dev
 ```
+
+Two local online test modes are available. Both only override environment
+variables for the current process and do not modify `.env.local` or production
+configuration:
+
+```bash
+# Local Next + local Cloudflare Worker/Durable Object coordinator
+npm run dev:local-worker
+
+# Local Next + the online coordinator configured in .env.local
+npm run dev:online-worker
+```
+
+`dev:local-worker` starts both `http://localhost:3000` and
+`http://localhost:8787`, and disables Supabase server writes for that process so
+local worker rooms do not pollute the online read model.
 
 Common verification commands:
 

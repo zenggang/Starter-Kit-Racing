@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createCommandResult, isPlayerColor, validateLapTarget, validateMatchProgressPayload } from './protocol';
+import { createCommandResult, isPlayerColor, isVehicleType, validateLapTarget, validateMatchProgressPayload } from './protocol';
 
 describe('Phase 1 realtime protocol', () => {
   it('accepts integer lap targets from 1 through 10', () => {
@@ -19,6 +19,13 @@ describe('Phase 1 realtime protocol', () => {
     expect(isPlayerColor('purple')).toBe(true);
     expect(isPlayerColor('red')).toBe(true);
     expect(isPlayerColor('blue')).toBe(false);
+  });
+
+  it('allows only supported vehicle body types', () => {
+    expect(isVehicleType('truck')).toBe(true);
+    expect(isVehicleType('motorcycle')).toBe(true);
+    expect(isVehicleType('kart')).toBe(false);
+    expect(isVehicleType(null)).toBe(false);
   });
 
   it('creates command.result envelopes without leaking transport details', () => {

@@ -4,6 +4,8 @@ export const MATCH_PHASES = ['countdown', 'live', 'finished', 'aborted'] as cons
 export const MATCH_PRESENCE = ['pending', 'connected', 'disconnected', 'finished'] as const;
 export const TRANSPORT_MODES = ['socket', 'bridge'] as const;
 export const PLAYER_COLORS = ['yellow', 'green', 'purple', 'red'] as const;
+export const VEHICLE_TYPES = ['truck', 'motorcycle'] as const;
+export const DEFAULT_VEHICLE_TYPE = 'truck';
 export const MATCH_START_COUNTDOWN_MS = 15 * 1000;
 
 export type RoomStatus = (typeof ROOM_STATUSES)[number];
@@ -12,6 +14,7 @@ export type MatchPhase = (typeof MATCH_PHASES)[number];
 export type MatchPresence = (typeof MATCH_PRESENCE)[number];
 export type TransportMode = (typeof TRANSPORT_MODES)[number];
 export type PlayerColor = (typeof PLAYER_COLORS)[number];
+export type VehicleType = (typeof VEHICLE_TYPES)[number];
 
 export type RacingErrorCode =
   | 'ROOM_NOT_FOUND'
@@ -22,6 +25,7 @@ export type RacingErrorCode =
   | 'ROOM_EXPIRED'
   | 'COLOR_TAKEN'
   | 'COLOR_INVALID'
+  | 'VEHICLE_TYPE_INVALID'
   | 'LAP_TARGET_INVALID'
   | 'ONLY_HOST_CAN_START'
   | 'ONLY_HOST_CAN_REMATCH'
@@ -49,6 +53,7 @@ export type RoomCommandType =
   | 'room.leave'
   | 'room.setLapTarget'
   | 'room.chooseColor'
+  | 'room.chooseVehicleType'
   | 'room.ready'
   | 'room.start'
   | 'room.rematch'
@@ -63,6 +68,7 @@ export interface RoomPlayer {
   playerId: string;
   nickname: string;
   color: PlayerColor | null;
+  vehicleType?: VehicleType;
   status: PlayerStatus;
   ready: boolean;
   isHost: boolean;
@@ -94,6 +100,7 @@ export interface MatchPlayerState extends MatchTelemetry {
   playerId: string;
   nickname: string;
   color: PlayerColor;
+  vehicleType?: VehicleType;
   isHost: boolean;
   presence: MatchPresence;
   rank: number;
@@ -212,11 +219,20 @@ export function validateLapTarget(value: unknown): { ok: true; value: number } |
 }
 
 /**
- * Restricts player color selection to the four GLB vehicle variants that are
- * already present in the repository so room and race state never drift.
+ * Restricts player color selection to the four unique lobby seats. Vehicle body
+ * type is modeled separately so a motorcycle does not consume an extra seat.
  */
 export function isPlayerColor(value: unknown): value is PlayerColor {
   return typeof value === 'string' && (PLAYER_COLORS as readonly string[]).includes(value);
+}
+
+/**
+ * Keeps the visual body selection inside runtime-supported GLB variants. This
+ * is intentionally separate from color because many racers may choose the same
+ * vehicle body while still requiring unique colors for HUD and roster identity.
+ */
+export function isVehicleType(value: unknown): value is VehicleType {
+  return typeof value === 'string' && (VEHICLE_TYPES as readonly string[]).includes(value);
 }
 
 /**

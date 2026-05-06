@@ -184,6 +184,28 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     );
   });
 
+  it('lets room racers switch vehicle type without reserving it uniquely', async () => {
+    const coordinator = createCoordinator();
+
+    const created = await coordinator.execute(command('room.create', 'host-1', { nickname: 'Host' }));
+    await coordinator.execute(command('room.join', 'player-2', { nickname: 'Guest' }));
+    const hostMotorcycle = await coordinator.execute(command('room.chooseVehicleType', 'host-1', { vehicleType: 'motorcycle' }));
+    const guestMotorcycle = await coordinator.execute(command('room.chooseVehicleType', 'player-2', { vehicleType: 'motorcycle' }));
+    await coordinator.execute(command('room.ready', 'host-1', { ready: true }));
+    await coordinator.execute(command('room.ready', 'player-2', { ready: true }));
+    const started = await coordinator.execute(command('room.start', 'host-1', {}));
+
+    expect(created.room?.players).toEqual([expect.objectContaining({ playerId: 'host-1', vehicleType: 'truck' })]);
+    expect(hostMotorcycle.room?.players).toEqual(expect.arrayContaining([expect.objectContaining({ playerId: 'host-1', vehicleType: 'motorcycle' })]));
+    expect(guestMotorcycle.room?.players).toEqual(expect.arrayContaining([expect.objectContaining({ playerId: 'player-2', vehicleType: 'motorcycle' })]));
+    expect(started.match?.players).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ playerId: 'host-1', vehicleType: 'motorcycle' }),
+        expect.objectContaining({ playerId: 'player-2', vehicleType: 'motorcycle' })
+      ])
+    );
+  });
+
   it('rejects new joins once the four-seat room is full', async () => {
     const coordinator = createCoordinator();
 
@@ -209,12 +231,14 @@ describe('RoomCoordinator Phase 1 lifecycle', () => {
     const invalidLap = await coordinator.execute(command('room.setLapTarget', 'host-1', { lapTarget: 11 }));
     const nonHostLap = await coordinator.execute(command('room.setLapTarget', 'player-2', { lapTarget: 4 }));
     const invalidColor = await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'blue' }));
+    const invalidVehicleType = await coordinator.execute(command('room.chooseVehicleType', 'host-1', { vehicleType: 'kart' }));
     await coordinator.execute(command('room.chooseColor', 'host-1', { color: 'yellow' }));
     const takenColor = await coordinator.execute(command('room.chooseColor', 'player-2', { color: 'yellow' }));
 
     expect(invalidLap).toMatchObject({ ok: false, errorCode: 'LAP_TARGET_INVALID' });
     expect(nonHostLap).toMatchObject({ ok: false, errorCode: 'ONLY_HOST_CAN_START' });
     expect(invalidColor).toMatchObject({ ok: false, errorCode: 'COLOR_INVALID' });
+    expect(invalidVehicleType).toMatchObject({ ok: false, errorCode: 'VEHICLE_TYPE_INVALID' });
     expect(takenColor).toMatchObject({ ok: false, errorCode: 'COLOR_TAKEN' });
   });
 

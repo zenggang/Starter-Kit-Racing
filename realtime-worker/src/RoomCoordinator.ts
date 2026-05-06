@@ -1,4 +1,5 @@
 import {
+  DEFAULT_VEHICLE_TYPE,
   DEFAULT_LAP_TARGET,
   FINISHED_ROOM_TTL_MS,
   MATCH_START_COUNTDOWN_MS,
@@ -7,6 +8,7 @@ import {
   commandError,
   isAuthTicketValid,
   isPlayerColor,
+  isVehicleType,
   validateLapTarget,
   validateMatchProgressPayload,
   type AuthTicket,
@@ -98,6 +100,8 @@ export class RoomCoordinator {
         return this.setLapTarget(command, room);
       case 'room.chooseColor':
         return this.chooseColor(command, room, now);
+      case 'room.chooseVehicleType':
+        return this.chooseVehicleType(command, room, now);
       case 'room.ready':
         return this.setReady(command, room, now);
       case 'room.start':
@@ -278,6 +282,31 @@ export class RoomCoordinator {
     }
 
     player.color = color;
+    player.lastSeenAt = new Date(now).toISOString();
+    return this.mutate(command.commandId, room);
+  }
+
+  private async chooseVehicleType(command: RoomCommandEnvelope, room: RoomState, now: number): Promise<CommandResult> {
+    if (room.status !== 'waiting') {
+      return commandError(command.commandId, room.seq, 'ROOM_NOT_WAITING');
+    }
+
+    const vehicleType = (command.payload as { vehicleType?: unknown }).vehicleType;
+    if (!isVehicleType(vehicleType)) {
+      return commandError(command.commandId, room.seq, 'VEHICLE_TYPE_INVALID');
+    }
+
+    const player = this.findRoomPlayer(room, command.playerId);
+    if (!player) {
+      return commandError(command.commandId, room.seq, 'PLAYER_NOT_IN_ROOM');
+    }
+
+    /**
+     * Vehicle type is cosmetic and intentionally not unique. Several racers
+     * can pick motorcycles while the four unique colors continue to reserve
+     * the actual start positions and HUD identities.
+     */
+    player.vehicleType = vehicleType;
     player.lastSeenAt = new Date(now).toISOString();
     return this.mutate(command.commandId, room);
   }
@@ -504,6 +533,7 @@ function createPlayer(playerId: string, nickname: string, isHost: boolean, times
     playerId,
     nickname,
     color: null,
+    vehicleType: DEFAULT_VEHICLE_TYPE,
     status: 'joined',
     ready: false,
     isHost,
@@ -547,6 +577,7 @@ function createMatchState(room: RoomState, startedAt: string): MatchState {
       playerId: player.playerId,
       nickname: player.nickname,
       color: player.color as MatchPlayerState['color'],
+      vehicleType: player.vehicleType ?? DEFAULT_VEHICLE_TYPE,
       isHost: player.isHost,
       presence: 'pending',
       rank: 0,

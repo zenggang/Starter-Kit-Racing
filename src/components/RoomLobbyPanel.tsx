@@ -4,8 +4,9 @@ import React from 'react';
 import Link from 'next/link';
 import { ColorPicker, PLAYER_COLOR_HEX, PLAYER_COLOR_LABELS } from './ColorPicker';
 import { LapTargetControl } from './LapTargetControl';
+import { VehicleTypePicker, VEHICLE_TYPE_LABELS } from './VehicleTypePicker';
 import { createLobbySeatSlots, getRosterDensity } from './rosterLayout';
-import type { PlayerColor, RoomState } from '@/realtime/protocol';
+import { DEFAULT_VEHICLE_TYPE, type PlayerColor, type RoomState } from '@/realtime/protocol';
 import { createCommand } from '@/realtime/sessionReducer';
 import type { PlayerSession } from '@/session/playerSession';
 import { buildTrackProgressModel, type TrackProgressModel } from '@/game/trackProgress';
@@ -74,6 +75,13 @@ export function RoomLobbyPanel({
               label="车身颜色"
               onSelect={(color) => onCommand(createCommand('room.chooseColor', player.playerId, { color }))}
             />
+            <VehicleTypePicker
+              selected={current?.vehicleType ?? DEFAULT_VEHICLE_TYPE}
+              disabled={disabled}
+              compact
+              label="车型"
+              onSelect={(vehicleType) => onCommand(createCommand('room.chooseVehicleType', player.playerId, { vehicleType }))}
+            />
           </div>
           <section className="driver-grid room-driver-grid" data-roster-density={rosterDensity}>
             {seatSlots.map((member, index) =>
@@ -92,6 +100,7 @@ export function RoomLobbyPanel({
                   <strong>{member.nickname}</strong>
                   <div className="driver-meta">
                     <span>{member.ready ? '已准备' : '待准备'}</span>
+                    <span>{VEHICLE_TYPE_LABELS[member.vehicleType ?? DEFAULT_VEHICLE_TYPE]}</span>
                   </div>
                 </div>
               ) : (

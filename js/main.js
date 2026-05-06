@@ -16,6 +16,7 @@ import { resolveRuntimeGraphicsProfile } from './runtimeProfile.js';
 
 const modelNames = [
 	'vehicle-truck-yellow', 'vehicle-truck-green', 'vehicle-truck-purple', 'vehicle-truck-red',
+	'vehicle-motorcycle',
 	'track-straight', 'track-corner', 'track-bump', 'track-finish',
 	'decoration-empty', 'decoration-forest', 'decoration-tents',
 ];
@@ -90,6 +91,7 @@ export async function mountRacingRuntime( container, options = {} ) {
 		hasCustomTrack: typeof mapParam === 'string' && mapParam.length > 0,
 	} );
 	const vehicleColor = typeof options.vehicleColor === 'string' && options.vehicleColor.length > 0 ? options.vehicleColor : 'yellow';
+	const vehicleType = options.vehicleType === 'motorcycle' ? 'motorcycle' : 'truck';
 	const { width, height } = measureRuntimeViewport( container );
 	let animationFrame = 0;
 	let destroyed = false;
@@ -276,8 +278,11 @@ export async function mountRacingRuntime( container, options = {} ) {
 
 	}
 
-	const vehicleModelName = `vehicle-truck-${ vehicleColor }`;
-	const vehicleGroup = vehicle.init( models[ vehicleModelName ] || models[ 'vehicle-truck-yellow' ] );
+	const vehicleModelName = vehicleType === 'motorcycle' ? 'vehicle-motorcycle' : `vehicle-truck-${ vehicleColor }`;
+	const vehicleGroup = vehicle.init( models[ vehicleModelName ] || models[ 'vehicle-truck-yellow' ], {
+		vehicleType,
+		vehicleColor,
+	} );
 	scene.add( vehicleGroup );
 
 	dirLight.target = vehicleGroup;
@@ -293,7 +298,11 @@ export async function mountRacingRuntime( container, options = {} ) {
 	const remoteVehicles = new RemoteVehicles( scene, models );
 
 	const audio = new GameAudio();
-	audio.init( cam.camera, { assetBaseUrl, target: window } );
+	audio.init( cam.camera, {
+		assetBaseUrl,
+		target: window,
+		engineSoundName: vehicleType === 'motorcycle' ? 'engine-motorcycle' : 'engine',
+	} );
 
 	const _forward = new THREE.Vector3();
 	const contactListener = {

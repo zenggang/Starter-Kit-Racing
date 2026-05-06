@@ -45,6 +45,7 @@ export class GameAudio {
 	init( camera, options = {} ) {
 
 		const assetBaseUrl = options.assetBaseUrl || '';
+		const engineSoundName = options.engineSoundName || 'engine';
 		this.unlockTarget = options.target || window;
 		this.listener = new THREE.AudioListener();
 		camera.add( this.listener );
@@ -62,7 +63,7 @@ export class GameAudio {
 
 		this.skidSound = new THREE.Audio( this.listener );
 
-		loader.load( `${ assetBaseUrl }audio/engine.ogg`, ( buffer ) => {
+		loader.load( `${ assetBaseUrl }audio/${ engineSoundName }.ogg`, ( buffer ) => {
 
 			this.engineSound.setBuffer( buffer );
 			this.engineSound.setLoop( true );

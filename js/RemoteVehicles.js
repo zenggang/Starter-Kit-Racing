@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { applyMotorcycleColor, vehicleColorToHex } from './VehicleAppearance.js';
 
 const STALE_AFTER_MS = 10_000;
 const BODY_OPACITY = 0.62;
@@ -71,15 +72,6 @@ function roundRect( ctx, x, y, width, height, radius ) {
 
 }
 
-function colorToHex( color ) {
-
-	if ( color === 'green' ) return '#4ec45f';
-	if ( color === 'purple' ) return '#9a6cff';
-	if ( color === 'red' ) return '#ec3f35';
-	return '#ffd34d';
-
-}
-
 function makeGhostModel( source ) {
 
 	const clone = source.clone( true );
@@ -148,6 +140,7 @@ export class RemoteVehicles {
 			if ( entry.nickname !== vehicle.nickname || entry.color !== vehicle.color ) {
 
 				this.refreshLabel( entry, vehicle );
+				if ( entry.vehicleType === 'motorcycle' ) applyMotorcycleColor( entry.model, vehicle.color );
 
 			}
 
@@ -169,8 +162,9 @@ export class RemoteVehicles {
 	createEntry( vehicle, now ) {
 
 		const group = new THREE.Group();
-		const modelName = `vehicle-truck-${ vehicle.color }`;
+		const modelName = vehicle.vehicleType === 'motorcycle' ? 'vehicle-motorcycle' : `vehicle-truck-${ vehicle.color }`;
 		const model = makeGhostModel( this.models[ modelName ] || this.models[ 'vehicle-truck-yellow' ] );
+		if ( vehicle.vehicleType === 'motorcycle' ) applyMotorcycleColor( model, vehicle.color );
 		const targetPosition = new THREE.Vector3(
 			vehicle.position?.x ?? 0,
 			( vehicle.position?.y ?? 0.5 ) - 0.5,
@@ -189,6 +183,7 @@ export class RemoteVehicles {
 			playerId: vehicle.playerId,
 			nickname: vehicle.nickname,
 			color: vehicle.color,
+			vehicleType: vehicle.vehicleType || 'truck',
 			presence: vehicle.presence,
 			group,
 			model,
@@ -203,7 +198,7 @@ export class RemoteVehicles {
 
 	createLabel( vehicle ) {
 
-		const texture = createLabelTexture( vehicle.nickname, colorToHex( vehicle.color ) );
+		const texture = createLabelTexture( vehicle.nickname, vehicleColorToHex( vehicle.color ) );
 		const material = new THREE.SpriteMaterial( {
 			map: texture,
 			transparent: true,
@@ -223,7 +218,7 @@ export class RemoteVehicles {
 		entry.color = vehicle.color;
 
 		const previousTexture = entry.label.material.map;
-		entry.label.material.map = createLabelTexture( vehicle.nickname, colorToHex( vehicle.color ) );
+		entry.label.material.map = createLabelTexture( vehicle.nickname, vehicleColorToHex( vehicle.color ) );
 		entry.label.material.needsUpdate = true;
 		previousTexture?.dispose();
 

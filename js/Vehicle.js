@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { rigidBody } from 'crashcat';
+import { applyMotorcycleColor } from './VehicleAppearance.js';
 
 const _tmpVec = new THREE.Vector3();
 const _forward = new THREE.Vector3();
@@ -47,6 +48,9 @@ export class Vehicle {
 		this.wheelFR = null;
 		this.wheelBL = null;
 		this.wheelBR = null;
+		this.wheelFront = null;
+		this.forkNode = null;
+		this.leanNode = null;
 
 		this.inputX = 0;
 		this.inputZ = 0;
@@ -57,9 +61,10 @@ export class Vehicle {
 
 	}
 
-	init( model ) {
+	init( model, options = {} ) {
 
 		const vehicleModel = model.clone();
+		if ( options.vehicleType === 'motorcycle' ) applyMotorcycleColor( vehicleModel, options.vehicleColor );
 
 		this.container.add( vehicleModel );
 
@@ -73,11 +78,22 @@ export class Vehicle {
 				child.rotation.order = 'YXZ';
 				this.bodyNode = child;
 
+			} else if ( name === 'motorcycle' ) {
+
+				child.rotation.order = 'YXZ';
+				this.leanNode = child;
+
+			} else if ( name === 'fork' ) {
+
+				child.rotation.order = 'YXZ';
+				this.forkNode = child;
+
 			} else if ( name.includes( 'wheel' ) ) {
 
 				child.rotation.order = 'YXZ';
 				this.wheels.push( child );
 
+				if ( name === 'wheel-front' ) this.wheelFront = child;
 				if ( name.includes( 'front' ) && name.includes( 'left' ) ) this.wheelFL = child;
 				if ( name.includes( 'front' ) && name.includes( 'right' ) ) this.wheelFR = child;
 				if ( name.includes( 'back' ) && name.includes( 'left' ) ) this.wheelBL = child;
@@ -284,6 +300,9 @@ export class Vehicle {
 
 		if ( this.wheelFL ) this.wheelFL.rotation.y = 0;
 		if ( this.wheelFR ) this.wheelFR.rotation.y = 0;
+		if ( this.wheelFront ) this.wheelFront.rotation.y = 0;
+		if ( this.forkNode ) this.forkNode.rotation.y = 0;
+		if ( this.leanNode ) this.leanNode.rotation.z = 0;
 
 		this.prevModelPos.copy( this.container.position );
 
@@ -371,6 +390,19 @@ export class Vehicle {
 
 		this.bodyNode.position.y = THREE.MathUtils.lerp( this.bodyNode.position.y, 0.3, dt * 5 );
 
+		// Motorcycle GLB leans as a full frame around the same local steering
+		// signal. This keeps its handling identical while giving it the expected
+		// two-wheel visual weight in corners.
+		if ( this.leanNode ) {
+
+			this.leanNode.rotation.z = lerpAngle(
+				this.leanNode.rotation.z,
+				this.inputX * this.linearSpeed,
+				dt * 3
+			);
+
+		}
+
 	}
 
 	updateWheels( dt ) {
@@ -390,6 +422,18 @@ export class Vehicle {
 		if ( this.wheelFR ) {
 
 			this.wheelFR.rotation.y = lerpAngle( this.wheelFR.rotation.y, -this.inputX / 1.5, dt * 10 );
+
+		}
+
+		if ( this.forkNode ) {
+
+			this.forkNode.rotation.y = lerpAngle( this.forkNode.rotation.y, -this.inputX / 1.5, dt * 5 );
+
+		}
+
+		if ( this.wheelFront ) {
+
+			this.wheelFront.rotation.y = lerpAngle( this.wheelFront.rotation.y, -this.inputX / 1.5, dt * 10 );
 
 		}
 

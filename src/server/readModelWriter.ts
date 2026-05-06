@@ -1,4 +1,5 @@
 import type { MatchState, RoomState } from '@/realtime/protocol';
+import { DEFAULT_VEHICLE_TYPE } from '@/realtime/protocol';
 
 type ServerWriterEnv = Record<string, string | undefined> & {
   NEXT_PUBLIC_SUPABASE_URL?: string;
@@ -101,6 +102,7 @@ class SupabaseReadModelWriter implements ReadModelWriter {
         player_id: player.playerId,
         nickname: player.nickname,
         color: player.color,
+        vehicle_type: player.vehicleType ?? DEFAULT_VEHICLE_TYPE,
         ready: player.ready,
         is_host: player.isHost,
         last_seen_at: player.lastSeenAt
@@ -139,6 +141,7 @@ class SupabaseReadModelWriter implements ReadModelWriter {
         player_id: player.playerId,
         nickname: player.nickname,
         color: player.color,
+        vehicle_type: player.vehicleType ?? DEFAULT_VEHICLE_TYPE,
         rank: player.rank,
         presence: player.presence,
         completed_laps: player.completedLaps,

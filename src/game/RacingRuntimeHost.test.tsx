@@ -50,6 +50,7 @@ describe('RacingRuntimeHost remote vehicles', () => {
             playerId: 'player-2',
             nickname: '远端绿车',
             color: 'green',
+            vehicleType: 'motorcycle',
             presence: 'connected',
             position: { x: 3, y: 0.5, z: 4 },
             heading: 0.5,
@@ -66,6 +67,7 @@ describe('RacingRuntimeHost remote vehicles', () => {
           playerId: 'player-2',
           nickname: '远端绿车',
           color: 'green',
+          vehicleType: 'motorcycle',
           presence: 'connected',
           position: { x: 3, y: 0.5, z: 4 },
           heading: 0.5,
@@ -73,6 +75,22 @@ describe('RacingRuntimeHost remote vehicles', () => {
           lastReportAt: '2026-05-03T10:01:02.000Z'
         }
       ]);
+    });
+  });
+
+  it('passes the selected local vehicle type into the runtime mount options', async () => {
+    const Host = RacingRuntimeHost as React.ComponentType<Record<string, unknown>>;
+
+    render(<Host roomCode="8966" trackMap={null} vehicleColor="yellow" vehicleType="motorcycle" />);
+
+    await waitFor(() => {
+      expect(mountRacingRuntimeSpy).toHaveBeenCalledWith(
+        expect.any(HTMLElement),
+        expect.objectContaining({
+          vehicleColor: 'yellow',
+          vehicleType: 'motorcycle'
+        })
+      );
     });
   });
 

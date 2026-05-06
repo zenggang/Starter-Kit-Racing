@@ -8,6 +8,7 @@ const ERROR_MESSAGES: Record<RacingErrorCode, string> = {
   ROOM_EXPIRED: '房间等待超时，请重新创建',
   COLOR_TAKEN: '这辆车已经被其他车手选走',
   COLOR_INVALID: '请选择可用赛车颜色',
+  VEHICLE_TYPE_INVALID: '请选择可用车型',
   LAP_TARGET_INVALID: '圈数必须在 1 到 10 之间',
   ONLY_HOST_CAN_START: '只有房主可以发车',
   ONLY_HOST_CAN_REMATCH: '只有房主可以重新发车',

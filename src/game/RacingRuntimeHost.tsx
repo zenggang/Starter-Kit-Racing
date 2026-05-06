@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { DEFAULT_VEHICLE_TYPE, type VehicleType } from '@/realtime/protocol';
 
 interface RacingRuntimeModule {
   mountRacingRuntime(container: HTMLElement, options?: RuntimeMountOptions): Promise<RuntimeHandle>;
@@ -21,6 +22,7 @@ export interface RemoteVehicleTelemetry {
   playerId: string;
   nickname: string;
   color: NonNullable<RuntimeMountOptions['vehicleColor']>;
+  vehicleType: VehicleType;
   presence: 'pending' | 'connected' | 'disconnected' | 'finished';
   position: {
     x: number;
@@ -44,6 +46,7 @@ interface RuntimeMountOptions {
   roomCode?: string;
   trackMap?: string | null;
   vehicleColor?: 'yellow' | 'green' | 'purple' | 'red';
+  vehicleType?: VehicleType;
   inputLocked?: boolean;
   abortSignal?: AbortSignal;
 }
@@ -56,6 +59,7 @@ export function RacingRuntimeHost({
   roomCode,
   trackMap,
   vehicleColor,
+  vehicleType = DEFAULT_VEHICLE_TYPE,
   inputLocked = false,
   remoteVehicles,
   onRuntimeReady,
@@ -64,6 +68,7 @@ export function RacingRuntimeHost({
   roomCode: string;
   trackMap: string | null;
   vehicleColor: RuntimeMountOptions['vehicleColor'];
+  vehicleType?: RuntimeMountOptions['vehicleType'];
   inputLocked?: boolean;
   remoteVehicles?: RemoteVehicleTelemetry[];
   onRuntimeReady?: (runtime: RuntimeHandle | null) => void;
@@ -92,6 +97,7 @@ export function RacingRuntimeHost({
           roomCode,
           trackMap,
           vehicleColor,
+          vehicleType,
           abortSignal: abortController.signal
         });
 
@@ -121,7 +127,7 @@ export function RacingRuntimeHost({
       runtimeRef.current = null;
       runtime?.destroy();
     };
-  }, [onRuntimeReady, roomCode, trackMap, vehicleColor]);
+  }, [onRuntimeReady, roomCode, trackMap, vehicleColor, vehicleType]);
 
   useEffect(() => {
     remoteVehiclesRef.current = remoteVehicles ?? [];

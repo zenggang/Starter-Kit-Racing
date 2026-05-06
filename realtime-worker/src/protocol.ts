@@ -2,6 +2,8 @@ import type { TrackMapErrorCode } from '../../shared/trackMapValidation';
 
 export const ROOM_STATUSES = ['waiting', 'racing', 'finished', 'closed'] as const;
 export const PLAYER_COLORS = ['yellow', 'green', 'purple', 'red'] as const;
+export const VEHICLE_TYPES = ['truck', 'motorcycle'] as const;
+export const DEFAULT_VEHICLE_TYPE = 'truck';
 export const MATCH_PHASES = ['countdown', 'live', 'finished', 'aborted'] as const;
 export const MATCH_PRESENCE = ['pending', 'connected', 'disconnected', 'finished'] as const;
 export const DEFAULT_LAP_TARGET = 3;
@@ -11,6 +13,7 @@ export const MATCH_START_COUNTDOWN_MS = 15 * 1000;
 
 export type RoomStatus = (typeof ROOM_STATUSES)[number];
 export type PlayerColor = (typeof PLAYER_COLORS)[number];
+export type VehicleType = (typeof VEHICLE_TYPES)[number];
 export type MatchPhase = (typeof MATCH_PHASES)[number];
 export type MatchPresence = (typeof MATCH_PRESENCE)[number];
 
@@ -23,6 +26,7 @@ export type RacingErrorCode =
   | 'ROOM_EXPIRED'
   | 'COLOR_TAKEN'
   | 'COLOR_INVALID'
+  | 'VEHICLE_TYPE_INVALID'
   | 'LAP_TARGET_INVALID'
   | 'ONLY_HOST_CAN_START'
   | 'ONLY_HOST_CAN_REMATCH'
@@ -49,6 +53,7 @@ export type RoomCommandType =
   | 'room.leave'
   | 'room.setLapTarget'
   | 'room.chooseColor'
+  | 'room.chooseVehicleType'
   | 'room.ready'
   | 'room.start'
   | 'room.rematch'
@@ -69,6 +74,7 @@ export interface RoomPlayer {
   playerId: string;
   nickname: string;
   color: PlayerColor | null;
+  vehicleType: VehicleType;
   status: 'joined' | 'ready' | 'disconnected';
   ready: boolean;
   isHost: boolean;
@@ -95,6 +101,7 @@ export interface MatchPlayerState extends MatchTelemetry {
   playerId: string;
   nickname: string;
   color: PlayerColor;
+  vehicleType: VehicleType;
   isHost: boolean;
   presence: MatchPresence;
   rank: number;
@@ -195,6 +202,10 @@ export type ChooseColorPayload = {
   color: unknown;
 };
 
+export type ChooseVehicleTypePayload = {
+  vehicleType: unknown;
+};
+
 export type ReadyPayload = {
   ready?: boolean;
 };
@@ -219,6 +230,7 @@ export type RoomCommandPayloadMap = {
   'room.leave': Record<string, never>;
   'room.setLapTarget': SetLapTargetPayload;
   'room.chooseColor': ChooseColorPayload;
+  'room.chooseVehicleType': ChooseVehicleTypePayload;
   'room.ready': ReadyPayload;
   'room.start': Record<string, never>;
   'room.rematch': Record<string, never>;
@@ -262,11 +274,19 @@ export function validateLapTarget(value: unknown): value is number {
 }
 
 /**
- * Color selection must stay inside the four existing GLB variants so the room
- * roster, minimap markers, and local runtime all agree on the same palette.
+ * Color remains the unique four-seat identity. Vehicle body type is separate so
+ * several racers can pick motorcycles without changing room capacity.
  */
 export function isPlayerColor(value: unknown): value is PlayerColor {
   return typeof value === 'string' && (PLAYER_COLORS as readonly string[]).includes(value);
+}
+
+/**
+ * Validates the small set of runtime-supported vehicle bodies before room
+ * truth is mutated or persisted to the read model.
+ */
+export function isVehicleType(value: unknown): value is VehicleType {
+  return typeof value === 'string' && (VEHICLE_TYPES as readonly string[]).includes(value);
 }
 
 /**

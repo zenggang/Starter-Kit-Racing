@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { RaceHud } from './RaceHud';
 import { formatRacingError } from '@/realtime/errorMessages';
 import { createMatchCommand } from '@/realtime/matchReducer';
+import { DEFAULT_VEHICLE_TYPE } from '@/realtime/protocol';
 import { useMatchSession } from '@/realtime/useMatchSession';
 import { RacingRuntimeHost, type RemoteVehicleTelemetry, type RuntimeHandle } from '@/game/RacingRuntimeHost';
 import { advanceRaceProgress, buildTrackProgressModel, createInitialRaceProgressState } from '@/game/trackProgress';
@@ -59,6 +60,10 @@ export function RaceClient({
           playerId: player.playerId,
           nickname: player.nickname,
           color: player.color,
+          // Older room snapshots created before vehicle selection existed do
+          // not carry a body type; keep those racers on the original truck so
+          // reconnect and bridge recovery stay backward-compatible.
+          vehicleType: player.vehicleType ?? DEFAULT_VEHICLE_TYPE,
           presence: player.presence,
           position: player.position,
           heading: player.heading,
@@ -235,6 +240,7 @@ export function RaceClient({
       roomCode={code}
       trackMap={effectiveMatch.trackMap}
       vehicleColor={currentPlayer.color}
+      vehicleType={currentPlayer.vehicleType ?? DEFAULT_VEHICLE_TYPE}
       inputLocked={inputLocked}
       remoteVehicles={remoteVehicles}
       onRuntimeReady={handleRuntimeReady}

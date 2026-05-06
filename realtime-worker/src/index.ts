@@ -314,6 +314,7 @@ function isRealtimeCommandType(value: string): value is RoomCommandEnvelope['typ
     value === 'room.leave' ||
     value === 'room.setLapTarget' ||
     value === 'room.chooseColor' ||
+    value === 'room.chooseVehicleType' ||
     value === 'room.ready' ||
     value === 'room.start' ||
     value === 'room.rematch' ||
