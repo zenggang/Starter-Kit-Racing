@@ -10,3 +10,5 @@ coverage/
 .playwright-cli/
 realtime-worker/node_modules/
 *.log
+/videos
+/output/playwright
