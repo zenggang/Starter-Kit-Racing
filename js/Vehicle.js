@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { rigidBody } from 'crashcat';
-import { applyMotorcycleColor } from './VehicleAppearance.js';
+import { applyDogVehicleColor, applyMotorcycleColor } from './VehicleAppearance.js';
 
 const _tmpVec = new THREE.Vector3();
 const _forward = new THREE.Vector3();
@@ -65,6 +65,7 @@ export class Vehicle {
 
 		const vehicleModel = model.clone();
 		if ( options.vehicleType === 'motorcycle' ) applyMotorcycleColor( vehicleModel, options.vehicleColor );
+		if ( options.vehicleType === 'dog' ) applyDogVehicleColor( vehicleModel, options.vehicleColor );
 
 		this.container.add( vehicleModel );
 

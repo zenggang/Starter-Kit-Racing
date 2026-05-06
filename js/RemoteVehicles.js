@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { applyMotorcycleColor, vehicleColorToHex } from './VehicleAppearance.js';
+import { applyDogVehicleColor, applyMotorcycleColor, vehicleColorToHex } from './VehicleAppearance.js';
 
 const STALE_AFTER_MS = 10_000;
 const BODY_OPACITY = 0.62;
@@ -162,9 +162,10 @@ export class RemoteVehicles {
 	createEntry( vehicle, now ) {
 
 		const group = new THREE.Group();
-		const modelName = vehicle.vehicleType === 'motorcycle' ? 'vehicle-motorcycle' : `vehicle-truck-${ vehicle.color }`;
+		const modelName = vehicle.vehicleType === 'motorcycle' ? 'vehicle-motorcycle' : vehicle.vehicleType === 'dog' ? 'dog-car' : `vehicle-truck-${ vehicle.color }`;
 		const model = makeGhostModel( this.models[ modelName ] || this.models[ 'vehicle-truck-yellow' ] );
 		if ( vehicle.vehicleType === 'motorcycle' ) applyMotorcycleColor( model, vehicle.color );
+		if ( vehicle.vehicleType === 'dog' ) applyDogVehicleColor( model, vehicle.color );
 		const targetPosition = new THREE.Vector3(
 			vehicle.position?.x ?? 0,
 			( vehicle.position?.y ?? 0.5 ) - 0.5,

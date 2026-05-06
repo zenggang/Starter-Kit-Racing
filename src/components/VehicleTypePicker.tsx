@@ -5,7 +5,8 @@ import { DEFAULT_VEHICLE_TYPE, VEHICLE_TYPES, type VehicleType } from '@/realtim
 
 export const VEHICLE_TYPE_LABELS: Record<VehicleType, string> = {
   truck: '卡车',
-  motorcycle: '摩托'
+  motorcycle: '摩托',
+  dog: '狗狗'
 };
 
 export function VehicleTypePicker({

@@ -2,7 +2,7 @@ import type { TrackMapErrorCode } from '../../shared/trackMapValidation';
 
 export const ROOM_STATUSES = ['waiting', 'racing', 'finished', 'closed'] as const;
 export const PLAYER_COLORS = ['yellow', 'green', 'purple', 'red'] as const;
-export const VEHICLE_TYPES = ['truck', 'motorcycle'] as const;
+export const VEHICLE_TYPES = ['truck', 'motorcycle', 'dog'] as const;
 export const DEFAULT_VEHICLE_TYPE = 'truck';
 export const MATCH_PHASES = ['countdown', 'live', 'finished', 'aborted'] as const;
 export const MATCH_PRESENCE = ['pending', 'connected', 'disconnected', 'finished'] as const;

@@ -13,10 +13,11 @@ import { DriftMarks } from './DriftMarks.js';
 import { GameAudio } from './Audio.js';
 import { RemoteVehicles } from './RemoteVehicles.js';
 import { resolveRuntimeGraphicsProfile } from './runtimeProfile.js';
+import { prepareDogVehicleModel } from './VehicleAppearance.js';
 
 const modelNames = [
 	'vehicle-truck-yellow', 'vehicle-truck-green', 'vehicle-truck-purple', 'vehicle-truck-red',
-	'vehicle-motorcycle',
+	'vehicle-motorcycle', 'dog-car',
 	'track-straight', 'track-corner', 'track-bump', 'track-finish',
 	'decoration-empty', 'decoration-forest', 'decoration-tents',
 ];
@@ -91,7 +92,7 @@ export async function mountRacingRuntime( container, options = {} ) {
 		hasCustomTrack: typeof mapParam === 'string' && mapParam.length > 0,
 	} );
 	const vehicleColor = typeof options.vehicleColor === 'string' && options.vehicleColor.length > 0 ? options.vehicleColor : 'yellow';
-	const vehicleType = options.vehicleType === 'motorcycle' ? 'motorcycle' : 'truck';
+	const vehicleType = [ 'motorcycle', 'dog' ].includes( options.vehicleType ) ? options.vehicleType : 'truck';
 	const { width, height } = measureRuntimeViewport( container );
 	let animationFrame = 0;
 	let destroyed = false;
@@ -278,7 +279,7 @@ export async function mountRacingRuntime( container, options = {} ) {
 
 	}
 
-	const vehicleModelName = vehicleType === 'motorcycle' ? 'vehicle-motorcycle' : `vehicle-truck-${ vehicleColor }`;
+	const vehicleModelName = vehicleType === 'motorcycle' ? 'vehicle-motorcycle' : vehicleType === 'dog' ? 'dog-car' : `vehicle-truck-${ vehicleColor }`;
 	const vehicleGroup = vehicle.init( models[ vehicleModelName ] || models[ 'vehicle-truck-yellow' ], {
 		vehicleType,
 		vehicleColor,
@@ -466,6 +467,15 @@ async function loadModels( assetBaseUrl ) {
 					}
 
 				} );
+
+				if ( name === 'dog-car' ) {
+
+					prepareDogVehicleModel( gltf.scene );
+					models[ name ] = gltf.scene;
+					resolve();
+					return;
+
+				}
 
 				if ( name.startsWith( 'vehicle-' ) ) {
 

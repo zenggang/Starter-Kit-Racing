@@ -4,7 +4,7 @@ export const MATCH_PHASES = ['countdown', 'live', 'finished', 'aborted'] as cons
 export const MATCH_PRESENCE = ['pending', 'connected', 'disconnected', 'finished'] as const;
 export const TRANSPORT_MODES = ['socket', 'bridge'] as const;
 export const PLAYER_COLORS = ['yellow', 'green', 'purple', 'red'] as const;
-export const VEHICLE_TYPES = ['truck', 'motorcycle'] as const;
+export const VEHICLE_TYPES = ['truck', 'motorcycle', 'dog'] as const;
 export const DEFAULT_VEHICLE_TYPE = 'truck';
 export const MATCH_START_COUNTDOWN_MS = 15 * 1000;
 
