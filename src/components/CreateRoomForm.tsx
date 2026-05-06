@@ -12,7 +12,8 @@ export function CreateRoomForm({
   selectedTrackId,
   disabled,
   onSelectTrack,
-  onCreate
+  onCreate,
+  onOpenTrackEditor
 }: {
   player: PlayerSession | null;
   tracks: RacingTrackSummary[];
@@ -20,6 +21,7 @@ export function CreateRoomForm({
   disabled?: boolean;
   onSelectTrack(trackId: string | null): void;
   onCreate(command: ReturnType<typeof createCommand>): void;
+  onOpenTrackEditor?(): void;
 }) {
   const selectedTrack = selectedTrackId ? tracks.find((track) => track.id === selectedTrackId) ?? null : null;
 
@@ -43,9 +45,15 @@ export function CreateRoomForm({
       </label>
       <div className="track-picker-helper">
         <p className="muted">{selectedTrack ? `${selectedTrack.cellCount} 个路块 · 自定义赛道` : '使用内置默认赛道'}</p>
-        <Link href="/track-editor" className="secondary-action track-editor-entry">
-          创建/管理赛道
-        </Link>
+        {onOpenTrackEditor ? (
+          <button type="button" className="secondary-action track-editor-entry" onClick={onOpenTrackEditor}>
+            创建/管理赛道
+          </button>
+        ) : (
+          <Link href="/track-editor" className="secondary-action track-editor-entry">
+            创建/管理赛道
+          </Link>
+        )}
       </div>
       <button
         type="button"

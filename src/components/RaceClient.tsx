@@ -16,7 +16,17 @@ import { usePlayerSession } from '@/session/usePlayerSession';
  * Local physics remains browser-owned for now, while leaderboard and finish
  * state come from telemetry reported into the coordinator.
  */
-export function RaceClient({ code }: { code: string }) {
+export function RaceClient({
+  code,
+  onEnterResult,
+  onReturnToRoom,
+  onReturnToHall
+}: {
+  code: string;
+  onEnterResult?(code: string): void;
+  onReturnToRoom?(code: string): void;
+  onReturnToHall?(): void;
+}) {
   const router = useRouter();
   const { session } = usePlayerSession();
   const { room, match, transportMode, connectionState, lastErrorCode, sendCommand } = useMatchSession(code, session);
@@ -121,19 +131,31 @@ export function RaceClient({ code }: { code: string }) {
 
   useEffect(() => {
     if (room?.status === 'finished' || match?.phase === 'finished') {
-      router.replace(`/result/${code}`);
+      if (onEnterResult) {
+        onEnterResult(code);
+      } else {
+        router.replace(`/result/${code}`);
+      }
       return;
     }
 
     if (room?.status === 'waiting') {
-      router.replace(`/room/${code}`);
+      if (onReturnToRoom) {
+        onReturnToRoom(code);
+      } else {
+        router.replace(`/room/${code}`);
+      }
       return;
     }
 
     if (room?.status === 'closed') {
-      router.replace('/hall');
+      if (onReturnToHall) {
+        onReturnToHall();
+      } else {
+        router.replace('/hall');
+      }
     }
-  }, [code, match?.phase, room?.status, router]);
+  }, [code, match?.phase, onEnterResult, onReturnToHall, onReturnToRoom, room?.status, router]);
 
   useEffect(() => {
     if (!runtimeReady || !match?.id) return;

@@ -17,7 +17,8 @@ export function RoomLobbyPanel({
   connectionState,
   disabled,
   onCommand,
-  onLeave
+  onLeave,
+  onEnterRace
 }: {
   room: RoomState | null;
   player: PlayerSession | null;
@@ -26,10 +27,12 @@ export function RoomLobbyPanel({
   disabled?: boolean;
   onCommand(command: ReturnType<typeof createCommand>): void;
   onLeave(): void;
+  onEnterRace?(code: string): void;
 }) {
   const current = room?.players.find((candidate) => candidate.playerId === player?.playerId) ?? null;
   const takenColors = room?.players.map((candidate) => candidate.color).filter((color): color is PlayerColor => Boolean(color)) ?? [];
   const isHost = current?.isHost ?? false;
+  const nextReady = !current?.ready;
   const everyPlayerReady = Boolean(room?.players.every((candidate) => candidate.ready && candidate.color));
   const canStart = Boolean(isHost && current?.ready && current?.color && everyPlayerReady);
   const seatSlots = room ? createLobbySeatSlots(room.players) : [];
@@ -107,8 +110,8 @@ export function RoomLobbyPanel({
         <aside className="room-lobby-sidebar stack">
           <section className="console-section stack room-actions-panel">
             <div className="race-actions compact-actions">
-              <button type="button" className="secondary-action" disabled={disabled} onClick={() => onCommand(createCommand('room.ready', player.playerId))}>
-                准备
+              <button type="button" className="secondary-action" disabled={disabled} onClick={() => onCommand(createCommand('room.ready', player.playerId, { ready: nextReady }))}>
+                {current?.ready ? '取消准备' : '准备'}
               </button>
               {isHost ? (
                 <button type="button" className="primary-action" disabled={disabled || !canStart} onClick={() => onCommand(createCommand('room.start', player.playerId))}>
@@ -121,11 +124,17 @@ export function RoomLobbyPanel({
                 </button>
               ) : null}
               {room.status === 'racing' ? (
-                <Link href={`/race/${room.code}`}>
-                  <button type="button" className="primary-action">
+                onEnterRace ? (
+                  <button type="button" className="primary-action" onClick={() => onEnterRace(room.code)}>
                     进入赛道
                   </button>
-                </Link>
+                ) : (
+                  <Link href={`/race/${room.code}`}>
+                    <button type="button" className="primary-action">
+                      进入赛道
+                    </button>
+                  </Link>
+                )
               ) : null}
             </div>
           </section>

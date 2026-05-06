@@ -9,14 +9,31 @@ import { formatRacingError } from '@/realtime/errorMessages';
 import { createCommand } from '@/realtime/sessionReducer';
 import { usePlayerSession } from '@/session/usePlayerSession';
 
-export function RoomClient({ code }: { code: string }) {
+export function RoomClient({
+  code,
+  onEnterRace,
+  onEnterResult,
+  onExitToHall
+}: {
+  code: string;
+  onEnterRace?(code: string): void;
+  onEnterResult?(code: string): void;
+  onExitToHall?(): void;
+}) {
   const router = useRouter();
   const { session, rememberRoom } = usePlayerSession();
   const { snapshot, connectionState, lastErrorCode, sendCommand } = useRoomSession(code, session);
   const joinedRef = useRef(false);
   const leavingRef = useRef(false);
   const autoColorRequestRef = useRef<string | null>(null);
+  const autoReadyRequestRef = useRef<string | null>(null);
+  const manualReadyCancelledRef = useRef(false);
   const currentPlayer = snapshot?.players.find((candidate) => candidate.playerId === session?.playerId) ?? null;
+
+  useEffect(() => {
+    autoReadyRequestRef.current = null;
+    manualReadyCancelledRef.current = false;
+  }, [code, session?.playerId]);
 
   useEffect(() => {
     if (!session || connectionState !== 'connected') return;
@@ -29,17 +46,29 @@ export function RoomClient({ code }: { code: string }) {
 
   useEffect(() => {
     if (snapshot?.status === 'racing' && currentPlayer?.ready && currentPlayer?.color) {
-      router.push(`/race/${snapshot.code}`);
+      if (onEnterRace) {
+        onEnterRace(snapshot.code);
+      } else {
+        router.push(`/race/${snapshot.code}`);
+      }
     }
 
     if (snapshot?.status === 'finished' && currentPlayer) {
-      router.push(`/result/${snapshot.code}`);
+      if (onEnterResult) {
+        onEnterResult(snapshot.code);
+      } else {
+        router.push(`/result/${snapshot.code}`);
+      }
     }
 
     if (snapshot?.status === 'closed') {
-      router.replace('/');
+      if (onExitToHall) {
+        onExitToHall();
+      } else {
+        router.replace('/');
+      }
     }
-  }, [currentPlayer, router, snapshot]);
+  }, [currentPlayer, onEnterRace, onEnterResult, onExitToHall, router, snapshot]);
 
   useEffect(() => {
     if (!session || !snapshot || !currentPlayer) return;
@@ -69,6 +98,43 @@ export function RoomClient({ code }: { code: string }) {
     });
   }, [connectionState, currentPlayer, sendCommand, session, snapshot]);
 
+  useEffect(() => {
+    if (!session || !snapshot || !currentPlayer) return;
+    if (connectionState !== 'connected' || leavingRef.current) return;
+
+    if (snapshot.status !== 'waiting' || currentPlayer.ready) {
+      autoReadyRequestRef.current = null;
+      return;
+    }
+
+    if (manualReadyCancelledRef.current) {
+      return;
+    }
+
+    /**
+     * Ready depends on a chosen vehicle color because the coordinator requires
+     * every starting player to be both ready and color-assigned. Auto color
+     * selection is asynchronous, so this waits for the authoritative snapshot
+     * to show a color before sending the ready command.
+     */
+    if (!currentPlayer.color) {
+      autoReadyRequestRef.current = null;
+      return;
+    }
+
+    const requestKey = `${snapshot.code}:${currentPlayer.playerId}:ready`;
+    if (autoReadyRequestRef.current === requestKey) {
+      return;
+    }
+
+    autoReadyRequestRef.current = requestKey;
+    void sendCommand(createCommand('room.ready', session.playerId, { ready: true })).then((result) => {
+      if (!result.ok) {
+        autoReadyRequestRef.current = null;
+      }
+    });
+  }, [connectionState, currentPlayer, sendCommand, session, snapshot]);
+
   async function handleLeaveRoom() {
     if (!session) return;
     leavingRef.current = true;
@@ -80,11 +146,24 @@ export function RoomClient({ code }: { code: string }) {
      */
     const result = await sendCommand(createCommand('room.leave', session.playerId));
     if (result.ok) {
-      router.replace('/');
+      if (onExitToHall) {
+        onExitToHall();
+      } else {
+        router.replace('/');
+      }
       return;
     }
 
     leavingRef.current = false;
+  }
+
+  function handleRoomCommand(command: ReturnType<typeof createCommand>) {
+    if (command.type === 'room.ready') {
+      const ready = (command.payload as { ready?: boolean } | undefined)?.ready ?? true;
+      manualReadyCancelledRef.current = ready === false;
+    }
+
+    void sendCommand(command);
   }
 
   return (
@@ -96,8 +175,9 @@ export function RoomClient({ code }: { code: string }) {
         roomCode={code}
         connectionState={connectionState}
         disabled={connectionState !== 'connected'}
-        onCommand={sendCommand}
+        onCommand={handleRoomCommand}
         onLeave={handleLeaveRoom}
+        onEnterRace={onEnterRace}
       />
     </section>
   );

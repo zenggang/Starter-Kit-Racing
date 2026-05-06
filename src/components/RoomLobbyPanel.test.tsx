@@ -189,6 +189,80 @@ describe('RoomLobbyPanel', () => {
     expect(onLeave).toHaveBeenCalledTimes(1);
   });
 
+  it('turns the ready action into a cancel-ready action once the current racer is ready', () => {
+    const onCommand = vi.fn();
+    const player: PlayerSession = {
+      playerId: 'player-1',
+      nickname: '车手1',
+      lastRoomCode: '8966'
+    };
+
+    const room: RoomState = {
+      id: 'room-1',
+      code: '8966',
+      hostPlayerId: 'player-1',
+      status: 'waiting',
+      lapTarget: 3,
+      trackMap: null,
+      createdAt: '2026-05-02T10:00:00.000Z',
+      startedAt: null,
+      finishedAt: null,
+      expiresAt: '2026-05-02T11:00:00.000Z',
+      closedReason: null,
+      matchId: null,
+      players: [createRoomPlayer(1, { ready: true, status: 'ready' })]
+    };
+
+    render(<RoomLobbyPanel room={room} player={player} roomCode="8966" connectionState="connected" onCommand={onCommand} onLeave={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: '取消准备' }));
+
+    expect(onCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'room.ready',
+        playerId: 'player-1',
+        payload: { ready: false }
+      })
+    );
+  });
+
+  it('keeps the ready action available when the current racer has cancelled readiness', () => {
+    const onCommand = vi.fn();
+    const player: PlayerSession = {
+      playerId: 'player-1',
+      nickname: '车手1',
+      lastRoomCode: '8966'
+    };
+
+    const room: RoomState = {
+      id: 'room-1',
+      code: '8966',
+      hostPlayerId: 'player-1',
+      status: 'waiting',
+      lapTarget: 3,
+      trackMap: null,
+      createdAt: '2026-05-02T10:00:00.000Z',
+      startedAt: null,
+      finishedAt: null,
+      expiresAt: '2026-05-02T11:00:00.000Z',
+      closedReason: null,
+      matchId: null,
+      players: [createRoomPlayer(1, { ready: false, status: 'joined' })]
+    };
+
+    render(<RoomLobbyPanel room={room} player={player} roomCode="8966" connectionState="connected" onCommand={onCommand} onLeave={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: '准备' }));
+
+    expect(onCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'room.ready',
+        playerId: 'player-1',
+        payload: { ready: true }
+      })
+    );
+  });
+
   it('keeps the start button disabled until every racer in the room is ready', () => {
     const player: PlayerSession = {
       playerId: 'player-1',

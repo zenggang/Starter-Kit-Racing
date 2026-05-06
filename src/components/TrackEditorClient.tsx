@@ -37,7 +37,7 @@ interface TrackEditorRuntimeModule {
 
 const EDITOR_DRAFT_STORAGE_KEY = 'racing-track-editor-draft';
 
-export function TrackEditorClient() {
+export function TrackEditorClient({ onBackToHall }: { onBackToHall?(): void } = {}) {
   const { session } = usePlayerSession();
   const runtimeHostRef = useRef<HTMLDivElement | null>(null);
   const runtimeRef = useRef<TrackEditorRuntimeHandle | null>(null);
@@ -217,9 +217,15 @@ export function TrackEditorClient() {
             <strong className="console-screen-title">自定义赛道</strong>
             <p className="muted track-editor-intro">使用原生 3D 画图工具：拖拽画路、擦除改线、ghost 预览会自动拼接路块。</p>
           </div>
-          <Link href="/hall" className="secondary-action track-editor-back-link">
-            返回大厅
-          </Link>
+          {onBackToHall ? (
+            <button type="button" className="secondary-action track-editor-back-link" onClick={onBackToHall}>
+              返回大厅
+            </button>
+          ) : (
+            <Link href="/hall" className="secondary-action track-editor-back-link">
+              返回大厅
+            </Link>
+          )}
         </div>
 
         <div className="track-editor-grid">

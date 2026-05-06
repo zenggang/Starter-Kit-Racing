@@ -280,4 +280,155 @@ describe('RoomClient', () => {
       );
     });
   });
+
+  it('waits for the current racer to receive a color before auto-readying', async () => {
+    mockedSnapshot = {
+      ...mockedSnapshot,
+      hostPlayerId: 'host-1',
+      status: 'waiting',
+      closedReason: null,
+      players: [
+        {
+          playerId: 'host-1',
+          nickname: '房主',
+          color: 'green',
+          status: 'ready',
+          ready: true,
+          isHost: true,
+          lastSeenAt: '2026-05-02T10:00:00.000Z'
+        },
+        {
+          playerId: 'player-1',
+          nickname: '爸爸',
+          color: null,
+          status: 'joined',
+          ready: false,
+          isHost: false,
+          lastSeenAt: '2026-05-02T10:00:00.000Z'
+        }
+      ]
+    };
+
+    render(<RoomClient code="8966" />);
+
+    await waitFor(() => {
+      expect(sendCommandSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'room.chooseColor',
+          playerId: 'player-1',
+          payload: { color: 'yellow' }
+        })
+      );
+    });
+
+    expect(sendCommandSpy).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'room.ready',
+        playerId: 'player-1',
+        payload: { ready: true }
+      })
+    );
+  });
+
+  it('auto-readies the current racer after joining the room', async () => {
+    mockedSnapshot = {
+      ...mockedSnapshot,
+      hostPlayerId: 'host-1',
+      status: 'waiting',
+      closedReason: null,
+      players: [
+        {
+          playerId: 'host-1',
+          nickname: '房主',
+          color: 'green',
+          status: 'ready',
+          ready: true,
+          isHost: true,
+          lastSeenAt: '2026-05-02T10:00:00.000Z'
+        },
+        {
+          playerId: 'player-1',
+          nickname: '爸爸',
+          color: 'yellow',
+          status: 'joined',
+          ready: false,
+          isHost: false,
+          lastSeenAt: '2026-05-02T10:00:00.000Z'
+        }
+      ]
+    };
+
+    render(<RoomClient code="8966" />);
+
+    await waitFor(() => {
+      expect(sendCommandSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'room.ready',
+          playerId: 'player-1',
+          payload: { ready: true }
+        })
+      );
+    });
+  });
+
+  it('does not auto-ready the current racer again after they cancel readiness', async () => {
+    mockedSnapshot = {
+      ...mockedSnapshot,
+      hostPlayerId: 'host-1',
+      status: 'waiting',
+      closedReason: null,
+      players: [
+        {
+          playerId: 'host-1',
+          nickname: '房主',
+          color: 'green',
+          status: 'ready',
+          ready: true,
+          isHost: true,
+          lastSeenAt: '2026-05-02T10:00:00.000Z'
+        },
+        {
+          playerId: 'player-1',
+          nickname: '爸爸',
+          color: 'yellow',
+          status: 'ready',
+          ready: true,
+          isHost: false,
+          lastSeenAt: '2026-05-02T10:00:00.000Z'
+        }
+      ]
+    };
+
+    const { rerender } = render(<RoomClient code="8966" />);
+    fireEvent.click(screen.getByRole('button', { name: '取消准备' }));
+
+    await waitFor(() => {
+      expect(sendCommandSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'room.ready',
+          playerId: 'player-1',
+          payload: { ready: false }
+        })
+      );
+    });
+
+    sendCommandSpy.mockClear();
+    mockedSnapshot = {
+      ...mockedSnapshot,
+      players: mockedSnapshot.players.map((player) =>
+        player.playerId === 'player-1' ? { ...player, ready: false, status: 'joined' } : player
+      )
+    };
+
+    rerender(<RoomClient code="8966" />);
+
+    expect(screen.getByRole('button', { name: '准备' })).toBeInTheDocument();
+    expect(sendCommandSpy).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'room.ready',
+        playerId: 'player-1',
+        payload: { ready: true }
+      })
+    );
+  });
 });

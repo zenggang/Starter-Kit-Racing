@@ -7,3 +7,6 @@ dist/
 coverage/
 .vercel
 .env*.local
+.playwright-cli/
+realtime-worker/node_modules/
+*.log

@@ -16,7 +16,13 @@ import { resolveSessionNickname } from '@/session/playerSession';
 
 const ROOM_LIST_REFRESH_INTERVAL_MS = 5_000;
 
-export function HallClient() {
+export function HallClient({
+  onEnterRoom,
+  onOpenTrackEditor
+}: {
+  onEnterRoom?(code: string): void;
+  onOpenTrackEditor?(): void;
+} = {}) {
   const router = useRouter();
   const { session, rememberRoom, updateNickname } = usePlayerSession();
   const [rooms, setRooms] = useState<HallRoomSummary[]>([]);
@@ -109,6 +115,11 @@ export function HallClient() {
       }
 
       rememberRoom(result.room.code);
+      if (onEnterRoom) {
+        onEnterRoom(result.room.code);
+        return;
+      }
+
       router.push(`/room/${result.room.code}`);
     } finally {
       setBusy(false);
@@ -148,6 +159,7 @@ export function HallClient() {
             disabled={busy}
             onSelectTrack={setSelectedTrackId}
             onCreate={(command) => sendHallCommand('new', command)}
+            onOpenTrackEditor={onOpenTrackEditor}
           />
           <JoinRoomForm player={session} disabled={busy} onJoin={sendHallCommand} />
           <HallRoomList rooms={rooms} onJoin={(code) => session && sendHallCommand(code, createCommand('room.join', session.playerId))} />

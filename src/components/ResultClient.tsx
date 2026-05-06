@@ -15,7 +15,17 @@ import type { MatchPlayerState, MatchState } from '@/realtime/protocol';
  * Result page stays on the same coordinator-driven match snapshot used by the
  * race page so refresh, reconnect, and host rematch all reuse one authority.
  */
-export function ResultClient({ code }: { code: string }) {
+export function ResultClient({
+  code,
+  onEnterRace,
+  onReturnToRoom,
+  onReturnToHall
+}: {
+  code: string;
+  onEnterRace?(code: string): void;
+  onReturnToRoom?(code: string): void;
+  onReturnToHall?(): void;
+}) {
   const router = useRouter();
   const { session } = usePlayerSession();
   const { room, match, connectionState, lastErrorCode, sendCommand } = useMatchSession(code, session);
@@ -30,11 +40,19 @@ export function ResultClient({ code }: { code: string }) {
 
   useEffect(() => {
     if (room?.status === 'racing') {
-      router.replace(`/race/${room.code}`);
+      if (onEnterRace) {
+        onEnterRace(room.code);
+      } else {
+        router.replace(`/race/${room.code}`);
+      }
     }
 
     if (room?.status === 'waiting') {
-      router.replace(`/room/${room.code}`);
+      if (onReturnToRoom) {
+        onReturnToRoom(room.code);
+      } else {
+        router.replace(`/room/${room.code}`);
+      }
     }
 
     /**
@@ -42,9 +60,13 @@ export function ResultClient({ code }: { code: string }) {
      * teardown can evict every remaining racer back to the hall immediately.
      */
     if (room?.status === 'closed') {
-      router.replace('/hall');
+      if (onReturnToHall) {
+        onReturnToHall();
+      } else {
+        router.replace('/hall');
+      }
     }
-  }, [room, router]);
+  }, [onEnterRace, onReturnToHall, onReturnToRoom, room, router]);
 
   async function rematch() {
     if (!session) return;
@@ -53,7 +75,11 @@ export function ResultClient({ code }: { code: string }) {
     try {
       const result = await sendCommand(createMatchCommand('room.rematch', session.playerId, {}));
       if (result.ok && result.room) {
-        router.push(`/room/${result.room.code}`);
+        if (onReturnToRoom) {
+          onReturnToRoom(result.room.code);
+        } else {
+          router.push(`/room/${result.room.code}`);
+        }
       }
     } finally {
       setBusy(false);
@@ -62,7 +88,11 @@ export function ResultClient({ code }: { code: string }) {
 
   async function returnToHall() {
     if (!session) {
-      router.replace('/hall');
+      if (onReturnToHall) {
+        onReturnToHall();
+      } else {
+        router.replace('/hall');
+      }
       return;
     }
 
@@ -75,7 +105,11 @@ export function ResultClient({ code }: { code: string }) {
        */
       const result = await sendCommand(createMatchCommand('room.leave', session.playerId, {}));
       if (result.ok) {
-        router.replace('/hall');
+        if (onReturnToHall) {
+          onReturnToHall();
+        } else {
+          router.replace('/hall');
+        }
       }
     } finally {
       setBusy(false);

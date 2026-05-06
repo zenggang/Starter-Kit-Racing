@@ -9,12 +9,17 @@ A JavaScript/Three.js port of [Kenney's Starter Kit Racing](https://github.com/K
 The current app is a mobile-first online racing shell around the original
 Three.js runtime:
 
-- `/` selects local demo mode when Supabase public env is missing.
+- `/` is the fixed public game entry for embedded browsers such as WeChat. It
+  keeps the browser URL stable while hall, room, race, result, and track editor
+  screens move through internal game state.
 - `/hall` creates and joins coordinator-backed rooms, including default or saved custom track selection.
 - `/room/[code]` handles color, ready, lap target, host start, and current track display.
 - `/race/[code]` mounts the Three.js runtime, shows the authoritative start countdown, reports race telemetry, renders ghost cars, and drives the HUD/minimap.
 - `/result/[code]` shows coordinator-approved race results and supports host rematch.
 - `/track-editor` creates, validates, saves, edits, and deletes player-owned custom tracks.
+
+The route-specific pages remain available as compatibility and debugging
+entries, but the shareable mobile game link should use the bare domain root.
 
 The original static `index.html` and `editor.html` remain as compatibility entry
 points for local runtime/editor access.
