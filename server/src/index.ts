@@ -10,11 +10,13 @@ import { registerLeaderboardRoutes } from './http/routes/leaderboard.js';
 import { registerRaceRecordRoutes } from './http/routes/raceRecords.js';
 import { registerRoomRoutes } from './http/routes/rooms.js';
 import { registerTrackRoutes } from './http/routes/tracks.js';
+import { startRuntimeDiagnosticsReporter } from './lib/runtimeDiagnostics.js';
 import { RaceRoom } from './rooms/RaceRoom.js';
 
 const config = readServerConfig();
 const pool = createMysqlPool(config);
 setMysqlPool(pool);
+startRuntimeDiagnosticsReporter(pool);
 
 const app = express();
 app.use(

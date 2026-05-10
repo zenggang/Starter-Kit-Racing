@@ -7,6 +7,7 @@ import type { CommandResult, MatchState, RealtimeCommandType, RoomCommandEnvelop
 import { syncCommandResultProjection, syncMatchProjection, syncRoomProjection } from '../services/roomProjectionService.js';
 import { RaceState } from '../schema/RaceState.js';
 import { registerRoomId, unregisterRoomId } from '../lib/inMemoryRoomIndex.js';
+import { recordClientJoined, recordClientLeft, recordRealtimeMessage } from '../lib/runtimeDiagnostics.js';
 
 interface JoinOptions {
   playerId?: string;
@@ -94,12 +95,22 @@ export class RaceRoom extends Room<RaceState> {
 
     this.onMessage('command', async (client, raw) => {
       const command = this.normalizeIncomingCommand(client, raw);
-      console.log('[race-room] command:received', {
-        roomCode: this.roomId,
-        rawType: typeof (raw as { type?: unknown } | undefined)?.type === 'string' ? (raw as { type: string }).type : null,
-        normalizedType: command?.type ?? null,
-        playerId: command?.playerId ?? null
-      });
+      if (command) {
+        /**
+         * Command-rate counters stay in memory and are reported once per
+         * minute. This keeps hot-path observability available even when verbose
+         * per-command logs are too expensive to rely on during an incident.
+         */
+        recordRealtimeMessage(command.type);
+      }
+      if (this.shouldLogCommand(command?.type ?? null)) {
+        console.log('[race-room] command:received', {
+          roomCode: this.roomId,
+          rawType: typeof (raw as { type?: unknown } | undefined)?.type === 'string' ? (raw as { type: string }).type : null,
+          normalizedType: command?.type ?? null,
+          playerId: command?.playerId ?? null
+        });
+      }
       if (!command) {
         client.send('command.result', {
           type: 'command.result',
@@ -111,20 +122,24 @@ export class RaceRoom extends Room<RaceState> {
       }
 
       const result = await this.coordinator.execute(command);
-      console.log('[race-room] command:coordinatorResolved', {
-        roomCode: this.roomId,
-        type: command.type,
-        ok: result.ok,
-        seq: result.seq,
-        errorCode: result.errorCode ?? null
-      });
+      if (this.shouldLogCommand(command.type)) {
+        console.log('[race-room] command:coordinatorResolved', {
+          roomCode: this.roomId,
+          type: command.type,
+          ok: result.ok,
+          seq: result.seq,
+          errorCode: result.errorCode ?? null
+        });
+      }
       client.send('command.result', result);
-      console.log('[race-room] command:responseSent', {
-        roomCode: this.roomId,
-        type: command.type,
-        ok: result.ok,
-        seq: result.seq
-      });
+      if (this.shouldLogCommand(command.type)) {
+        console.log('[race-room] command:responseSent', {
+          roomCode: this.roomId,
+          type: command.type,
+          ok: result.ok,
+          seq: result.seq
+        });
+      }
 
       const event = buildRealtimeEvent(command, result);
       if (event) {
@@ -196,6 +211,7 @@ export class RaceRoom extends Room<RaceState> {
      * Projection lag is acceptable for a short period because the room truth is
      * already held in coordinator memory.
      */
+    recordClientJoined();
     void this.syncProjectionInBackground(joinCommand.type, result);
     void this.refreshRoomStatusInBackground(result.room);
     await this.sendSnapshot(client, playerId);
@@ -208,6 +224,7 @@ export class RaceRoom extends Room<RaceState> {
   async onLeave(_client: Client): Promise<void> {
     // Internal page switches should not mutate room truth by accident.
     // Explicit leave actions are handled through `room.leave` / `match.leave`.
+    recordClientLeft();
   }
 
   async onDispose(): Promise<void> {
@@ -277,6 +294,15 @@ export class RaceRoom extends Room<RaceState> {
       seq: result.seq,
       room: result.room
     });
+  }
+
+  /**
+   * Snapshot sync and race telemetry commands can arrive at very high
+   * frequency. Keeping them out of the per-command console stream avoids
+   * turning a transient client sync storm into a log amplification incident.
+   */
+  private shouldLogCommand(type: RealtimeCommandType | null): boolean {
+    return type !== 'sync.request' && type !== 'match.sync' && type !== 'match.progress';
   }
 
   private buildAuthTicket(auth: ClientAuth, roomCode?: string) {
