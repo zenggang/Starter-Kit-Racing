@@ -56,14 +56,14 @@ Vercel 项目 `race-online2`：
 
 ```env
 NEXT_PUBLIC_COLYSEUS_URL=wss://8.148.79.214/colyseus
-NEXT_PUBLIC_API_BASE_URL=https://8.148.79.214/api
+NEXT_PUBLIC_API_BASE_URL=/api
 SELF_HOSTED_SERVER_BASE_URL=https://8.148.79.214
 ```
 
 说明：
 
-- 浏览器端直接请求 ECS 的 `https://8.148.79.214/api/*`
-- Next.js route handlers 保留为本地联调和兼容入口
+- 浏览器端统一请求同源 `/api`
+- Next.js route handlers 再转发到 ECS 的 `https://8.148.79.214/api/*`
 - 浏览器实时连接直接使用 `wss://8.148.79.214/colyseus`
 
 ## 后端环境变量

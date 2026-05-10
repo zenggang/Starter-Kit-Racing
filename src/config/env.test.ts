@@ -4,7 +4,7 @@ import { buildPublicApiUrl, getPublicRuntimeConfig, getPublicRuntimeMode, getSel
 describe('runtime env', () => {
   it('uses demo mode when Colyseus public env is missing', () => {
     expect(getPublicRuntimeMode({})).toBe('demo');
-    expect(getPublicRuntimeMode({ NEXT_PUBLIC_API_BASE_URL: 'https://8.148.79.214/api' })).toBe('demo');
+    expect(getPublicRuntimeMode({ NEXT_PUBLIC_API_BASE_URL: '/api' })).toBe('demo');
   });
 
   it('uses online mode when Colyseus public env is present', () => {
@@ -19,18 +19,16 @@ describe('runtime env', () => {
     expect(
       getPublicRuntimeConfig({
         NEXT_PUBLIC_COLYSEUS_URL: 'wss://8.148.79.214/colyseus',
-        NEXT_PUBLIC_API_BASE_URL: 'https://8.148.79.214/api'
+        NEXT_PUBLIC_API_BASE_URL: '/api'
       })
     ).toEqual({
       colyseusUrl: 'wss://8.148.79.214/colyseus',
-      apiBaseUrl: 'https://8.148.79.214/api'
+      apiBaseUrl: '/api'
     });
   });
 
   it('builds browser API urls from the configured public base', () => {
-    expect(buildPublicApiUrl('/rooms', { NEXT_PUBLIC_API_BASE_URL: 'https://8.148.79.214/api' })).toBe(
-      'https://8.148.79.214/api/rooms'
-    );
+    expect(buildPublicApiUrl('/rooms', { NEXT_PUBLIC_API_BASE_URL: '/api' })).toBe('/api/rooms');
   });
 
   it('uses localhost self-hosted server base url by default', () => {

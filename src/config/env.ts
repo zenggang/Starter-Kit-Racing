@@ -41,11 +41,12 @@ export function getPublicRuntimeConfig(env: EnvSource = {}): { colyseusUrl: stri
      */
     colyseusUrl: env.NEXT_PUBLIC_COLYSEUS_URL ?? PUBLIC_COLYSEUS_URL ?? 'wss://8.148.79.214/colyseus',
     /**
-     * Vercel's server-side proxy to the ECS IP proved unreliable in production.
-     * The stable runtime path is to let the browser talk directly to the ECS
-     * HTTPS API entry and keep this value configurable for local development.
+     * Browser-side direct API calls to the ECS IP can be blocked by client
+     * extensions or endpoint security. Keep production API traffic same-origin
+     * through the Vercel-hosted Next.js routes, while realtime WSS still talks
+     * directly to the ECS IP.
      */
-    apiBaseUrl: env.NEXT_PUBLIC_API_BASE_URL ?? PUBLIC_API_BASE_URL ?? 'https://8.148.79.214/api'
+    apiBaseUrl: env.NEXT_PUBLIC_API_BASE_URL ?? PUBLIC_API_BASE_URL ?? '/api'
   };
 }
 
