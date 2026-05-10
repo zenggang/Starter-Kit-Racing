@@ -6,6 +6,7 @@ import { listActiveRoomIds } from './inMemoryRoomIndex.js';
 const BYTES_PER_MEBIBYTE = 1024 * 1024;
 const NANOSECONDS_PER_MILLISECOND = 1_000_000;
 const DEFAULT_REPORT_INTERVAL_MS = 60_000;
+const MIN_REPORT_INTERVAL_MS = 1_000;
 
 interface MysqlPoolInternals {
   config?: {
@@ -148,6 +149,24 @@ export function buildRuntimeDiagnosticsSnapshot(input: RuntimeSnapshotInput): Ru
   };
 }
 
+/**
+ * Shorter intervals are useful for live incident reproduction, but a sub-second
+ * reporter would become its own source of noise. Clamp the interval so
+ * diagnostics stay readable and safe even if an operator passes a bad value.
+ */
+export function normalizeDiagnosticsIntervalMs(rawValue: string | undefined): number {
+  if (!rawValue) {
+    return DEFAULT_REPORT_INTERVAL_MS;
+  }
+
+  const parsed = Number(rawValue);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return DEFAULT_REPORT_INTERVAL_MS;
+  }
+
+  return Math.max(MIN_REPORT_INTERVAL_MS, Math.round(parsed));
+}
+
 export function recordRealtimeMessage(type: string): void {
   counters.messageCount += 1;
   counters.messageTypeCounts.set(type, (counters.messageTypeCounts.get(type) ?? 0) + 1);
@@ -188,7 +207,8 @@ function flushRuntimeSnapshot(pool: Pool): RuntimeDiagnosticsSnapshot {
 
 export function startRuntimeDiagnosticsReporter(
   pool: Pool = getMysqlPool(),
-  logger: (message: string) => void = console.log
+  logger: (message: string) => void = console.log,
+  intervalMs: number = DEFAULT_REPORT_INTERVAL_MS
 ): void {
   if (reportTimer) {
     return;
@@ -200,6 +220,6 @@ export function startRuntimeDiagnosticsReporter(
   reportTimer = setInterval(() => {
     const snapshot = flushRuntimeSnapshot(pool);
     logger(`[runtime-diagnostics] ${JSON.stringify(snapshot)}`);
-  }, DEFAULT_REPORT_INTERVAL_MS);
+  }, intervalMs);
   reportTimer.unref();
 }

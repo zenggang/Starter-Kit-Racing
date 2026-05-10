@@ -14,17 +14,19 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
   const [connectionState, setConnectionState] = useState<MatchConnectionState>('idle');
   const roomRef = useRef<Awaited<ReturnType<typeof acquireRealtimeRoom>> | null>(null);
   const pendingCommandRef = useRef(new Map<string, (result: CommandResult) => void>());
+  const playerId = player?.playerId ?? null;
+  const playerNickname = player ? resolveSessionNickname(player) : null;
 
   useEffect(() => {
-    if (!player) return;
+    if (!playerId || !playerNickname) return;
 
     let cancelled = false;
     setConnectionState('connecting');
 
     acquireRealtimeRoom({
       roomCode,
-      playerId: player.playerId,
-      nickname: resolveSessionNickname(player)
+      playerId,
+      nickname: playerNickname
     })
       .then((room) => {
         if (cancelled) return;
@@ -52,11 +54,11 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
 
     return () => {
       cancelled = true;
-      if (player) {
-        detachActiveListeners(roomCode, player.playerId);
+      if (playerId) {
+        detachActiveListeners(roomCode, playerId);
       }
     };
-  }, [player, roomCode]);
+  }, [playerId, playerNickname, roomCode]);
 
   const sendCommand = useCallback(
     async (command: RoomCommandEnvelope) => {
@@ -86,14 +88,14 @@ export function useMatchSession(roomCode: string, player: PlayerSession | null) 
   );
 
   useEffect(() => {
-    if (!player || connectionState !== 'connected') return;
-    void sendCommand(createMatchCommand('match.sync', player.playerId, {}));
-  }, [connectionState, player, sendCommand]);
+    if (!playerId || connectionState !== 'connected') return;
+    void sendCommand(createMatchCommand('match.sync', playerId, {}));
+  }, [connectionState, playerId, sendCommand]);
 
   useEffect(() => {
-    if (!player || connectionState !== 'connected' || !state.needsSync) return;
-    void sendCommand(createMatchCommand('match.sync', player.playerId, {}));
-  }, [connectionState, player, sendCommand, state.needsSync]);
+    if (!playerId || connectionState !== 'connected' || !state.needsSync) return;
+    void sendCommand(createMatchCommand('match.sync', playerId, {}));
+  }, [connectionState, playerId, sendCommand, state.needsSync]);
 
   return {
     room: state.room,

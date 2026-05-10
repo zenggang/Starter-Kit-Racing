@@ -37,6 +37,7 @@ export function RoomClient({
   useEffect(() => {
     if (!session || connectionState !== 'connected') return;
     if (leavingRef.current) return;
+    if (session.lastRoomCode === code) return;
     rememberRoom(code);
   }, [code, connectionState, rememberRoom, session]);
 

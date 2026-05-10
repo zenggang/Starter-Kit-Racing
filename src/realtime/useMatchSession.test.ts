@@ -186,4 +186,27 @@ describe('useMatchSession', () => {
       commandId: 'match.progress:1'
     });
   });
+
+  it('does not reacquire the realtime room when the player object identity changes without changing player identity', async () => {
+    const { result, rerender } = renderHook(({ nextPlayer }) => useMatchSession('5035', nextPlayer), {
+      initialProps: { nextPlayer: player }
+    });
+
+    await waitFor(() => {
+      expect(result.current.connectionState).toBe('connected');
+    });
+
+    expect(acquireRealtimeRoom).toHaveBeenCalledTimes(1);
+    rerender({
+      nextPlayer: {
+        ...player
+      }
+    });
+
+    await waitFor(() => {
+      expect(result.current.connectionState).toBe('connected');
+    });
+
+    expect(acquireRealtimeRoom).toHaveBeenCalledTimes(1);
+  });
 });

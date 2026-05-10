@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildRuntimeDiagnosticsSnapshot, readMysqlPoolRuntimeState } from './runtimeDiagnostics.js';
+import { buildRuntimeDiagnosticsSnapshot, normalizeDiagnosticsIntervalMs, readMysqlPoolRuntimeState } from './runtimeDiagnostics.js';
 
 describe('runtime diagnostics', () => {
   it('extracts mysql pool internals for runtime logging', () => {
@@ -89,5 +89,12 @@ describe('runtime diagnostics', () => {
         queuedRequests: 1
       }
     });
+  });
+
+  it('normalizes diagnostics interval to a safe sampling window', () => {
+    expect(normalizeDiagnosticsIntervalMs(undefined)).toBe(60_000);
+    expect(normalizeDiagnosticsIntervalMs('5000')).toBe(5_000);
+    expect(normalizeDiagnosticsIntervalMs('500')).toBe(1_000);
+    expect(normalizeDiagnosticsIntervalMs('oops')).toBe(60_000);
   });
 });

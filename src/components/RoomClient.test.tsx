@@ -5,6 +5,7 @@ import { RoomClient } from './RoomClient';
 
 const replaceSpy = vi.fn();
 const pushSpy = vi.fn();
+const rememberRoomSpy = vi.fn();
 const sendCommandSpy = vi.fn().mockResolvedValue({
   type: 'command.result',
   seq: 2,
@@ -42,7 +43,7 @@ vi.mock('@/session/usePlayerSession', () => ({
       nickname: '车手1',
       lastRoomCode: '8966'
     },
-    rememberRoom: vi.fn()
+    rememberRoom: rememberRoomSpy
   })
 }));
 
@@ -89,6 +90,7 @@ describe('RoomClient', () => {
   beforeEach(() => {
     replaceSpy.mockClear();
     pushSpy.mockClear();
+    rememberRoomSpy.mockClear();
     sendCommandSpy.mockClear();
   });
 
@@ -430,5 +432,21 @@ describe('RoomClient', () => {
         payload: { ready: true }
       })
     );
+  });
+
+  it('does not re-store the same room code once the session already points at the current room', async () => {
+    mockedSnapshot = {
+      ...mockedSnapshot,
+      status: 'waiting',
+      closedReason: null
+    };
+
+    render(<RoomClient code="8966" />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText((_, node) => node?.textContent?.includes('房间 8966') ?? false).length).toBeGreaterThan(0);
+    });
+
+    expect(rememberRoomSpy).not.toHaveBeenCalled();
   });
 });
