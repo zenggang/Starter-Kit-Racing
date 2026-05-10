@@ -1,6 +1,6 @@
 import { Client, Room } from '@colyseus/core';
 import { getMysqlPool } from '../db/mysql.js';
-import { buildRealtimeEvent } from '../lib/realtimeBroadcast.js';
+import { buildLifecycleRealtimeEvent, buildRealtimeEvent } from '../lib/realtimeBroadcast.js';
 import { InMemoryRoomStorage } from '../lib/storage.js';
 import { RoomCoordinator } from '../lib/RoomCoordinator.js';
 import type { CommandResult, MatchState, RealtimeCommandType, RoomCommandEnvelope, RoomState } from '../lib/protocol.js';
@@ -27,8 +27,10 @@ interface ClientAuth {
 
 export class RaceRoom extends Room<RaceState> {
   maxClients = 4;
+  private static readonly LIFECYCLE_TICK_MS = 250;
   private readonly storage = new InMemoryRoomStorage();
   private readonly coordinator = new RoomCoordinator(this.storage);
+  private lifecycleTickInFlight = false;
 
   async onCreate(options: JoinOptions): Promise<void> {
     console.log('[race-room] onCreate:start', {
@@ -92,6 +94,7 @@ export class RaceRoom extends Room<RaceState> {
       roomCode: created.room.code,
       status: created.room.status
     });
+    this.startLifecycleTicker();
 
     this.onMessage('command', async (client, raw) => {
       const command = this.normalizeIncomingCommand(client, raw);
@@ -231,6 +234,25 @@ export class RaceRoom extends Room<RaceState> {
     unregisterRoomId(this.roomId);
   }
 
+  /**
+   * Countdown and finish-deadline transitions are time-based, not player-input
+   * based. The fixed ticker keeps coordinator lifecycle state moving even when
+   * the browser is waiting for the official start moment and therefore is not
+   * sending any further commands.
+   */
+  private startLifecycleTicker(): void {
+    this.clock.setInterval(() => {
+      if (this.lifecycleTickInFlight) {
+        return;
+      }
+
+      this.lifecycleTickInFlight = true;
+      void this.pumpLifecycleTransitions().finally(() => {
+        this.lifecycleTickInFlight = false;
+      });
+    }, RaceRoom.LIFECYCLE_TICK_MS);
+  }
+
   private normalizeIncomingCommand(client: Client, raw: unknown): RoomCommandEnvelope | null {
     const auth = client.userData as ClientAuth | undefined;
     if (!auth || !raw || typeof raw !== 'object') {
@@ -350,6 +372,36 @@ export class RaceRoom extends Room<RaceState> {
       await this.refreshRoomStatus(room);
     } catch (error) {
       console.error('[race-room] room-status-refresh-failed', {
+        roomCode: this.roomId,
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  }
+
+  /**
+   * Lifecycle ticks produce the same room/match payloads as user commands, but
+   * they do so without a triggering websocket message. We therefore broadcast
+   * the promoted state explicitly and refresh the durable read model in the
+   * background so the hall API and match clients see the same phase transition.
+   */
+  private async pumpLifecycleTransitions(): Promise<void> {
+    const result = await this.coordinator.advanceLifecycle();
+    if (!result?.ok || !result.room) {
+      return;
+    }
+
+    const event = buildLifecycleRealtimeEvent(result);
+    if (event) {
+      this.broadcast(event.type, event);
+    }
+
+    try {
+      if (result.match) {
+        await syncMatchProjection(getMysqlPool(), result.room, result.match as MatchState);
+      }
+      await this.refreshRoomStatus(result.room);
+    } catch (error) {
+      console.error('[race-room] lifecycle-sync-failed', {
         roomCode: this.roomId,
         error: error instanceof Error ? error.message : String(error)
       });

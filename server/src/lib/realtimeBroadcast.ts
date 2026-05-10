@@ -35,3 +35,31 @@ export function buildRealtimeEvent(command: RoomCommandEnvelope, result: Command
     room: result.room
   } satisfies RoomEvent;
 }
+
+/**
+ * Lifecycle promotion does not originate from a client command, so the room
+ * ticker cannot reuse `buildRealtimeEvent()` directly. This helper turns the
+ * coordinator result back into the same websocket contract the browser already
+ * understands, ensuring countdown -> live and live -> finished transitions are
+ * pushed proactively instead of waiting for another player action.
+ */
+export function buildLifecycleRealtimeEvent(result: CommandResult): RealtimeEvent | null {
+  if (!result.ok || !result.room) {
+    return null;
+  }
+
+  if (result.match) {
+    return {
+      type: 'match.event',
+      seq: result.seq,
+      room: result.room,
+      match: result.match
+    } satisfies MatchEvent;
+  }
+
+  return {
+    type: 'room.event',
+    seq: result.seq,
+    room: result.room
+  } satisfies RoomEvent;
+}
