@@ -33,7 +33,7 @@
 - `race-online2` 负责前端页面构建与托管。
 - `8.148.79.214` 负责 `Colyseus / API / MySQL`。
 - `Colyseus` 负责房间真相、比赛真相、命令排序、超时推进、排名计算、完赛和胜者裁定。
-- `Next.js` server routes 负责同源 `/api` 入口，并代理到 ECS 的 `https://8.148.79.214/api/*`。
+- 浏览器直接请求 ECS 的 `https://8.148.79.214/api/*`，Next.js route handlers 只保留为本地联调和兼容入口。
 - `MySQL` 负责房间读模型、自定义赛道、比赛头信息、最终结果和排行榜查询。
 
 高频 `match.progress` 遥测应保留在 `Colyseus` 房间内存或实时消息里，不要逐帧写入 MySQL。
@@ -57,7 +57,7 @@
 复制 `.env.example` 后保持浏览器公开变量与 Next.js 服务器代理目标分离：
 
 - `NEXT_PUBLIC_COLYSEUS_URL`：浏览器实时连接地址，默认 `wss://8.148.79.214/colyseus`
-- `NEXT_PUBLIC_API_BASE_URL`：浏览器 API 基地址，默认同源 `/api`
+- `NEXT_PUBLIC_API_BASE_URL`：浏览器 API 基地址，默认 `https://8.148.79.214/api`
 - `SELF_HOSTED_SERVER_BASE_URL`：仅 Next.js server routes 使用的 backend 代理地址；本地默认 `http://127.0.0.1:2567`，Vercel 应指向 `https://8.148.79.214`
 
 ## 本地开发
@@ -132,7 +132,7 @@ The current `Vercel + ECS` stack splits responsibilities as follows:
 - `race-online2` hosts the frontend.
 - `8.148.79.214` hosts the realtime/API/database backend.
 - `Colyseus` owns room truth, match truth, command ordering, timeout transitions, ranking, finish state, and winner decisions.
-- `Next.js` server routes expose same-origin `/api/*` endpoints and proxy them to `https://8.148.79.214/api/*`.
+- The browser talks directly to `https://8.148.79.214/api/*` in production, while Next.js route handlers remain as compatibility entry points for local development.
 - `MySQL` stores hall projections, track library rows, match headers, final results, and leaderboard queries.
 
 High-frequency `match.progress` telemetry stays in `Colyseus` room memory or transport messages. Do not write every frame into MySQL.
@@ -153,7 +153,7 @@ See `docs/self-hosted-deploy.md` and `docs/self-hosted-test-plan.md` for deploym
 Copy `.env.example` and keep browser-visible variables separate from the Next.js server-side proxy target:
 
 - `NEXT_PUBLIC_COLYSEUS_URL`: browser realtime endpoint, default `wss://8.148.79.214/colyseus`
-- `NEXT_PUBLIC_API_BASE_URL`: browser API base URL, default `/api`
+- `NEXT_PUBLIC_API_BASE_URL`: browser API base URL, default `https://8.148.79.214/api`
 - `SELF_HOSTED_SERVER_BASE_URL`: server-only proxy target for Next.js routes; local default `http://127.0.0.1:2567`, Vercel target `https://8.148.79.214`
 
 ## Development

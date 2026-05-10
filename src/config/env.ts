@@ -40,7 +40,12 @@ export function getPublicRuntimeConfig(env: EnvSource = {}): { colyseusUrl: stri
      * deployment shape even when no public env is injected yet.
      */
     colyseusUrl: env.NEXT_PUBLIC_COLYSEUS_URL ?? PUBLIC_COLYSEUS_URL ?? 'wss://8.148.79.214/colyseus',
-    apiBaseUrl: env.NEXT_PUBLIC_API_BASE_URL ?? PUBLIC_API_BASE_URL ?? '/api'
+    /**
+     * Vercel's server-side proxy to the ECS IP proved unreliable in production.
+     * The stable runtime path is to let the browser talk directly to the ECS
+     * HTTPS API entry and keep this value configurable for local development.
+     */
+    apiBaseUrl: env.NEXT_PUBLIC_API_BASE_URL ?? PUBLIC_API_BASE_URL ?? 'https://8.148.79.214/api'
   };
 }
 
@@ -50,6 +55,18 @@ export function getSelfHostedServerBaseUrl(env: EnvSource = {}): string {
    * machine. Production Vercel deployments override this with the ECS HTTPS IP.
    */
   return env.SELF_HOSTED_SERVER_BASE_URL ?? SELF_HOSTED_SERVER_BASE_URL ?? 'http://127.0.0.1:2567';
+}
+
+/**
+ * Normalizes browser-visible API paths so client components can target either
+ * same-origin routes in local development or the ECS HTTPS IP in production
+ * without duplicating string concatenation logic throughout the app shell.
+ */
+export function buildPublicApiUrl(path: string, env: EnvSource = {}): string {
+  const { apiBaseUrl } = getPublicRuntimeConfig(env);
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const suffix = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${suffix}`;
 }
 
 export function getServerCoordinatorConfig(_env: EnvSource = process.env): CoordinatorConfig {

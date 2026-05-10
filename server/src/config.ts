@@ -15,11 +15,16 @@ export interface ServerConfig {
   };
   public: {
     colyseusUrl: string;
-    corsOrigin: string;
+    corsOrigins: string[];
   };
 }
 
 export function readServerConfig(env: Record<string, string | undefined> = process.env): ServerConfig {
+  const corsOrigins = (env.CORS_ORIGIN ?? 'https://race2.pigou.top')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+
   return {
     nodeEnv: env.NODE_ENV ?? 'development',
     host: env.HOST ?? '127.0.0.1',
@@ -38,7 +43,7 @@ export function readServerConfig(env: Record<string, string | undefined> = proce
        * while concrete deployments can still override it explicitly.
        */
       colyseusUrl: env.COLYSEUS_PUBLIC_URL ?? 'wss://8.148.79.214/colyseus',
-      corsOrigin: env.CORS_ORIGIN ?? 'https://race2.pigou.top'
+      corsOrigins
     }
   };
 }

@@ -7,6 +7,7 @@ import { CreateRoomForm } from './CreateRoomForm';
 import { HallRoomList } from './HallRoomList';
 import { JoinRoomForm } from './JoinRoomForm';
 import { createRoomReservation, joinRoomReservation } from '@/realtime/sessionClient';
+import { buildPublicApiUrl } from '@/config/env';
 import type { RacingTrackSummary } from '@/server/tracks';
 import type { HallRoomSummary } from '@/server/rooms';
 import { formatRacingError } from '@/realtime/errorMessages';
@@ -40,7 +41,7 @@ export function HallClient({
      */
     async function refreshRooms() {
       try {
-        const response = await fetch('/api/rooms');
+        const response = await fetch(buildPublicApiUrl('/rooms'));
         const body = await response.json();
 
         if (!cancelled) {
@@ -72,7 +73,7 @@ export function HallClient({
 
     async function refreshTracks() {
       try {
-        const response = await fetch(`/api/tracks?playerId=${encodeURIComponent(playerId)}`);
+        const response = await fetch(buildPublicApiUrl(`/tracks?playerId=${encodeURIComponent(playerId)}`));
         const body = await response.json();
         if (!cancelled) {
           setTracks(body.tracks ?? []);

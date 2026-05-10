@@ -19,7 +19,19 @@ setMysqlPool(pool);
 const app = express();
 app.use(
   cors({
-    origin: config.public.corsOrigin,
+    /**
+     * Browser API calls now hit the ECS HTTPS IP directly from both the custom
+     * Vercel domain and the Vercel default deployment domain. Accept either
+     * origin while still rejecting unrelated websites.
+     */
+    origin(origin, callback) {
+      if (!origin || config.public.corsOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error('CORS_ORIGIN_NOT_ALLOWED'));
+    },
     credentials: true
   })
 );

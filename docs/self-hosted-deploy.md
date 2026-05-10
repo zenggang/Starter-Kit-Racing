@@ -56,14 +56,14 @@ Vercel 项目 `race-online2`：
 
 ```env
 NEXT_PUBLIC_COLYSEUS_URL=wss://8.148.79.214/colyseus
-NEXT_PUBLIC_API_BASE_URL=/api
+NEXT_PUBLIC_API_BASE_URL=https://8.148.79.214/api
 SELF_HOSTED_SERVER_BASE_URL=https://8.148.79.214
 ```
 
 说明：
 
-- 浏览器端统一请求同源 `/api`
-- Next.js route handlers 再代理到 ECS 的 `https://8.148.79.214/api/*`
+- 浏览器端直接请求 ECS 的 `https://8.148.79.214/api/*`
+- Next.js route handlers 保留为本地联调和兼容入口
 - 浏览器实时连接直接使用 `wss://8.148.79.214/colyseus`
 
 ## 后端环境变量
@@ -82,7 +82,7 @@ MYSQL_USER=race_user
 MYSQL_PASSWORD=change_me
 
 COLYSEUS_PUBLIC_URL=wss://8.148.79.214/colyseus
-CORS_ORIGIN=https://race2.pigou.top
+CORS_ORIGIN=https://race2.pigou.top,https://race-online2.vercel.app
 ```
 
 ## ECS 后端部署
@@ -147,5 +147,5 @@ ECS 本身不再要求新链路域名指向它。
 
 - `Nginx -> Node/Colyseus`：`127.0.0.1:2567`
 - `Node/Colyseus -> MySQL`：`127.0.0.1:3306`
-- `Vercel -> ECS API`：`https://8.148.79.214/api/*`
+- `Browser/Vercel frontend -> ECS API`：`https://8.148.79.214/api/*`
 - `Browser -> ECS realtime`：`wss://8.148.79.214/colyseus`

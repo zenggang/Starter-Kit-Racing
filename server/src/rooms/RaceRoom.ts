@@ -82,8 +82,12 @@ export class RaceRoom extends Room<RaceState> {
       roomCode: created.room.code,
       status: created.room.status
     });
-    await syncCommandResultProjection(getMysqlPool(), 'room.create', created);
-    console.log('[race-room] onCreate:projectionSynced', {
+    /**
+     * Room creation must acknowledge quickly. Projection writes only feed the
+     * hall/read-model side and must never block the seat reservation response.
+     */
+    void this.syncProjectionInBackground('room.create', created);
+    console.log('[race-room] onCreate:projectionQueued', {
       roomCode: created.room.code,
       status: created.room.status
     });
@@ -114,8 +118,6 @@ export class RaceRoom extends Room<RaceState> {
         seq: result.seq,
         errorCode: result.errorCode ?? null
       });
-      await this.syncProjection(command.type, result);
-      await this.refreshRoomStatus(result.room);
       client.send('command.result', result);
       console.log('[race-room] command:responseSent', {
         roomCode: this.roomId,
@@ -128,6 +130,14 @@ export class RaceRoom extends Room<RaceState> {
       if (event) {
         this.broadcast(event.type, event, { except: client });
       }
+
+      /**
+       * Durable read-model updates happen after the realtime acknowledgement so
+       * a slow MySQL write cannot freeze room controls, ready toggles, or room
+       * creation in the browser.
+       */
+      void this.syncProjectionInBackground(command.type, result);
+      void this.refreshRoomStatusInBackground(result.room);
     });
   }
 
@@ -181,8 +191,13 @@ export class RaceRoom extends Room<RaceState> {
       throw new Error(result.errorCode ?? 'ROOM_NOT_FOUND');
     }
 
-    await this.syncProjection(joinCommand.type, result);
-    await this.refreshRoomStatus(result.room);
+    /**
+     * Joining should prioritize getting the latest snapshot to the browser.
+     * Projection lag is acceptable for a short period because the room truth is
+     * already held in coordinator memory.
+     */
+    void this.syncProjectionInBackground(joinCommand.type, result);
+    void this.refreshRoomStatusInBackground(result.room);
     await this.sendSnapshot(client, playerId);
     console.log('[race-room] onJoin:snapshotSent', {
       roomCode: this.roomId,
@@ -290,5 +305,28 @@ export class RaceRoom extends Room<RaceState> {
       status: room.status
     });
     await syncRoomProjection(getMysqlPool(), room);
+  }
+
+  private async syncProjectionInBackground(commandType: string, result: CommandResult): Promise<void> {
+    try {
+      await this.syncProjection(commandType, result);
+    } catch (error) {
+      console.error('[race-room] projection-sync-failed', {
+        roomCode: this.roomId,
+        commandType,
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  }
+
+  private async refreshRoomStatusInBackground(room: RoomState | undefined): Promise<void> {
+    try {
+      await this.refreshRoomStatus(room);
+    } catch (error) {
+      console.error('[race-room] room-status-refresh-failed', {
+        roomCode: this.roomId,
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
   }
 }

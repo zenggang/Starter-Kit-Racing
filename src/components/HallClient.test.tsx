@@ -40,7 +40,7 @@ describe('HallClient room list refresh', () => {
     let roomCalls = 0;
     const fetchMock = vi.fn((input: RequestInfo | URL) => {
       const url = input.toString();
-      if (url.startsWith('/api/tracks')) {
+      if (url.includes('/api/tracks')) {
         return Promise.resolve(new Response(JSON.stringify({ tracks: [] })));
       }
 

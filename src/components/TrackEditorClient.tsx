@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { validateTrackMap } from '../../shared/trackMapValidation';
+import { buildPublicApiUrl } from '@/config/env';
 import { formatRacingError } from '@/realtime/errorMessages';
 import type { RacingTrackSummary } from '@/server/tracks';
 import { usePlayerSession } from '@/session/usePlayerSession';
@@ -118,7 +119,7 @@ export function TrackEditorClient({ onBackToHall }: { onBackToHall?(): void } = 
   }, [isTrackLibraryOpen]);
 
   async function refreshTracks(playerId: string) {
-    const response = await fetch(`/api/tracks?playerId=${encodeURIComponent(playerId)}`);
+    const response = await fetch(buildPublicApiUrl(`/tracks?playerId=${encodeURIComponent(playerId)}`));
     const body = await response.json();
     setTracks(body.tracks ?? []);
   }
@@ -136,7 +137,7 @@ export function TrackEditorClient({ onBackToHall }: { onBackToHall?(): void } = 
     setMessage(null);
 
     try {
-      const response = await fetch(editingTrackId ? `/api/tracks/${editingTrackId}` : '/api/tracks', {
+      const response = await fetch(buildPublicApiUrl(editingTrackId ? `/tracks/${editingTrackId}` : '/tracks'), {
         method: editingTrackId ? 'PATCH' : 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -166,7 +167,9 @@ export function TrackEditorClient({ onBackToHall }: { onBackToHall?(): void } = 
     setMessage(null);
 
     try {
-      const response = await fetch(`/api/tracks/${trackId}?playerId=${encodeURIComponent(session.playerId)}`, { method: 'DELETE' });
+      const response = await fetch(buildPublicApiUrl(`/tracks/${trackId}?playerId=${encodeURIComponent(session.playerId)}`), {
+        method: 'DELETE'
+      });
       const body = await response.json();
       if (!body.ok) {
         setMessage(formatRacingError(body.errorCode) ?? body.errorCode);

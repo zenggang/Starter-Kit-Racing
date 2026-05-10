@@ -1,5 +1,5 @@
 import { Client, type Room, type SeatReservation } from 'colyseus.js';
-import { getPublicRuntimeConfig } from '@/config/env';
+import { buildPublicApiUrl, getPublicRuntimeConfig } from '@/config/env';
 import type { RacingTrackSummary } from '@/server/tracks';
 import { cacheRoomReservation, clearActiveConnection, consumeRoomReservation, getActiveConnection, setActiveConnection } from './roomConnectionStore';
 import type { RealtimeMessage, RoomCommandEnvelope } from './protocol';
@@ -16,7 +16,7 @@ export async function createRoomReservation(input: {
   nickname: string;
   track: RacingTrackSummary | null;
 }): Promise<{ roomCode: string }> {
-  const response = await fetch('/api/rooms', {
+  const response = await fetch(buildPublicApiUrl('/rooms'), {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -42,7 +42,7 @@ export async function joinRoomReservation(input: {
   nickname: string;
 }): Promise<void> {
   const roomCode = input.roomCode.toUpperCase();
-  const response = await fetch('/api/rooms', {
+  const response = await fetch(buildPublicApiUrl('/rooms'), {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -108,7 +108,7 @@ export async function disposeRealtimeConnection(): Promise<void> {
 }
 
 async function requestJoinReservation(roomCode: string, playerId: string, nickname: string): Promise<SeatReservation> {
-  const response = await fetch('/api/rooms', {
+  const response = await fetch(buildPublicApiUrl('/rooms'), {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
