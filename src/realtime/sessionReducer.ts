@@ -1,4 +1,5 @@
 import type { RacingErrorCode, RealtimeMessage, RoomCommandEnvelope, RoomState } from './protocol';
+import { createClientUuid } from '@/utils/clientUuid';
 
 export interface RoomSessionState {
   snapshot: RoomState | null;
@@ -65,7 +66,7 @@ export function reduceRoomSession(state: RoomSessionState, message: RealtimeMess
 
 export function createCommand(type: RoomCommandEnvelope['type'], playerId: string, payload?: unknown): RoomCommandEnvelope {
   return {
-    commandId: crypto.randomUUID(),
+    commandId: createClientUuid(),
     type,
     playerId,
     payload

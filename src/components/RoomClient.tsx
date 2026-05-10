@@ -23,7 +23,6 @@ export function RoomClient({
   const router = useRouter();
   const { session, rememberRoom } = usePlayerSession();
   const { snapshot, connectionState, lastErrorCode, sendCommand } = useRoomSession(code, session);
-  const joinedRef = useRef(false);
   const leavingRef = useRef(false);
   const autoColorRequestRef = useRef<string | null>(null);
   const autoReadyRequestRef = useRef<string | null>(null);
@@ -38,11 +37,8 @@ export function RoomClient({
   useEffect(() => {
     if (!session || connectionState !== 'connected') return;
     if (leavingRef.current) return;
-    if (joinedRef.current && currentPlayer) return;
-    joinedRef.current = true;
     rememberRoom(code);
-    void sendCommand(createCommand('room.join', session.playerId));
-  }, [code, connectionState, currentPlayer, rememberRoom, sendCommand, session]);
+  }, [code, connectionState, rememberRoom, session]);
 
   useEffect(() => {
     if (snapshot?.status === 'racing' && currentPlayer?.ready && currentPlayer?.color) {

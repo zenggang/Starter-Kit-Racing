@@ -1,3 +1,5 @@
+import { createClientUuid } from '@/utils/clientUuid';
+
 const PLAYER_ID_KEY = 'racing.playerId';
 const NICKNAME_KEY = 'racing.nickname';
 const LAST_ROOM_CODE_KEY = 'racing.lastRoomCode';
@@ -24,7 +26,7 @@ export function getOrCreatePlayerSession(storage: PlayerSessionStorage, nickname
   let playerId = storage.getItem(PLAYER_ID_KEY);
 
   if (!playerId) {
-    playerId = crypto.randomUUID();
+    playerId = createClientUuid();
     storage.setItem(PLAYER_ID_KEY, playerId);
   }
 

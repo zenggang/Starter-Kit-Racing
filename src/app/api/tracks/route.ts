@@ -1,33 +1,34 @@
 import { NextResponse } from 'next/server';
-import { createPlayerTrack, listPlayerTracks } from '@/server/tracks';
+import { forwardSelfHostedRequest } from '@/server/selfHostedApi';
 
 export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const playerId = url.searchParams.get('playerId')?.trim();
-  if (!playerId) {
-    return NextResponse.json({ ok: false, errorCode: 'AUTH_TICKET_INVALID' }, { status: 400 });
+  const response = await forwardSelfHostedRequest(`/api/tracks${url.search}`, {
+    method: 'GET'
+  }).catch(() => null);
+
+  if (!response) {
+    return NextResponse.json({ ok: false, errorCode: 'COORDINATOR_NOT_READY' }, { status: 503 });
   }
 
-  return NextResponse.json({ ok: true, tracks: await listPlayerTracks(playerId) });
+  const body = await response.json().catch(() => ({ ok: false, errorCode: 'COORDINATOR_NOT_READY' }));
+  return NextResponse.json(body, { status: response.status });
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => null)) as { playerId?: string; name?: string; trackMap?: string } | null;
-  if (!body?.playerId || !body.trackMap) {
-    return NextResponse.json({ ok: false, errorCode: 'TRACK_MAP_INVALID' }, { status: 400 });
+  const body = await request.json().catch(() => null);
+  const response = await forwardSelfHostedRequest('/api/tracks', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body ?? {})
+  }).catch(() => null);
+
+  if (!response) {
+    return NextResponse.json({ ok: false, errorCode: 'COORDINATOR_NOT_READY' }, { status: 503 });
   }
 
-  const result = await createPlayerTrack({
-    ownerPlayerId: body.playerId,
-    name: body.name ?? '',
-    trackMap: body.trackMap
-  });
-
-  if (!result.ok) {
-    return NextResponse.json({ ok: false, errorCode: result.errorCode }, { status: result.errorCode === 'COORDINATOR_NOT_READY' ? 503 : 400 });
-  }
-
-  return NextResponse.json({ ok: true, track: result.value });
+  const payload = await response.json().catch(() => ({ ok: false, errorCode: 'COORDINATOR_NOT_READY' }));
+  return NextResponse.json(payload, { status: response.status });
 }

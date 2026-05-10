@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getOrCreatePlayerSession, normalizeNickname, rememberLastRoomCode, resolveSessionNickname, setStoredNickname, type PlayerSessionStorage } from './playerSession';
 
 function createMemoryStorage(): PlayerSessionStorage {
@@ -13,6 +13,10 @@ function createMemoryStorage(): PlayerSessionStorage {
 }
 
 describe('player session', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('creates and reuses a stable player id', () => {
     vi.spyOn(crypto, 'randomUUID').mockReturnValue('12345678-1234-1234-1234-123456789abc');
     const storage = createMemoryStorage();
@@ -57,5 +61,30 @@ describe('player session', () => {
     const session = getOrCreatePlayerSession(storage);
     expect(session.nickname).toBe('');
     expect(resolveSessionNickname(session)).toBe('RacerABCD');
+  });
+
+  it('falls back to getRandomValues when randomUUID is unavailable on insecure HTTP entries', () => {
+    const storage = createMemoryStorage();
+    const originalRandomUUID = crypto.randomUUID;
+    const bytes = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+
+    Object.defineProperty(crypto, 'randomUUID', {
+      value: undefined,
+      configurable: true
+    });
+    vi.spyOn(crypto, 'getRandomValues').mockImplementation((buffer) => {
+      buffer.set(bytes);
+      return buffer;
+    });
+
+    const session = getOrCreatePlayerSession(storage);
+
+    expect(session.playerId).toBe('00010203-0405-4607-8809-0a0b0c0d0e0f');
+    expect(session.nickname).toBe('Racer0001');
+
+    Object.defineProperty(crypto, 'randomUUID', {
+      value: originalRandomUUID,
+      configurable: true
+    });
   });
 });

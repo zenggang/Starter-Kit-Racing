@@ -162,7 +162,7 @@ describe('RoomClient', () => {
     expect(pushSpy).not.toHaveBeenCalled();
   });
 
-  it('does not auto-rejoin after the current racer explicitly leaves the room', async () => {
+  it('does not send a duplicate room.join after the current racer explicitly leaves the room', async () => {
     mockedSnapshot = {
       ...mockedSnapshot,
       hostPlayerId: 'host-1',
@@ -193,7 +193,7 @@ describe('RoomClient', () => {
     const { rerender } = render(<RoomClient code="8966" />);
 
     await waitFor(() => {
-      expect(sendCommandSpy).toHaveBeenCalledWith(
+      expect(sendCommandSpy).not.toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'room.join',
           playerId: 'player-1'

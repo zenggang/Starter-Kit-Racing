@@ -1,41 +1,33 @@
 import { describe, expect, it } from 'vitest';
-import { getPublicRuntimeMode, getServerCoordinatorConfig } from './env';
+import { getPublicRuntimeConfig, getPublicRuntimeMode, getSelfHostedServerBaseUrl } from './env';
 
 describe('runtime env', () => {
-  it('uses demo mode when Supabase public env is missing', () => {
+  it('uses demo mode when Colyseus public env is missing', () => {
     expect(getPublicRuntimeMode({})).toBe('demo');
-    expect(getPublicRuntimeMode({ NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co' })).toBe('demo');
+    expect(getPublicRuntimeMode({ NEXT_PUBLIC_API_BASE_URL: 'https://race2.pigou.top/api' })).toBe('demo');
   });
 
-  it('uses online mode when Supabase public env is complete', () => {
+  it('uses online mode when Colyseus public env is present', () => {
     expect(
       getPublicRuntimeMode({
-        NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon'
+        NEXT_PUBLIC_COLYSEUS_URL: 'wss://8.148.79.214/colyseus'
       })
     ).toBe('online');
   });
 
-  it('returns a machine-readable coordinator error when server env is incomplete', () => {
-    expect(getServerCoordinatorConfig({})).toEqual({
-      ok: false,
-      errorCode: 'COORDINATOR_NOT_READY',
-      missing: ['COORDINATOR_URL', 'COORDINATOR_SHARED_SECRET']
+  it('reads public self-hosted runtime config', () => {
+    expect(
+      getPublicRuntimeConfig({
+        NEXT_PUBLIC_COLYSEUS_URL: 'wss://8.148.79.214/colyseus',
+        NEXT_PUBLIC_API_BASE_URL: '/api'
+      })
+    ).toEqual({
+      colyseusUrl: 'wss://8.148.79.214/colyseus',
+      apiBaseUrl: '/api'
     });
   });
 
-  it('reads server-only coordinator config without requiring bridge mode', () => {
-    expect(
-      getServerCoordinatorConfig({
-        COORDINATOR_URL: 'https://coordinator.example.com',
-        COORDINATOR_SHARED_SECRET: 'secret',
-        COORDINATOR_BRIDGE_ENABLED: 'false'
-      })
-    ).toEqual({
-      ok: true,
-      url: 'https://coordinator.example.com',
-      sharedSecret: 'secret',
-      bridgeEnabled: false
-    });
+  it('uses localhost self-hosted server base url by default', () => {
+    expect(getSelfHostedServerBaseUrl({})).toBe('http://127.0.0.1:2567');
   });
 });

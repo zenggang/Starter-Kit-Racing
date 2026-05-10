@@ -10,6 +10,6 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
-    exclude: ['node_modules/**', '.next/**', 'realtime-worker/**']
+    exclude: ['node_modules/**', '.next/**', 'realtime-worker/**', 'server/dist/**']
   }
 });

@@ -6,13 +6,13 @@
 
 ## 中文
 
-[在线试玩](https://race.pigou.top)
+[在线试玩](https://race2.pigou.top)
 
-这是一个基于 [Kenney Starter Kit Racing](https://github.com/KenneyNL/Starter-Kit-Racing) 的浏览器联机赛车项目。原始 Godot 赛车素材和玩法被移植到 JavaScript、Three.js 和 crashcat physics，并在外层加入移动端优先的联机大厅、房间、倒计时比赛、幽灵车、结果页和自定义赛道编辑器。
+这是一个基于 [Kenney Starter Kit Racing](https://github.com/KenneyNL/Starter-Kit-Racing) 的浏览器联机赛车项目。原始 Godot 赛车素材和玩法被移植到 JavaScript、Three.js 和 crashcat physics，并在外层加入移动端优先的联机大厅、房间、倒计时比赛、幽灵车、结果页和自定义赛道编辑器。当前分支的运行时目标是 `Vercel 前端 + ECS Colyseus/API + MySQL`。
 
 ## 当前能力
 
-- 固定入口：线上主入口使用裸域名 `https://race.pigou.top`，微信等内置浏览器全程保持同一个 URL。
+- 固定入口：线上主入口使用 `https://race2.pigou.top`，微信等内置浏览器全程保持同一个 URL。
 - 游戏内路由：大厅、房间、比赛、结果和赛道编辑器都由内部游戏状态切换，不依赖浏览器子路由。
 - 联机房间：支持创建房间、输入 4 位房间码加入、选择车身颜色、自动选色、自动准备、取消准备、设置圈数和房主发车。
 - 公平开赛：房主发车后进入 coordinator 权威倒计时，所有玩家在同一个正式开赛时间点解锁输入。
@@ -27,35 +27,38 @@
 
 ## 联机边界
 
-这个项目没有把 Supabase 当作实时比赛总线，而是拆成更清晰的职责边界：
+这个项目当前按 `Vercel + ECS` 链路拆成更清晰的职责边界：
 
-- `coordinator` 负责房间真相、比赛真相、命令排序、超时推进、排名计算、完赛和胜者决策。
-- WebSocket 是主要实时通道；同源 `bridge` 是命令转发、快照恢复和移动端兼容的兜底通道。
-- Next.js server routes 负责签发 ticket、代理 bridge 命令、解析自定义赛道归属，并使用服务端密钥写入持久化快照。
-- Supabase 是持久化读模型，用于恢复大厅等待房间、保存玩家赛道、保留比赛结果和历史快照。
+- `race2.pigou.top` 承载固定公开入口，并保持内部状态式导航，不靠浏览器 URL 切页。
+- `race-online2` 负责前端页面构建与托管。
+- `8.148.79.214` 负责 `Colyseus / API / MySQL`。
+- `Colyseus` 负责房间真相、比赛真相、命令排序、超时推进、排名计算、完赛和胜者裁定。
+- `Next.js` server routes 负责同源 `/api` 入口，并代理到 ECS 的 `https://8.148.79.214/api/*`。
+- `MySQL` 负责房间读模型、自定义赛道、比赛头信息、最终结果和排行榜查询。
 
-高频 `match.progress` 遥测应保留在 coordinator 内存或实时传输消息中，不要逐帧写入 Postgres。
+高频 `match.progress` 遥测应保留在 `Colyseus` 房间内存或实时消息里，不要逐帧写入 MySQL。
 
 ## 持久化模型
 
-项目当前使用三类主要持久化数据：
+项目当前使用四类主要持久化数据：
 
 - `racing_rooms` 和 `racing_room_players`：大厅等待房间读模型。
 - `racing_tracks`：玩家自定义赛道库。
 - `racing_matches` 和 `racing_match_results`：单场比赛头信息、结果和玩家最终进度快照。
+- `players`：玩家基础标识、昵称和最近活跃时间。
 
-服务端和 worker 只写入 coordinator 批准过的房间生命周期、比赛头信息和最终结果。表职责、phase 语义和 RLS 预期见 `supabase/README.md`。
+后端只写入房间生命周期、比赛头信息和最终结果。部署与测试口径见：
+
+- `docs/self-hosted-deploy.md`
+- `docs/self-hosted-test-plan.md`
 
 ## 环境变量
 
-复制 `.env.example` 后保持浏览器变量和服务端密钥分离：
+复制 `.env.example` 后保持浏览器公开变量与 Next.js 服务器代理目标分离：
 
-- `NEXT_PUBLIC_SUPABASE_URL`、`NEXT_PUBLIC_SUPABASE_ANON_KEY`：浏览器可见，只用于大厅公开读模型和在线模式检测。
-- `SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`：仅服务端或 worker 使用，用于房间生命周期、自定义赛道、比赛头信息和最终结果写入。
-- `COORDINATOR_URL`：Cloudflare coordinator 地址。
-- `COORDINATOR_SHARED_SECRET`：仅服务端使用，用于 ticket 签名和 bridge 转发校验。
-
-如果 Cloudflare worker 直接写 Supabase，请把同一组服务端密钥配置到 worker secret store，不要暴露到浏览器 bundle。
+- `NEXT_PUBLIC_COLYSEUS_URL`：浏览器实时连接地址，默认 `wss://8.148.79.214/colyseus`
+- `NEXT_PUBLIC_API_BASE_URL`：浏览器 API 基地址，默认同源 `/api`
+- `SELF_HOSTED_SERVER_BASE_URL`：仅 Next.js server routes 使用的 backend 代理地址；本地默认 `http://127.0.0.1:2567`，Vercel 应指向 `https://8.148.79.214`
 
 ## 本地开发
 
@@ -64,17 +67,20 @@ npm install
 npm run dev
 ```
 
-本地联机环境有两种启动方式，二者都只覆盖当前进程环境变量，不会修改 `.env.local` 或线上配置：
+本地开发分成两部分：
 
 ```bash
-# 本地 Next + 本地 Cloudflare Worker/Durable Object coordinator
-npm run dev:local-worker
-
-# 本地 Next + .env.local 中配置的线上 coordinator
-npm run dev:online-worker
+npm install
+npm run dev
 ```
 
-`dev:local-worker` 会同时启动 `http://localhost:3000` 和 `http://localhost:8787`，并禁用当前进程的 Supabase 服务端写入，避免本地 worker 房间污染线上读模型。
+后端本地开发：
+
+```bash
+cd server
+npm install
+npm run dev
+```
 
 常用验证命令：
 
@@ -84,7 +90,10 @@ npm run test
 npm run build
 ```
 
-联机、默认赛道、自定义赛道、倒计时、幽灵车、结果页和 rematch 的烟测流程见 `docs/runbooks/phase-1-online-room-lifecycle.md`。
+详细部署与测试流程见：
+
+- `docs/self-hosted-deploy.md`
+- `docs/self-hosted-test-plan.md`
 
 ## 致谢
 
@@ -96,13 +105,13 @@ npm run build
 
 ## English
 
-[Live Demo](https://race.pigou.top)
+[Live Demo](https://race2.pigou.top)
 
-This is a browser-based online racing game built from [Kenney Starter Kit Racing](https://github.com/KenneyNL/Starter-Kit-Racing). The original Godot racing assets and gameplay have been ported to JavaScript, Three.js, and crashcat physics, then wrapped with a mobile-first online shell for the hall, rooms, authoritative countdown races, ghost cars, results, and custom track editing.
+This is a browser-based online racing game built from [Kenney Starter Kit Racing](https://github.com/KenneyNL/Starter-Kit-Racing). The original Godot racing assets and gameplay have been ported to JavaScript, Three.js, and crashcat physics, then wrapped with a mobile-first online shell for the hall, rooms, authoritative countdown races, ghost cars, results, and custom track editing. The current branch targets a `Vercel frontend + ECS Colyseus/API + MySQL` runtime.
 
 ## Current Features
 
-- Fixed entry URL: the public production entry is the bare domain `https://race.pigou.top`, so embedded browsers such as WeChat keep one stable URL for the whole game.
+- Fixed entry URL: the public production entry is `https://race2.pigou.top`, so embedded browsers such as WeChat keep one stable URL for the whole game.
 - Internal game navigation: hall, room, race, result, and track editor screens switch through game state instead of browser sub-routes.
 - Online rooms: create a room, join with a 4-digit room code, choose vehicle color, auto-select color, auto-ready, cancel readiness, set lap count, and start as host.
 - Fair start: host start enters a coordinator-authoritative countdown, and all players unlock input at the same official start time.
@@ -117,35 +126,35 @@ This is a browser-based online racing game built from [Kenney Starter Kit Racing
 
 ## Realtime Boundary
 
-The online stack deliberately avoids using Supabase as a live race bus. Responsibilities are split as follows:
+The current `Vercel + ECS` stack splits responsibilities as follows:
 
-- `coordinator` owns room truth, match truth, command ordering, timeout transitions, rank calculation, finish state, and winner decisions.
-- WebSocket is the primary realtime transport. The same-origin `bridge` remains the fallback for command forwarding, snapshot recovery, and mobile compatibility.
-- Next.js server routes sign tickets, proxy authenticated bridge commands, resolve custom track ownership, and persist coordinator-approved snapshots with server-only credentials.
-- Supabase is the durable read-model layer for restoring hall rooms, storing player tracks, and retaining match results and historical snapshots.
+- `race2.pigou.top` is the fixed public web entry.
+- `race-online2` hosts the frontend.
+- `8.148.79.214` hosts the realtime/API/database backend.
+- `Colyseus` owns room truth, match truth, command ordering, timeout transitions, ranking, finish state, and winner decisions.
+- `Next.js` server routes expose same-origin `/api/*` endpoints and proxy them to `https://8.148.79.214/api/*`.
+- `MySQL` stores hall projections, track library rows, match headers, final results, and leaderboard queries.
 
-High-frequency `match.progress` telemetry should stay in coordinator memory or transport messages. Do not write every frame into Postgres.
+High-frequency `match.progress` telemetry stays in `Colyseus` room memory or transport messages. Do not write every frame into MySQL.
 
 ## Durable Models
 
-The project currently uses three main durable data groups:
+The project currently uses four main durable data groups:
 
 - `racing_rooms` and `racing_room_players`: public waiting-room read model consumed by the hall.
 - `racing_tracks`: player-owned custom track library.
 - `racing_matches` and `racing_match_results`: match headers, final results, and per-player final progress snapshots.
+- `players`: player identity, nickname, and recent activity.
 
-Server and worker writers persist only coordinator-approved room lifecycle snapshots, match headers, and final results. See `supabase/README.md` for table responsibilities, phase semantics, and RLS expectations.
+See `docs/self-hosted-deploy.md` and `docs/self-hosted-test-plan.md` for deployment and verification details.
 
 ## Environment
 
-Copy `.env.example` and keep browser-visible variables separate from server-only secrets:
+Copy `.env.example` and keep browser-visible variables separate from the Next.js server-side proxy target:
 
-- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`: browser-safe values used only for public hall reads and online-mode detection.
-- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`: server/worker-only values used for room lifecycle, custom tracks, match headers, and final result writes.
-- `COORDINATOR_URL`: Cloudflare coordinator endpoint.
-- `COORDINATOR_SHARED_SECRET`: server-only secret for ticket signing and bridge forwarding.
-
-If the Cloudflare worker writes directly to Supabase, mirror the same server-only secrets into the worker secret store instead of exposing them to the browser bundle.
+- `NEXT_PUBLIC_COLYSEUS_URL`: browser realtime endpoint, default `wss://8.148.79.214/colyseus`
+- `NEXT_PUBLIC_API_BASE_URL`: browser API base URL, default `/api`
+- `SELF_HOSTED_SERVER_BASE_URL`: server-only proxy target for Next.js routes; local default `http://127.0.0.1:2567`, Vercel target `https://8.148.79.214`
 
 ## Development
 
@@ -154,21 +163,20 @@ npm install
 npm run dev
 ```
 
-Two local online test modes are available. Both only override environment
-variables for the current process and do not modify `.env.local` or production
-configuration:
+Frontend development:
 
 ```bash
-# Local Next + local Cloudflare Worker/Durable Object coordinator
-npm run dev:local-worker
-
-# Local Next + the online coordinator configured in .env.local
-npm run dev:online-worker
+npm install
+npm run dev
 ```
 
-`dev:local-worker` starts both `http://localhost:3000` and
-`http://localhost:8787`, and disables Supabase server writes for that process so
-local worker rooms do not pollute the online read model.
+Backend development:
+
+```bash
+cd server
+npm install
+npm run dev
+```
 
 Common verification commands:
 
@@ -178,7 +186,7 @@ npm run test
 npm run build
 ```
 
-See `docs/runbooks/phase-1-online-room-lifecycle.md` for smoke checks covering online rooms, default tracks, custom tracks, countdown, ghost cars, results, and rematch.
+See `docs/self-hosted-deploy.md` and `docs/self-hosted-test-plan.md` for deployment and smoke checks.
 
 ## Credits
 

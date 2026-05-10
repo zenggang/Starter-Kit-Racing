@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { createCommand } from '@/realtime/sessionReducer';
 import type { RacingTrackSummary } from '@/server/tracks';
 import type { PlayerSession } from '@/session/playerSession';
 
@@ -20,7 +19,7 @@ export function CreateRoomForm({
   selectedTrackId: string | null;
   disabled?: boolean;
   onSelectTrack(trackId: string | null): void;
-  onCreate(command: ReturnType<typeof createCommand>): void;
+  onCreate(): void;
   onOpenTrackEditor?(): void;
 }) {
   const selectedTrack = selectedTrackId ? tracks.find((track) => track.id === selectedTrackId) ?? null : null;
@@ -59,7 +58,7 @@ export function CreateRoomForm({
         type="button"
         className="primary-action console-button"
         disabled={!player || disabled}
-        onClick={() => player && onCreate(createCommand('room.create', player.playerId, selectedTrackId ? { trackId: selectedTrackId } : undefined))}
+        onClick={() => player && onCreate()}
       >
         创建房间
       </button>

@@ -30,7 +30,7 @@ export function RaceClient({
 }) {
   const router = useRouter();
   const { session } = usePlayerSession();
-  const { room, match, transportMode, connectionState, lastErrorCode, sendCommand } = useMatchSession(code, session);
+  const { room, match, connectionState, lastErrorCode, sendCommand } = useMatchSession(code, session);
   const runtimeRef = useRef<RuntimeHandle | null>(null);
   const progressRef = useRef(createInitialRaceProgressState());
   const telemetryInFlightRef = useRef(false);
@@ -86,7 +86,7 @@ export function RaceClient({
   const trackModel = useMemo(() => {
     return effectiveMatch ? buildTrackProgressModel(effectiveMatch.trackMap) : null;
   }, [effectiveMatch]);
-  const telemetryIntervalMs = useMemo(() => getRaceTelemetryIntervalMs(transportMode ?? null), [transportMode]);
+  const telemetryIntervalMs = useMemo(() => getRaceTelemetryIntervalMs('socket'), []);
 
   useEffect(() => {
     connectionStateRef.current = connectionState;

@@ -6,10 +6,9 @@ import { useRouter } from 'next/navigation';
 import { CreateRoomForm } from './CreateRoomForm';
 import { HallRoomList } from './HallRoomList';
 import { JoinRoomForm } from './JoinRoomForm';
-import { requestCoordinatorTicket, sendBridgeCommand } from '@/realtime/sessionClient';
+import { createRoomReservation, joinRoomReservation } from '@/realtime/sessionClient';
 import type { RacingTrackSummary } from '@/server/tracks';
 import type { HallRoomSummary } from '@/server/rooms';
-import { createCommand } from '@/realtime/sessionReducer';
 import { formatRacingError } from '@/realtime/errorMessages';
 import { usePlayerSession } from '@/session/usePlayerSession';
 import { resolveSessionNickname } from '@/session/playerSession';
@@ -98,7 +97,7 @@ export function HallClient({
     }
   }, [session?.nickname]);
 
-  async function sendHallCommand(roomCode: string, command: ReturnType<typeof createCommand>) {
+  async function handleCreateRoom() {
     if (!session) return;
     setBusy(true);
     setErrorCode(null);
@@ -106,21 +105,50 @@ export function HallClient({
     try {
       const nicknameForCommand = resolveSessionNickname(session);
       updateNickname(nicknameForCommand);
-      const ticket = await requestCoordinatorTicket({ playerId: session.playerId, nickname: nicknameForCommand, roomCode });
-      const result = await sendBridgeCommand(roomCode, ticket, command);
+      const selectedTrack = selectedTrackId ? tracks.find((track) => track.id === selectedTrackId) ?? null : null;
+      const result = await createRoomReservation({
+        playerId: session.playerId,
+        nickname: nicknameForCommand,
+        track: selectedTrack
+      });
 
-      if (!result.ok || !result.room) {
-        setErrorCode(result.errorCode ?? 'COORDINATOR_NOT_READY');
-        return;
-      }
-
-      rememberRoom(result.room.code);
+      rememberRoom(result.roomCode);
       if (onEnterRoom) {
-        onEnterRoom(result.room.code);
+        onEnterRoom(result.roomCode);
         return;
       }
 
-      router.push(`/room/${result.room.code}`);
+      router.push(`/room/${result.roomCode}`);
+    } catch (error) {
+      setErrorCode(error instanceof Error ? error.message : 'COORDINATOR_NOT_READY');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleJoinRoom(roomCode: string) {
+    if (!session) return;
+    setBusy(true);
+    setErrorCode(null);
+
+    try {
+      const nicknameForCommand = resolveSessionNickname(session);
+      updateNickname(nicknameForCommand);
+      await joinRoomReservation({
+        roomCode,
+        playerId: session.playerId,
+        nickname: nicknameForCommand
+      });
+
+      rememberRoom(roomCode.toUpperCase());
+      if (onEnterRoom) {
+        onEnterRoom(roomCode);
+        return;
+      }
+
+      router.push(`/room/${roomCode.toUpperCase()}`);
+    } catch (error) {
+      setErrorCode(error instanceof Error ? error.message : 'ROOM_NOT_FOUND');
     } finally {
       setBusy(false);
     }
@@ -158,11 +186,11 @@ export function HallClient({
             selectedTrackId={selectedTrackId}
             disabled={busy}
             onSelectTrack={setSelectedTrackId}
-            onCreate={(command) => sendHallCommand('new', command)}
+            onCreate={handleCreateRoom}
             onOpenTrackEditor={onOpenTrackEditor}
           />
-          <JoinRoomForm player={session} disabled={busy} onJoin={sendHallCommand} />
-          <HallRoomList rooms={rooms} onJoin={(code) => session && sendHallCommand(code, createCommand('room.join', session.playerId))} />
+          <JoinRoomForm player={session} disabled={busy} onJoin={handleJoinRoom} />
+          <HallRoomList rooms={rooms} onJoin={handleJoinRoom} />
         </div>
       </div>
     </section>

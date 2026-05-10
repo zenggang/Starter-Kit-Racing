@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { initialMatchSessionState, reduceMatchSession } from './matchReducer';
+import { describe, expect, it, vi } from 'vitest';
+import { createMatchCommand, initialMatchSessionState, reduceMatchSession } from './matchReducer';
 import type { MatchState, RoomState } from './protocol';
 
 const room: RoomState = {
@@ -114,5 +114,26 @@ describe('match session reducer', () => {
     expect(next.match?.players[0]?.lapProgress).toBe(0.42);
     expect(next.lastSeq).toBe(3);
     expect(next.needsSync).toBe(false);
+  });
+
+  it('creates match command ids without requiring crypto.randomUUID', () => {
+    const originalRandomUUID = crypto.randomUUID;
+
+    Object.defineProperty(crypto, 'randomUUID', {
+      value: undefined,
+      configurable: true
+    });
+    vi.spyOn(crypto, 'getRandomValues').mockImplementation((buffer) => {
+      buffer.set(new Uint8Array([15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]));
+      return buffer;
+    });
+
+    const command = createMatchCommand('match.sync', 'player-1');
+    expect(command.commandId).toBe('0f0e0d0c-0b0a-4908-8706-050403020100');
+
+    Object.defineProperty(crypto, 'randomUUID', {
+      value: originalRandomUUID,
+      configurable: true
+    });
   });
 });

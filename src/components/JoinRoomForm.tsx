@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { useState } from 'react';
-import { createCommand } from '@/realtime/sessionReducer';
 import type { PlayerSession } from '@/session/playerSession';
 
 export function JoinRoomForm({
@@ -12,7 +11,7 @@ export function JoinRoomForm({
 }: {
   player: PlayerSession | null;
   disabled?: boolean;
-  onJoin(roomCode: string, command: ReturnType<typeof createCommand>): void;
+  onJoin(roomCode: string): void;
 }) {
   const [roomCode, setRoomCode] = useState('');
 
@@ -22,7 +21,7 @@ export function JoinRoomForm({
       onSubmit={(event) => {
         event.preventDefault();
         if (!player || roomCode.trim().length !== 4) return;
-        onJoin(roomCode.trim(), createCommand('room.join', player.playerId));
+        onJoin(roomCode.trim());
       }}
     >
       <div className="console-section-head">

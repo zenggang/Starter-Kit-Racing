@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { initialRoomSessionState, reduceRoomSession } from './sessionReducer';
+import { describe, expect, it, vi } from 'vitest';
+import { createCommand, initialRoomSessionState, reduceRoomSession } from './sessionReducer';
 import type { RoomState } from './protocol';
 
 const room: RoomState = {
@@ -58,5 +58,26 @@ describe('room session reducer', () => {
     expect(next.snapshot?.lapTarget).toBe(5);
     expect(next.lastSeq).toBe(3);
     expect(next.needsSync).toBe(false);
+  });
+
+  it('creates command ids without requiring crypto.randomUUID', () => {
+    const originalRandomUUID = crypto.randomUUID;
+
+    Object.defineProperty(crypto, 'randomUUID', {
+      value: undefined,
+      configurable: true
+    });
+    vi.spyOn(crypto, 'getRandomValues').mockImplementation((buffer) => {
+      buffer.set(new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]));
+      return buffer;
+    });
+
+    const command = createCommand('sync.request', 'player-1');
+    expect(command.commandId).toBe('00010203-0405-4607-8809-0a0b0c0d0e0f');
+
+    Object.defineProperty(crypto, 'randomUUID', {
+      value: originalRandomUUID,
+      configurable: true
+    });
   });
 });

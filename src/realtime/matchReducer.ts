@@ -1,4 +1,5 @@
 import type { MatchState, RealtimeMessage, RacingErrorCode, RoomCommandEnvelope, RoomState } from './protocol';
+import { createClientUuid } from '@/utils/clientUuid';
 
 export interface MatchSessionState {
   room: RoomState | null;
@@ -74,7 +75,7 @@ export function createMatchCommand<TPayload = unknown>(
   payload?: TPayload
 ): RoomCommandEnvelope<TPayload> {
   return {
-    commandId: crypto.randomUUID(),
+    commandId: createClientUuid(),
     type,
     playerId,
     payload
