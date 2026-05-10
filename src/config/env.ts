@@ -20,7 +20,6 @@ type EnvSource = Record<string, string | undefined>;
  * allows Next's compiler to inline the configured values into browser chunks.
  */
 const PUBLIC_COLYSEUS_URL = process.env.NEXT_PUBLIC_COLYSEUS_URL;
-const PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const SELF_HOSTED_SERVER_BASE_URL = process.env.SELF_HOSTED_SERVER_BASE_URL;
 
 export function getPublicRuntimeMode(env: EnvSource = {}): PublicRuntimeMode {
@@ -41,12 +40,13 @@ export function getPublicRuntimeConfig(env: EnvSource = {}): { colyseusUrl: stri
      */
     colyseusUrl: env.NEXT_PUBLIC_COLYSEUS_URL ?? PUBLIC_COLYSEUS_URL ?? 'wss://8.148.79.214/colyseus',
     /**
-     * Browser-side direct API calls to the ECS IP can be blocked by client
-     * extensions or endpoint security. Keep production API traffic same-origin
-     * through the Vercel-hosted Next.js routes, while realtime WSS still talks
-     * directly to the ECS IP.
+     * Browser-side API traffic must stay same-origin so the Vercel frontend can
+     * keep a stable `/api/*` contract regardless of how the ECS backend is
+     * exposed underneath. We intentionally ignore any baked public API env
+     * value here because a stale deployment variable would otherwise hard-code
+     * the ECS IP into browser chunks and bypass the route handlers entirely.
      */
-    apiBaseUrl: env.NEXT_PUBLIC_API_BASE_URL ?? PUBLIC_API_BASE_URL ?? '/api'
+    apiBaseUrl: env.NEXT_PUBLIC_API_BASE_URL ?? '/api'
   };
 }
 
