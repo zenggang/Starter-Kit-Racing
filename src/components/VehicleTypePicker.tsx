@@ -4,7 +4,8 @@ import React from 'react';
 import { DEFAULT_VEHICLE_TYPE, VEHICLE_TYPES, type VehicleType } from '@/realtime/protocol';
 
 export const VEHICLE_TYPE_LABELS: Record<VehicleType, string> = {
-  truck: 'E级轿车',
+  truck: '卡车',
+  sedan: 'E级轿车',
   motorcycle: '摩托',
   dog: '狗狗'
 };

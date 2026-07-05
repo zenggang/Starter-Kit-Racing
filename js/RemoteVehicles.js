@@ -98,6 +98,16 @@ function makeGhostModel( source ) {
 
 }
 
+function resolveRemoteVehicleModelName( vehicle ) {
+
+	if ( vehicle.vehicleType === 'sedan' ) return 'vehicle-mercedes-e';
+	if ( vehicle.vehicleType === 'motorcycle' ) return 'vehicle-motorcycle';
+	if ( vehicle.vehicleType === 'dog' ) return 'dog-car';
+
+	return `vehicle-truck-${ vehicle.color }`;
+
+}
+
 export class RemoteVehicles {
 
 	constructor( scene, models ) {
@@ -130,6 +140,12 @@ export class RemoteVehicles {
 				entry = this.createEntry( vehicle, now );
 				this.entries.set( vehicle.playerId, entry );
 
+			} else if ( entry.vehicleType !== ( vehicle.vehicleType || 'truck' ) ) {
+
+				this.removeEntry( entry );
+				entry = this.createEntry( vehicle, now );
+				this.entries.set( vehicle.playerId, entry );
+
 			}
 
 			entry.targetPosition.set( vehicle.position?.x ?? 0, ( vehicle.position?.y ?? 0.5 ) - 0.5, vehicle.position?.z ?? 0 );
@@ -140,7 +156,7 @@ export class RemoteVehicles {
 			if ( entry.nickname !== vehicle.nickname || entry.color !== vehicle.color ) {
 
 				this.refreshLabel( entry, vehicle );
-				if ( entry.vehicleType === 'truck' ) applyMercedesVehicleColor( entry.model, vehicle.color );
+				if ( entry.vehicleType === 'sedan' ) applyMercedesVehicleColor( entry.model, vehicle.color );
 				if ( entry.vehicleType === 'motorcycle' ) applyMotorcycleColor( entry.model, vehicle.color );
 				if ( entry.vehicleType === 'dog' ) applyDogVehicleColor( entry.model, vehicle.color );
 
@@ -164,9 +180,9 @@ export class RemoteVehicles {
 	createEntry( vehicle, now ) {
 
 		const group = new THREE.Group();
-		const modelName = vehicle.vehicleType === 'motorcycle' ? 'vehicle-motorcycle' : vehicle.vehicleType === 'dog' ? 'dog-car' : 'vehicle-mercedes-e';
+		const modelName = resolveRemoteVehicleModelName( vehicle );
 		const model = makeGhostModel( this.models[ modelName ] || this.models[ 'vehicle-truck-yellow' ] );
-		if ( vehicle.vehicleType === 'truck' ) applyMercedesVehicleColor( model, vehicle.color );
+		if ( vehicle.vehicleType === 'sedan' ) applyMercedesVehicleColor( model, vehicle.color );
 		if ( vehicle.vehicleType === 'motorcycle' ) applyMotorcycleColor( model, vehicle.color );
 		if ( vehicle.vehicleType === 'dog' ) applyDogVehicleColor( model, vehicle.color );
 		const targetPosition = new THREE.Vector3(

@@ -82,8 +82,8 @@ export function applyMotorcycleColor( model, color ) {
 }
 
 /**
- * The default four-wheel protocol key is still `truck` for room/state
- * compatibility, but the shipped runtime asset is now a single E-sedan GLB.
+ * The E-sedan ships as one shared GLB while the legacy truck still ships as
+ * one GLB per color.
  * Tint only the named body-paint material so glass, chrome, tires and lights
  * keep their readability while the lobby color still changes the car body.
  */

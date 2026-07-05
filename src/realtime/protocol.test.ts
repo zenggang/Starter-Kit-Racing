@@ -23,6 +23,7 @@ describe('Phase 1 realtime protocol', () => {
 
   it('allows only supported vehicle body types', () => {
     expect(isVehicleType('truck')).toBe(true);
+    expect(isVehicleType('sedan')).toBe(true);
     expect(isVehicleType('motorcycle')).toBe(true);
     expect(isVehicleType('dog')).toBe(true);
     expect(isVehicleType('kart')).toBe(false);

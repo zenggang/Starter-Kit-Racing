@@ -51,14 +51,14 @@ function createEmptyRuntimeSnapshot() {
 
 }
 
-function resolveVehicleModelName( vehicleType ) {
+function resolveVehicleModelName( vehicleType, vehicleColor ) {
 
+	if ( vehicleType === 'truck' ) return `vehicle-truck-${ vehicleColor }`;
+	if ( vehicleType === 'sedan' ) return 'vehicle-mercedes-e';
 	if ( vehicleType === 'motorcycle' ) return 'vehicle-motorcycle';
 	if ( vehicleType === 'dog' ) return 'dog-car';
 
-	// The coordinator still sends the legacy `truck` key, but the four-wheel
-	// player car now ships as one tintable sedan GLB instead of four color files.
-	return 'vehicle-mercedes-e';
+	return `vehicle-truck-${ vehicleColor }`;
 
 }
 
@@ -104,7 +104,7 @@ export async function mountRacingRuntime( container, options = {} ) {
 		hasCustomTrack: typeof mapParam === 'string' && mapParam.length > 0,
 	} );
 	const vehicleColor = typeof options.vehicleColor === 'string' && options.vehicleColor.length > 0 ? options.vehicleColor : 'yellow';
-	const vehicleType = [ 'motorcycle', 'dog' ].includes( options.vehicleType ) ? options.vehicleType : 'truck';
+	const vehicleType = [ 'sedan', 'motorcycle', 'dog' ].includes( options.vehicleType ) ? options.vehicleType : 'truck';
 	const { width, height } = measureRuntimeViewport( container );
 	let animationFrame = 0;
 	let destroyed = false;
@@ -291,7 +291,7 @@ export async function mountRacingRuntime( container, options = {} ) {
 
 	}
 
-	const vehicleModelName = resolveVehicleModelName( vehicleType );
+	const vehicleModelName = resolveVehicleModelName( vehicleType, vehicleColor );
 	const vehicleGroup = vehicle.init( models[ vehicleModelName ] || models[ 'vehicle-truck-yellow' ], {
 		vehicleType,
 		vehicleColor,

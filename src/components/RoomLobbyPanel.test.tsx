@@ -182,6 +182,18 @@ describe('RoomLobbyPanel', () => {
 
     render(<RoomLobbyPanel room={room} player={player} roomCode="8966" connectionState="connected" onCommand={onCommand} onLeave={vi.fn()} />);
 
+    expect(screen.getByRole('button', { name: '卡车' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'E级轿车' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'E级轿车' }));
+    expect(onCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'room.chooseVehicleType',
+        playerId: 'player-1',
+        payload: { vehicleType: 'sedan' }
+      })
+    );
+
     fireEvent.click(screen.getByRole('button', { name: '摩托' }));
 
     expect(onCommand).toHaveBeenCalledWith(

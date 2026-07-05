@@ -31,7 +31,7 @@ function createWheelNode( name, childName ) {
 
 describe( 'Vehicle.init', () => {
 
-	it( 'tracks only the four sedan wheel parent nodes and tints body paint', () => {
+	it( 'tracks only the four sedan wheel parent nodes and tints sedan body paint', () => {
 
 		const model = new THREE.Group();
 		model.add(
@@ -43,7 +43,7 @@ describe( 'Vehicle.init', () => {
 		);
 
 		const vehicle = new Vehicle();
-		vehicle.init( model, { vehicleType: 'truck', vehicleColor: 'green' } );
+		vehicle.init( model, { vehicleType: 'sedan', vehicleColor: 'green' } );
 
 		expect( vehicle.bodyNode.material.color.getHexString() ).toBe( '4ec45f' );
 		expect( vehicle.wheels.map( ( wheel ) => wheel.name ).sort() ).toEqual( [
@@ -56,6 +56,18 @@ describe( 'Vehicle.init', () => {
 		expect( vehicle.wheelFR.name ).toBe( 'wheel-front-right' );
 		expect( vehicle.wheelBL.name ).toBe( 'wheel-back-left' );
 		expect( vehicle.wheelBR.name ).toBe( 'wheel-back-right' );
+
+	} );
+
+	it( 'keeps legacy truck models on their authored color materials', () => {
+
+		const model = new THREE.Group();
+		model.add( createPaintedBody() );
+
+		const vehicle = new Vehicle();
+		vehicle.init( model, { vehicleType: 'truck', vehicleColor: 'green' } );
+
+		expect( vehicle.bodyNode.material.color.getHexString() ).toBe( 'ffffff' );
 
 	} );
 
