@@ -87,3 +87,61 @@ describe('RoomCoordinator vehicle selection', () => {
     });
   });
 });
+
+describe('RoomCoordinator track scene selection', () => {
+  it('stores the selected scene on the room and match snapshots', async () => {
+    const storage = new InMemoryRoomStorage();
+    const coordinator = new RoomCoordinator(storage, {
+      now: () => 2_000,
+      roomCodeGenerator: () => '8181',
+      matchIdGenerator: () => 'match-scene-1'
+    });
+
+    const created = await coordinator.execute({
+      commandId: 'create',
+      type: 'room.create',
+      playerId: 'player-1',
+      authTicket: authTicket('player-1'),
+      payload: { nickname: '车手1', trackScene: 'city' }
+    });
+
+    expect(created.ok).toBe(true);
+    expect(created.room).toMatchObject({
+      trackScene: 'city'
+    });
+
+    const started = await coordinator.execute({
+      commandId: 'start',
+      type: 'room.start',
+      playerId: 'player-1',
+      authTicket: authTicket('player-1', '8181'),
+      payload: {}
+    });
+
+    expect(started.ok).toBe(true);
+    expect(started.match).toMatchObject({
+      trackScene: 'city'
+    });
+  });
+
+  it('rejects unknown room scenes before creating a room', async () => {
+    const storage = new InMemoryRoomStorage();
+    const coordinator = new RoomCoordinator(storage, {
+      now: () => 2_000,
+      roomCodeGenerator: () => '8182'
+    });
+
+    const created = await coordinator.execute({
+      commandId: 'create',
+      type: 'room.create',
+      playerId: 'player-1',
+      authTicket: authTicket('player-1'),
+      payload: { nickname: '车手1', trackScene: 'desert' }
+    });
+
+    expect(created).toMatchObject({
+      ok: false,
+      errorCode: 'TRACK_SCENE_INVALID'
+    });
+  });
+});

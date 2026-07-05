@@ -3,12 +3,14 @@ import { matchMaker } from '@colyseus/core';
 import type { RowDataPacket } from 'mysql2/promise';
 import { getMysqlPool } from '../../db/mysql.js';
 import { listActiveRoomIds } from '../../lib/inMemoryRoomIndex.js';
+import { DEFAULT_TRACK_SCENE, normalizeTrackScene, type TrackScene } from '../../lib/protocol.js';
 import type { TrackSummary } from '../../services/trackService.js';
 
 interface RoomListRow extends RowDataPacket {
   code: string;
   lap_target: number;
   track_name: string | null;
+  track_scene: TrackScene | null;
   expires_at: string;
   player_count: number;
 }
@@ -28,6 +30,7 @@ export function registerRoomRoutes(app: express.Express): void {
       code: room.code,
       lapTarget: room.lap_target,
       trackName: room.track_name,
+      trackScene: normalizeTrackScene(room.track_scene).ok ? room.track_scene ?? DEFAULT_TRACK_SCENE : DEFAULT_TRACK_SCENE,
       playerCount: Number(room.player_count ?? 0),
       expiresAt: room.expires_at
     }));
@@ -49,13 +52,19 @@ export function registerRoomRoutes(app: express.Express): void {
     try {
       if (action === 'create') {
         const selectedTrack = normalizeSelectedTrack(req.body?.track);
+        const trackScene = normalizeTrackScene(req.body?.trackScene);
+        if (!trackScene.ok) {
+          res.status(400).json({ ok: false, errorCode: trackScene.errorCode });
+          return;
+        }
         const reservation = await matchMaker.create('race_room', {
           playerId,
           nickname,
           roomCode: req.body?.roomCode,
           trackId: selectedTrack?.id ?? null,
           trackName: selectedTrack?.name ?? null,
-          trackMap: selectedTrack?.trackMap ?? null
+          trackMap: selectedTrack?.trackMap ?? null,
+          trackScene: trackScene.trackScene
         });
 
         res.json({
@@ -109,6 +118,7 @@ export function buildWaitingRoomListQuery(activeRoomIds: readonly string[]): { s
         r.code,
         r.lap_target,
         r.track_name,
+        r.track_scene,
         date_format(r.expires_at, '%Y-%m-%dT%H:%i:%sZ') as expires_at,
         count(rp.player_id) as player_count
       from racing_rooms r
@@ -116,7 +126,7 @@ export function buildWaitingRoomListQuery(activeRoomIds: readonly string[]): { s
       where r.status = 'waiting'
         and r.expires_at > utc_timestamp()
         and r.code in (${placeholders})
-      group by r.id, r.code, r.lap_target, r.track_name, r.expires_at
+      group by r.id, r.code, r.lap_target, r.track_name, r.track_scene, r.expires_at
       order by r.created_at desc
       limit 20
     `,

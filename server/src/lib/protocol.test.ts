@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isVehicleModel, isVehicleType, normalizeVehicleSelection } from './protocol.js';
+import { isTrackScene, isVehicleModel, isVehicleType, normalizeTrackScene, normalizeVehicleSelection } from './protocol.js';
 
 describe('server protocol vehicle types', () => {
   it('keeps legacy truck and accepts car category with model selection', () => {
@@ -18,5 +18,15 @@ describe('server protocol vehicle types', () => {
       vehicleType: 'car',
       vehicleModel: 'mercedes-e'
     });
+  });
+
+  it('normalizes supported track scenes and rejects unknown scenes', () => {
+    expect(isTrackScene('forest')).toBe(true);
+    expect(isTrackScene('city')).toBe(true);
+    expect(isTrackScene('desert')).toBe(false);
+
+    expect(normalizeTrackScene(undefined)).toEqual({ ok: true, trackScene: 'forest' });
+    expect(normalizeTrackScene('city')).toEqual({ ok: true, trackScene: 'city' });
+    expect(normalizeTrackScene('desert')).toEqual({ ok: false, errorCode: 'TRACK_SCENE_INVALID' });
   });
 });

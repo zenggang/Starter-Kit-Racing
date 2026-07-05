@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { RaceHud } from './RaceHud';
 import { formatRacingError } from '@/realtime/errorMessages';
 import { createMatchCommand } from '@/realtime/matchReducer';
-import { DEFAULT_VEHICLE_MODEL, DEFAULT_VEHICLE_TYPE } from '@/realtime/protocol';
+import { DEFAULT_TRACK_SCENE, DEFAULT_VEHICLE_MODEL, DEFAULT_VEHICLE_TYPE } from '@/realtime/protocol';
 import { useMatchSession } from '@/realtime/useMatchSession';
 import { RacingRuntimeHost, type RemoteVehicleTelemetry, type RuntimeHandle } from '@/game/RacingRuntimeHost';
 import { advanceRaceProgress, buildTrackProgressModel, createInitialRaceProgressState } from '@/game/trackProgress';
@@ -84,7 +84,8 @@ export function RaceClient({
     return {
       ...match,
       trackName: match.trackName ?? room.trackName,
-      trackMap: match.trackMap ?? room.trackMap
+      trackMap: match.trackMap ?? room.trackMap,
+      trackScene: match.trackScene ?? room.trackScene ?? DEFAULT_TRACK_SCENE
     };
   }, [match, room]);
 
@@ -246,6 +247,7 @@ export function RaceClient({
     <RacingRuntimeHost
       roomCode={code}
       trackMap={effectiveMatch.trackMap}
+      trackScene={effectiveMatch.trackScene}
       vehicleColor={currentPlayer.color}
       vehicleType={currentVehicleType}
       vehicleModel={currentVehicleModel}

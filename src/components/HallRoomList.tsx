@@ -2,6 +2,7 @@
 
 import React from 'react';
 import type { HallRoomSummary } from '@/server/rooms';
+import { TRACK_SCENE_LABELS } from '@/realtime/protocol';
 
 export function HallRoomList({ rooms, onJoin }: { rooms: HallRoomSummary[]; onJoin(code: string): void }) {
   if (rooms.length === 0) {
@@ -28,6 +29,7 @@ export function HallRoomList({ rooms, onJoin }: { rooms: HallRoomSummary[]; onJo
           <span>{room.playerCount} 名车手</span>
           <span>{room.lapTarget} 圈</span>
           <span>{room.trackName ?? '默认赛道'}</span>
+          <span>{TRACK_SCENE_LABELS[room.trackScene]}</span>
           <button type="button" className="secondary-action" onClick={() => onJoin(room.code)}>
             加入
           </button>

@@ -283,6 +283,15 @@ describe('RaceClient remote vehicle projection', () => {
     expect(screen.getByText('赛道：自定义 T 赛道')).toBeInTheDocument();
   });
 
+  it('passes the match scene into the runtime host and falls back to the room scene', async () => {
+    mockRoom.trackScene = 'city';
+    mockMatch.trackScene = undefined;
+
+    render(<RaceClient code="8966" />);
+
+    expect(racingRuntimeHostProps?.trackScene).toBe('city');
+  });
+
   it('renders the countdown overlay, keeps the race clock at zero, and locks input during countdown', async () => {
     mockMatch.phase = 'countdown';
     mockMatch.startedAt = '2026-05-03T10:01:12.000Z';

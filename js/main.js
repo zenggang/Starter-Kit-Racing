@@ -59,6 +59,12 @@ function normalizeRuntimeVehicleType( vehicleType ) {
 
 }
 
+function normalizeRuntimeTrackScene( trackScene ) {
+
+	return trackScene === 'city' ? 'city' : 'forest';
+
+}
+
 function resolveVehicleModelName( vehicleType, vehicleColor, vehicleModel ) {
 
 	if ( vehicleType === 'truck' ) return `vehicle-truck-${ vehicleColor }`;
@@ -77,9 +83,14 @@ function resolveVehicleModelName( vehicleType, vehicleColor, vehicleModel ) {
  */
 function measureRuntimeViewport( container ) {
 
+	const isViewportContainer = container === document.body || container === document.documentElement;
+
 	return {
-		width: Math.max( 1, Math.round( container.clientWidth || window.innerWidth || 1 ) ),
-		height: Math.max( 1, Math.round( container.clientHeight || window.innerHeight || 1 ) ),
+		// Standalone mode mounts into document.body; measuring body after the
+		// canvas is appended creates a feedback loop where canvas height becomes
+		// the next body height. Viewport containers must use the window size.
+		width: Math.max( 1, Math.round( isViewportContainer ? window.innerWidth || 1 : container.clientWidth || window.innerWidth || 1 ) ),
+		height: Math.max( 1, Math.round( isViewportContainer ? window.innerHeight || 1 : container.clientHeight || window.innerHeight || 1 ) ),
 	};
 
 }
@@ -114,6 +125,7 @@ export async function mountRacingRuntime( container, options = {} ) {
 	const vehicleColor = typeof options.vehicleColor === 'string' && options.vehicleColor.length > 0 ? options.vehicleColor : 'yellow';
 	const vehicleType = normalizeRuntimeVehicleType( options.vehicleType );
 	const vehicleModel = vehicleType === 'car' && typeof options.vehicleModel === 'string' ? options.vehicleModel : 'mercedes-e';
+	const trackScene = normalizeRuntimeTrackScene( options.trackScene );
 	const { width, height } = measureRuntimeViewport( container );
 	let animationFrame = 0;
 	let destroyed = false;
@@ -160,8 +172,9 @@ export async function mountRacingRuntime( container, options = {} ) {
 	container.appendChild( renderer.domElement );
 
 	const scene = new THREE.Scene();
-	scene.background = new THREE.Color( 0xadb2ba );
-	scene.fog = new THREE.Fog( 0xadb2ba, 30, 55 );
+	const sceneSkyColor = trackScene === 'city' ? 0xb9c3cf : 0xadb2ba;
+	scene.background = new THREE.Color( sceneSkyColor );
+	scene.fog = new THREE.Fog( sceneSkyColor, 30, 55 );
 
 	const dirLight = new THREE.DirectionalLight( 0xffffff, 3 );
 	dirLight.position.set( 11.4, 15, -5.3 );
@@ -172,7 +185,7 @@ export async function mountRacingRuntime( container, options = {} ) {
 	dirLight.shadow.radius = 4;
 	scene.add( dirLight );
 
-	const hemiLight = new THREE.HemisphereLight( 0xc8d8e8, 0x7a8a5a, 2 );
+	const hemiLight = new THREE.HemisphereLight( 0xc8d8e8, trackScene === 'city' ? 0x6d6a61 : 0x7a8a5a, 2 );
 	hemiLight.position.copy( dirLight.position );
 	scene.add( hemiLight );
 
@@ -227,7 +240,7 @@ export async function mountRacingRuntime( container, options = {} ) {
 	scene.fog.near = groundSize * 0.4;
 	scene.fog.far = groundSize * 0.8;
 
-	buildTrack( scene, models, customCells );
+	buildTrack( scene, models, customCells, { trackScene } );
 
 	if ( graphicsProfile.enableLightProbeBake ) {
 

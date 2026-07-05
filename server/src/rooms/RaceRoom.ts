@@ -16,6 +16,7 @@ interface JoinOptions {
   trackId?: string | null;
   trackName?: string | null;
   trackMap?: string | null;
+  trackScene?: string | null;
 }
 
 interface ClientAuth {
@@ -36,7 +37,8 @@ export class RaceRoom extends Room<RaceState> {
     console.log('[race-room] onCreate:start', {
       roomCode: options.roomCode ?? null,
       playerId: options.playerId ?? null,
-      nickname: options.nickname ?? null
+      nickname: options.nickname ?? null,
+      trackScene: options.trackScene ?? null
     });
     this.setState(new RaceState());
     this.autoDispose = true;
@@ -64,7 +66,8 @@ export class RaceRoom extends Room<RaceState> {
         nickname,
         trackId: options.trackId ?? null,
         trackName: options.trackName ?? null,
-        trackMap: options.trackMap ?? null
+        trackMap: options.trackMap ?? null,
+        trackScene: options.trackScene ?? null
       }
     });
     console.log('[race-room] onCreate:coordinatorResolved', {

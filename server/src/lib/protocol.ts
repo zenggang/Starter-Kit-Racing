@@ -4,8 +4,14 @@ export const ROOM_STATUSES = ['waiting', 'racing', 'finished', 'closed'] as cons
 export const PLAYER_COLORS = ['yellow', 'green', 'purple', 'red'] as const;
 export const VEHICLE_TYPES = ['truck', 'car', 'motorcycle', 'dog'] as const;
 export const VEHICLE_MODELS = ['mercedes-e'] as const;
+export const TRACK_SCENES = ['forest', 'city'] as const;
 export const DEFAULT_VEHICLE_TYPE = 'truck';
 export const DEFAULT_VEHICLE_MODEL = 'mercedes-e';
+export const DEFAULT_TRACK_SCENE = 'forest';
+export const TRACK_SCENE_LABELS: Record<TrackScene, string> = {
+  forest: '森林',
+  city: '城市'
+};
 export const MATCH_PHASES = ['countdown', 'live', 'finished', 'aborted'] as const;
 export const MATCH_PRESENCE = ['pending', 'connected', 'disconnected', 'finished'] as const;
 export const DEFAULT_LAP_TARGET = 3;
@@ -17,6 +23,7 @@ export type RoomStatus = (typeof ROOM_STATUSES)[number];
 export type PlayerColor = (typeof PLAYER_COLORS)[number];
 export type VehicleType = (typeof VEHICLE_TYPES)[number];
 export type VehicleModel = (typeof VEHICLE_MODELS)[number];
+export type TrackScene = (typeof TRACK_SCENES)[number];
 export type MatchPhase = (typeof MATCH_PHASES)[number];
 export type MatchPresence = (typeof MATCH_PRESENCE)[number];
 
@@ -30,6 +37,7 @@ export type RacingErrorCode =
   | 'COLOR_TAKEN'
   | 'COLOR_INVALID'
   | 'VEHICLE_TYPE_INVALID'
+  | 'TRACK_SCENE_INVALID'
   | 'LAP_TARGET_INVALID'
   | 'ONLY_HOST_CAN_START'
   | 'ONLY_HOST_CAN_REMATCH'
@@ -121,6 +129,7 @@ export interface MatchState {
   trackId: string | null;
   trackName: string | null;
   trackMap: string | null;
+  trackScene: TrackScene;
   startedAt: string;
   finishedAt: string | null;
   finishDeadlineAt?: string | null;
@@ -137,6 +146,7 @@ export interface RoomState {
   trackId: string | null;
   trackName: string | null;
   trackMap: string | null;
+  trackScene: TrackScene;
   createdAt: string;
   startedAt: string | null;
   finishedAt: string | null;
@@ -193,6 +203,7 @@ export type CreateRoomPayload = {
   trackId?: string | null;
   trackName?: string | null;
   trackMap?: string | null;
+  trackScene?: string | null;
 };
 
 export type JoinRoomPayload = {
@@ -245,6 +256,24 @@ export function isVehicleType(value: unknown): value is VehicleType {
 
 export function isVehicleModel(value: unknown): value is VehicleModel {
   return typeof value === 'string' && (VEHICLE_MODELS as readonly string[]).includes(value);
+}
+
+export function isTrackScene(value: unknown): value is TrackScene {
+  return typeof value === 'string' && (TRACK_SCENES as readonly string[]).includes(value);
+}
+
+export function normalizeTrackScene(
+  value: unknown
+): { ok: true; trackScene: TrackScene } | { ok: false; errorCode: 'TRACK_SCENE_INVALID' } {
+  if (value === undefined || value === null || value === '') {
+    return { ok: true, trackScene: DEFAULT_TRACK_SCENE };
+  }
+
+  if (!isTrackScene(value)) {
+    return { ok: false, errorCode: 'TRACK_SCENE_INVALID' };
+  }
+
+  return { ok: true, trackScene: value };
 }
 
 export function normalizeVehicleSelection(

@@ -32,6 +32,7 @@ declare module '../../js/main.js' {
     roomCode?: string;
     map?: string | null;
     trackMap?: string | null;
+    trackScene?: 'forest' | 'city';
     useQueryMap?: boolean;
     vehicleColor?: 'yellow' | 'green' | 'purple' | 'red';
     vehicleType?: 'truck' | 'car' | 'motorcycle' | 'dog';

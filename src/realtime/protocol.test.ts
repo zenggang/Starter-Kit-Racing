@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   createCommandResult,
   isPlayerColor,
+  isTrackScene,
   isVehicleModel,
   isVehicleType,
+  normalizeTrackScene,
   normalizeVehicleSelection,
   validateLapTarget,
   validateMatchProgressPayload
@@ -67,6 +69,17 @@ describe('Phase 1 realtime protocol', () => {
       ok: false,
       errorCode: 'VEHICLE_TYPE_INVALID'
     });
+  });
+
+  it('normalizes supported track scenes and defaults missing values to forest', () => {
+    expect(isTrackScene('forest')).toBe(true);
+    expect(isTrackScene('city')).toBe(true);
+    expect(isTrackScene('desert')).toBe(false);
+
+    expect(normalizeTrackScene(undefined)).toEqual({ ok: true, trackScene: 'forest' });
+    expect(normalizeTrackScene(null)).toEqual({ ok: true, trackScene: 'forest' });
+    expect(normalizeTrackScene('city')).toEqual({ ok: true, trackScene: 'city' });
+    expect(normalizeTrackScene('desert')).toEqual({ ok: false, errorCode: 'TRACK_SCENE_INVALID' });
   });
 
   it('creates command.result envelopes without leaking transport details', () => {

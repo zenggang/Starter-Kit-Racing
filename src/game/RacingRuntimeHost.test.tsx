@@ -110,6 +110,21 @@ describe('RacingRuntimeHost remote vehicles', () => {
     });
   });
 
+  it('passes the selected track scene into the runtime mount options', async () => {
+    const Host = RacingRuntimeHost as React.ComponentType<Record<string, unknown>>;
+
+    render(<Host roomCode="8966" trackMap={null} trackScene="city" vehicleColor="yellow" />);
+
+    await waitFor(() => {
+      expect(mountRacingRuntimeSpy).toHaveBeenCalledWith(
+        expect.any(HTMLElement),
+        expect.objectContaining({
+          trackScene: 'city'
+        })
+      );
+    });
+  });
+
   it('aborts cancelled mounts and ignores their late failures after track swaps', async () => {
     const firstMount = Promise.reject(new Error('STALE_RUNTIME_FAILED'));
     const secondRuntime = {

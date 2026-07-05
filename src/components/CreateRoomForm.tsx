@@ -4,21 +4,26 @@ import React from 'react';
 import Link from 'next/link';
 import type { RacingTrackSummary } from '@/server/tracks';
 import type { PlayerSession } from '@/session/playerSession';
+import { TRACK_SCENE_LABELS, TRACK_SCENES, type TrackScene } from '@/realtime/protocol';
 
 export function CreateRoomForm({
   player,
   tracks,
   selectedTrackId,
+  selectedTrackScene,
   disabled,
   onSelectTrack,
+  onSelectScene,
   onCreate,
   onOpenTrackEditor
 }: {
   player: PlayerSession | null;
   tracks: RacingTrackSummary[];
   selectedTrackId: string | null;
+  selectedTrackScene: TrackScene;
   disabled?: boolean;
   onSelectTrack(trackId: string | null): void;
+  onSelectScene(trackScene: TrackScene): void;
   onCreate(): void;
   onOpenTrackEditor?(): void;
 }) {
@@ -31,6 +36,21 @@ export function CreateRoomForm({
         <strong className="console-block-title">创建房间</strong>
       </div>
       <p className="muted">选择赛道后立即生成 4 位数字房间码。</p>
+      <label className="field">
+        <span>比赛场景</span>
+        <select
+          className="input"
+          value={selectedTrackScene}
+          disabled={disabled}
+          onChange={(event) => onSelectScene(event.target.value as TrackScene)}
+        >
+          {TRACK_SCENES.map((trackScene) => (
+            <option key={trackScene} value={trackScene}>
+              {TRACK_SCENE_LABELS[trackScene]}
+            </option>
+          ))}
+        </select>
+      </label>
       <label className="field">
         <span>比赛赛道</span>
         <select className="input" value={selectedTrackId ?? ''} disabled={disabled} onChange={(event) => onSelectTrack(event.target.value || null)}>

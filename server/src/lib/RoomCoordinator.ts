@@ -8,6 +8,7 @@ import {
   commandError,
   isAuthTicketValid,
   isPlayerColor,
+  normalizeTrackScene,
   normalizeVehicleSelection,
   validateLapTarget,
   validateMatchProgressPayload,
@@ -141,6 +142,10 @@ export class RoomCoordinator {
     if (!track.ok) {
       return commandError(command.commandId, 0, track.errorCode);
     }
+    const scene = normalizeTrackScene(command.payload.trackScene);
+    if (!scene.ok) {
+      return commandError(command.commandId, 0, scene.errorCode);
+    }
 
     const host = createPlayer(command.playerId, command.payload.nickname, true, timestamp);
     assignFirstAvailableColor(host, []);
@@ -155,6 +160,7 @@ export class RoomCoordinator {
       trackId: track.trackId,
       trackName: track.trackName,
       trackMap: track.trackMap,
+      trackScene: scene.trackScene,
       createdAt: timestamp,
       startedAt: null,
       finishedAt: null,
@@ -549,6 +555,7 @@ function createMatchState(room: RoomState, startedAt: string): MatchState {
     trackId: room.trackId,
     trackName: room.trackName,
     trackMap: room.trackMap,
+    trackScene: room.trackScene,
     startedAt,
     finishedAt: null,
     finishDeadlineAt: null,

@@ -1,7 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { DEFAULT_VEHICLE_MODEL, DEFAULT_VEHICLE_TYPE, type VehicleModel, type VehicleType } from '@/realtime/protocol';
+import {
+  DEFAULT_TRACK_SCENE,
+  DEFAULT_VEHICLE_MODEL,
+  DEFAULT_VEHICLE_TYPE,
+  type TrackScene,
+  type VehicleModel,
+  type VehicleType
+} from '@/realtime/protocol';
 
 interface RacingRuntimeModule {
   mountRacingRuntime(container: HTMLElement, options?: RuntimeMountOptions): Promise<RuntimeHandle>;
@@ -46,6 +53,7 @@ interface RuntimeMountOptions {
   assetBaseUrl?: string;
   roomCode?: string;
   trackMap?: string | null;
+  trackScene?: TrackScene;
   vehicleColor?: 'yellow' | 'green' | 'purple' | 'red';
   vehicleType?: VehicleType;
   vehicleModel?: VehicleModel | null;
@@ -60,6 +68,7 @@ interface RuntimeMountOptions {
 export function RacingRuntimeHost({
   roomCode,
   trackMap,
+  trackScene = DEFAULT_TRACK_SCENE,
   vehicleColor,
   vehicleType = DEFAULT_VEHICLE_TYPE,
   vehicleModel = null,
@@ -70,6 +79,7 @@ export function RacingRuntimeHost({
 }: {
   roomCode: string;
   trackMap: string | null;
+  trackScene?: RuntimeMountOptions['trackScene'];
   vehicleColor: RuntimeMountOptions['vehicleColor'];
   vehicleType?: RuntimeMountOptions['vehicleType'];
   vehicleModel?: RuntimeMountOptions['vehicleModel'];
@@ -101,6 +111,7 @@ export function RacingRuntimeHost({
           assetBaseUrl: '/racing/',
           roomCode,
           trackMap,
+          trackScene,
           vehicleColor,
           vehicleType,
           vehicleModel: resolvedVehicleModel,
@@ -133,7 +144,7 @@ export function RacingRuntimeHost({
       runtimeRef.current = null;
       runtime?.destroy();
     };
-  }, [onRuntimeReady, resolvedVehicleModel, roomCode, trackMap, vehicleColor, vehicleType]);
+  }, [onRuntimeReady, resolvedVehicleModel, roomCode, trackMap, trackScene, vehicleColor, vehicleType]);
 
   useEffect(() => {
     remoteVehiclesRef.current = remoteVehicles ?? [];

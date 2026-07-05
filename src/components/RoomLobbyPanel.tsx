@@ -6,7 +6,7 @@ import { ColorPicker, PLAYER_COLOR_HEX, PLAYER_COLOR_LABELS } from './ColorPicke
 import { LapTargetControl } from './LapTargetControl';
 import { VehicleTypePicker, formatVehicleSelectionLabel } from './VehicleTypePicker';
 import { createLobbySeatSlots, getRosterDensity } from './rosterLayout';
-import { DEFAULT_VEHICLE_TYPE, type PlayerColor, type RoomState } from '@/realtime/protocol';
+import { DEFAULT_TRACK_SCENE, DEFAULT_VEHICLE_TYPE, TRACK_SCENE_LABELS, type PlayerColor, type RoomState } from '@/realtime/protocol';
 import { createCommand } from '@/realtime/sessionReducer';
 import type { PlayerSession } from '@/session/playerSession';
 import { buildTrackProgressModel, type TrackProgressModel } from '@/game/trackProgress';
@@ -39,6 +39,7 @@ export function RoomLobbyPanel({
   const seatSlots = room ? createLobbySeatSlots(room.players) : [];
   const rosterDensity = getRosterDensity(room?.players.length ?? 0, { reserveCapacity: true });
   const roomTrackMap = room?.trackMap ?? null;
+  const roomTrackScene = room?.trackScene ?? DEFAULT_TRACK_SCENE;
   const trackModel = React.useMemo(() => buildTrackProgressModel(roomTrackMap), [roomTrackMap]);
   const trackPreview = React.useMemo(() => (trackModel ? createRoomTrackPreview(trackModel) : null), [trackModel]);
 
@@ -56,7 +57,9 @@ export function RoomLobbyPanel({
             </strong>
             <span className="status-pill">{room.status === 'waiting' ? '等待中' : '比赛中'}</span>
           </div>
-          <p className="muted">{connectionState === 'connected' ? '已连接' : '连接中'} · {room.trackName ?? '默认赛道'}</p>
+          <p className="muted">
+            {connectionState === 'connected' ? '已连接' : '连接中'} · {room.trackName ?? '默认赛道'} · {TRACK_SCENE_LABELS[roomTrackScene]}
+          </p>
         </div>
       </div>
 

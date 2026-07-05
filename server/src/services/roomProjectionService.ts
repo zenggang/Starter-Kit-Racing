@@ -6,10 +6,10 @@ export async function syncRoomProjection(pool: Pool, room: RoomState): Promise<v
   await pool.execute(
     `
       insert into racing_rooms (
-        id, code, host_player_id, status, lap_target, track_id, track_name, track_map,
+        id, code, host_player_id, status, lap_target, track_id, track_name, track_map, track_scene,
         created_at, started_at, finished_at, expires_at, closed_reason
       )
-      values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       on duplicate key update
         host_player_id = values(host_player_id),
         status = values(status),
@@ -17,6 +17,7 @@ export async function syncRoomProjection(pool: Pool, room: RoomState): Promise<v
         track_id = values(track_id),
         track_name = values(track_name),
         track_map = values(track_map),
+        track_scene = values(track_scene),
         started_at = values(started_at),
         finished_at = values(finished_at),
         expires_at = values(expires_at),
@@ -31,6 +32,7 @@ export async function syncRoomProjection(pool: Pool, room: RoomState): Promise<v
       room.trackId,
       room.trackName,
       room.trackMap,
+      room.trackScene,
       toMysqlDatetime(room.createdAt),
       toMysqlDatetime(room.startedAt),
       toMysqlDatetime(room.finishedAt),
@@ -85,16 +87,17 @@ export async function syncMatchProjection(pool: Pool, room: RoomState, match: Ma
   await pool.execute(
     `
       insert into racing_matches (
-        id, room_id, room_code, phase, lap_target, track_id, track_name, track_map,
+        id, room_id, room_code, phase, lap_target, track_id, track_name, track_map, track_scene,
         started_at, finished_at, winner_player_id
       )
-      values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       on duplicate key update
         phase = values(phase),
         lap_target = values(lap_target),
         track_id = values(track_id),
         track_name = values(track_name),
         track_map = values(track_map),
+        track_scene = values(track_scene),
         started_at = values(started_at),
         finished_at = values(finished_at),
         winner_player_id = values(winner_player_id)
@@ -108,6 +111,7 @@ export async function syncMatchProjection(pool: Pool, room: RoomState, match: Ma
       match.trackId,
       match.trackName,
       match.trackMap,
+      match.trackScene,
       toMysqlDatetime(match.startedAt),
       toMysqlDatetime(match.finishedAt),
       match.winnerPlayerId

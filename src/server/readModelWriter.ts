@@ -81,6 +81,7 @@ class SupabaseReadModelWriter implements ReadModelWriter {
         track_id: room.trackId,
         track_name: room.trackName,
         track_map: room.trackMap,
+        track_scene: room.trackScene,
         created_at: room.createdAt,
         started_at: room.startedAt,
         finished_at: room.finishedAt,
@@ -121,6 +122,7 @@ class SupabaseReadModelWriter implements ReadModelWriter {
         track_id: match.trackId,
         track_name: match.trackName,
         track_map: match.trackMap,
+        track_scene: match.trackScene,
         started_at: match.startedAt,
         finished_at: match.finishedAt,
         winner_player_id: match.winnerPlayerId

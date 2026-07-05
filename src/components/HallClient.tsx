@@ -11,6 +11,7 @@ import { buildPublicApiUrl } from '@/config/env';
 import type { RacingTrackSummary } from '@/server/tracks';
 import type { HallRoomSummary } from '@/server/rooms';
 import { formatRacingError } from '@/realtime/errorMessages';
+import { DEFAULT_TRACK_SCENE, type TrackScene } from '@/realtime/protocol';
 import { usePlayerSession } from '@/session/usePlayerSession';
 import { resolveSessionNickname } from '@/session/playerSession';
 
@@ -28,6 +29,7 @@ export function HallClient({
   const [rooms, setRooms] = useState<HallRoomSummary[]>([]);
   const [tracks, setTracks] = useState<RacingTrackSummary[]>([]);
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+  const [selectedTrackScene, setSelectedTrackScene] = useState<TrackScene>(DEFAULT_TRACK_SCENE);
   const [busy, setBusy] = useState(false);
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [nickname, setNickname] = useState('');
@@ -110,7 +112,8 @@ export function HallClient({
       const result = await createRoomReservation({
         playerId: session.playerId,
         nickname: nicknameForCommand,
-        track: selectedTrack
+        track: selectedTrack,
+        trackScene: selectedTrackScene
       });
 
       rememberRoom(result.roomCode);
@@ -185,8 +188,10 @@ export function HallClient({
             player={session}
             tracks={tracks}
             selectedTrackId={selectedTrackId}
+            selectedTrackScene={selectedTrackScene}
             disabled={busy}
             onSelectTrack={setSelectedTrackId}
+            onSelectScene={setSelectedTrackScene}
             onCreate={handleCreateRoom}
             onOpenTrackEditor={onOpenTrackEditor}
           />
