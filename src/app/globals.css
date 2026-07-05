@@ -324,6 +324,7 @@ a {
 .vehicle-type-picker-inline {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   min-width: 0;
 }
@@ -423,6 +424,10 @@ a {
 .vehicle-type-option[aria-pressed='true'] {
   color: #111;
   background: #f3f5ee;
+}
+
+.vehicle-model-segmented {
+  grid-template-columns: minmax(64px, 1fr);
 }
 
 .room-driver-grid {

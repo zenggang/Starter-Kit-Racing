@@ -31,7 +31,7 @@ function createWheelNode( name, childName ) {
 
 describe( 'Vehicle.init', () => {
 
-	it( 'tracks only the four sedan wheel parent nodes and tints sedan body paint', () => {
+	it( 'tracks only the four car wheel parent nodes and tints Mercedes body paint', () => {
 
 		const model = new THREE.Group();
 		model.add(
@@ -43,7 +43,7 @@ describe( 'Vehicle.init', () => {
 		);
 
 		const vehicle = new Vehicle();
-		vehicle.init( model, { vehicleType: 'sedan', vehicleColor: 'green' } );
+		vehicle.init( model, { vehicleType: 'car', vehicleModel: 'mercedes-e', vehicleColor: 'green' } );
 
 		expect( vehicle.bodyNode.material.color.getHexString() ).toBe( '4ec45f' );
 		expect( vehicle.wheels.map( ( wheel ) => wheel.name ).sort() ).toEqual( [

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { RaceHud } from './RaceHud';
 import { formatRacingError } from '@/realtime/errorMessages';
 import { createMatchCommand } from '@/realtime/matchReducer';
-import { DEFAULT_VEHICLE_TYPE } from '@/realtime/protocol';
+import { DEFAULT_VEHICLE_MODEL, DEFAULT_VEHICLE_TYPE } from '@/realtime/protocol';
 import { useMatchSession } from '@/realtime/useMatchSession';
 import { RacingRuntimeHost, type RemoteVehicleTelemetry, type RuntimeHandle } from '@/game/RacingRuntimeHost';
 import { advanceRaceProgress, buildTrackProgressModel, createInitialRaceProgressState } from '@/game/trackProgress';
@@ -56,20 +56,25 @@ export function RaceClient({
     return (
       match?.players
         .filter((player) => player.playerId !== session?.playerId)
-        .map((player) => ({
-          playerId: player.playerId,
-          nickname: player.nickname,
-          color: player.color,
+        .map((player) => {
           // Older room snapshots created before vehicle selection existed do
           // not carry a body type; keep those racers on the default four-wheel
           // car so reconnect and bridge recovery stay backward-compatible.
-          vehicleType: player.vehicleType ?? DEFAULT_VEHICLE_TYPE,
-          presence: player.presence,
-          position: player.position,
-          heading: player.heading,
-          speed: player.speed,
-          lastReportAt: player.lastReportAt
-        })) ?? []
+          const vehicleType = player.vehicleType ?? DEFAULT_VEHICLE_TYPE;
+          const vehicleModel = vehicleType === 'car' ? player.vehicleModel ?? DEFAULT_VEHICLE_MODEL : null;
+          return {
+            playerId: player.playerId,
+            nickname: player.nickname,
+            color: player.color,
+            vehicleType,
+            ...(vehicleModel ? { vehicleModel } : {}),
+            presence: player.presence,
+            position: player.position,
+            heading: player.heading,
+            speed: player.speed,
+            lastReportAt: player.lastReportAt
+          };
+        }) ?? []
     );
   }, [match?.players, session?.playerId]);
 
@@ -234,13 +239,16 @@ export function RaceClient({
 
   const inputLocked = match.phase === 'countdown' || Boolean(currentPlayer.finishedAt && match.phase !== 'finished');
   const countdownDisplay = match.phase === 'countdown' ? getCountdownDisplay(match.startedAt, countdownNowMs) : null;
+  const currentVehicleType = currentPlayer.vehicleType ?? DEFAULT_VEHICLE_TYPE;
+  const currentVehicleModel = currentVehicleType === 'car' ? currentPlayer.vehicleModel ?? DEFAULT_VEHICLE_MODEL : null;
 
   return (
     <RacingRuntimeHost
       roomCode={code}
       trackMap={effectiveMatch.trackMap}
       vehicleColor={currentPlayer.color}
-      vehicleType={currentPlayer.vehicleType ?? DEFAULT_VEHICLE_TYPE}
+      vehicleType={currentVehicleType}
+      vehicleModel={currentVehicleModel}
       inputLocked={inputLocked}
       remoteVehicles={remoteVehicles}
       onRuntimeReady={handleRuntimeReady}

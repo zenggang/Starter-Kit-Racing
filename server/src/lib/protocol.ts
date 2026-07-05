@@ -2,8 +2,10 @@ import type { TrackMapErrorCode } from '../../../shared/trackMapValidation.js';
 
 export const ROOM_STATUSES = ['waiting', 'racing', 'finished', 'closed'] as const;
 export const PLAYER_COLORS = ['yellow', 'green', 'purple', 'red'] as const;
-export const VEHICLE_TYPES = ['truck', 'sedan', 'motorcycle', 'dog'] as const;
+export const VEHICLE_TYPES = ['truck', 'car', 'motorcycle', 'dog'] as const;
+export const VEHICLE_MODELS = ['mercedes-e'] as const;
 export const DEFAULT_VEHICLE_TYPE = 'truck';
+export const DEFAULT_VEHICLE_MODEL = 'mercedes-e';
 export const MATCH_PHASES = ['countdown', 'live', 'finished', 'aborted'] as const;
 export const MATCH_PRESENCE = ['pending', 'connected', 'disconnected', 'finished'] as const;
 export const DEFAULT_LAP_TARGET = 3;
@@ -14,6 +16,7 @@ export const MATCH_START_COUNTDOWN_MS = 15 * 1000;
 export type RoomStatus = (typeof ROOM_STATUSES)[number];
 export type PlayerColor = (typeof PLAYER_COLORS)[number];
 export type VehicleType = (typeof VEHICLE_TYPES)[number];
+export type VehicleModel = (typeof VEHICLE_MODELS)[number];
 export type MatchPhase = (typeof MATCH_PHASES)[number];
 export type MatchPresence = (typeof MATCH_PRESENCE)[number];
 
@@ -75,6 +78,7 @@ export interface RoomPlayer {
   nickname: string;
   color: PlayerColor | null;
   vehicleType: VehicleType;
+  vehicleModel?: VehicleModel | null;
   status: 'joined' | 'ready' | 'disconnected';
   ready: boolean;
   isHost: boolean;
@@ -102,6 +106,7 @@ export interface MatchPlayerState extends MatchTelemetry {
   nickname: string;
   color: PlayerColor;
   vehicleType: VehicleType;
+  vehicleModel?: VehicleModel | null;
   isHost: boolean;
   presence: MatchPresence;
   rank: number;
@@ -236,6 +241,40 @@ export function isPlayerColor(value: unknown): value is PlayerColor {
 
 export function isVehicleType(value: unknown): value is VehicleType {
   return typeof value === 'string' && (VEHICLE_TYPES as readonly string[]).includes(value);
+}
+
+export function isVehicleModel(value: unknown): value is VehicleModel {
+  return typeof value === 'string' && (VEHICLE_MODELS as readonly string[]).includes(value);
+}
+
+export function normalizeVehicleSelection(
+  value: { vehicleType?: unknown; vehicleModel?: unknown } | null | undefined
+):
+  | { ok: true; vehicleType: VehicleType; vehicleModel: VehicleModel | null }
+  | { ok: false; errorCode: 'VEHICLE_TYPE_INVALID' } {
+  if (!value || typeof value !== 'object') {
+    return { ok: false, errorCode: 'VEHICLE_TYPE_INVALID' };
+  }
+
+  // Older deployed clients sent `sedan`; normalize it so cached pages still join the car branch.
+  if (value.vehicleType === 'sedan') {
+    return { ok: true, vehicleType: 'car', vehicleModel: DEFAULT_VEHICLE_MODEL };
+  }
+
+  if (!isVehicleType(value.vehicleType)) {
+    return { ok: false, errorCode: 'VEHICLE_TYPE_INVALID' };
+  }
+
+  if (value.vehicleType !== 'car') {
+    return { ok: true, vehicleType: value.vehicleType, vehicleModel: null };
+  }
+
+  const vehicleModel = value.vehicleModel ?? DEFAULT_VEHICLE_MODEL;
+  if (!isVehicleModel(vehicleModel)) {
+    return { ok: false, errorCode: 'VEHICLE_TYPE_INVALID' };
+  }
+
+  return { ok: true, vehicleType: 'car', vehicleModel };
 }
 
 export function validateMatchProgressPayload(value: unknown): value is MatchProgressPayload {

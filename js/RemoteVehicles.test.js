@@ -96,7 +96,7 @@ describe( 'RemoteVehicles', () => {
 
 	} );
 
-	it( 'tints remote sedan racers with the selected body color', () => {
+	it( 'tints remote Mercedes car racers with the selected body color', () => {
 
 		const scene = new THREE.Scene();
 		const manager = new RemoteVehicles( scene, {
@@ -109,7 +109,8 @@ describe( 'RemoteVehicles', () => {
 				playerId: 'player-2',
 				nickname: '远端红车',
 				color: 'red',
-				vehicleType: 'sedan',
+				vehicleType: 'car',
+				vehicleModel: 'mercedes-e',
 				presence: 'connected',
 				position: { x: 0, y: 0.5, z: 0 },
 				heading: 0,

@@ -8,7 +8,7 @@ import {
   commandError,
   isAuthTicketValid,
   isPlayerColor,
-  isVehicleType,
+  normalizeVehicleSelection,
   validateLapTarget,
   validateMatchProgressPayload,
   type AuthTicket,
@@ -282,8 +282,8 @@ export class RoomCoordinator {
       return commandError(command.commandId, room.seq, 'ROOM_NOT_WAITING');
     }
 
-    const vehicleType = (command.payload as { vehicleType?: unknown }).vehicleType;
-    if (!isVehicleType(vehicleType)) {
+    const vehicleSelection = normalizeVehicleSelection(command.payload as { vehicleType?: unknown; vehicleModel?: unknown });
+    if (!vehicleSelection.ok) {
       return commandError(command.commandId, room.seq, 'VEHICLE_TYPE_INVALID');
     }
 
@@ -292,7 +292,8 @@ export class RoomCoordinator {
       return commandError(command.commandId, room.seq, 'PLAYER_NOT_IN_ROOM');
     }
 
-    player.vehicleType = vehicleType;
+    player.vehicleType = vehicleSelection.vehicleType;
+    player.vehicleModel = vehicleSelection.vehicleModel;
     player.lastSeenAt = new Date(now).toISOString();
     return this.mutate(command.commandId, room);
   }
@@ -515,6 +516,7 @@ function createPlayer(playerId: string, nickname: string, isHost: boolean, times
     nickname,
     color: null,
     vehicleType: DEFAULT_VEHICLE_TYPE,
+    vehicleModel: null,
     status: 'joined',
     ready: false,
     isHost,
@@ -556,6 +558,7 @@ function createMatchState(room: RoomState, startedAt: string): MatchState {
       nickname: player.nickname,
       color: player.color as MatchPlayerState['color'],
       vehicleType: player.vehicleType ?? DEFAULT_VEHICLE_TYPE,
+      vehicleModel: player.vehicleModel ?? null,
       isHost: player.isHost,
       presence: 'pending',
       rank: 0,

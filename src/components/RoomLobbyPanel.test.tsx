@@ -156,7 +156,7 @@ describe('RoomLobbyPanel', () => {
     expect(screen.queryByText('未选赛车')).toBeNull();
   });
 
-  it('lets the current racer switch vehicle type inside the room', () => {
+  it('lets the current racer switch vehicle category and car model inside the room', () => {
     const onCommand = vi.fn();
     const player: PlayerSession = {
       playerId: 'player-1',
@@ -183,14 +183,56 @@ describe('RoomLobbyPanel', () => {
     render(<RoomLobbyPanel room={room} player={player} roomCode="8966" connectionState="connected" onCommand={onCommand} onLeave={vi.fn()} />);
 
     expect(screen.getByRole('button', { name: '卡车' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'E级轿车' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '轿车' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '奔驰E级' })).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: 'E级轿车' }));
+    fireEvent.click(screen.getByRole('button', { name: '轿车' }));
     expect(onCommand).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'room.chooseVehicleType',
         playerId: 'player-1',
-        payload: { vehicleType: 'sedan' }
+        payload: { vehicleType: 'car', vehicleModel: 'mercedes-e' }
+      })
+    );
+  });
+
+  it('shows car model choices after the car category is selected', () => {
+    const onCommand = vi.fn();
+    const player: PlayerSession = {
+      playerId: 'player-1',
+      nickname: '车手1',
+      lastRoomCode: '8966'
+    };
+
+    const room: RoomState = {
+      id: 'room-1',
+      code: '8966',
+      hostPlayerId: 'player-1',
+      status: 'waiting',
+      lapTarget: 3,
+      trackMap: null,
+      createdAt: '2026-05-02T10:00:00.000Z',
+      startedAt: null,
+      finishedAt: null,
+      expiresAt: '2026-05-02T11:00:00.000Z',
+      closedReason: null,
+      matchId: null,
+      players: [createRoomPlayer(1, { vehicleType: 'car', vehicleModel: 'mercedes-e' })]
+    };
+
+    render(<RoomLobbyPanel room={room} player={player} roomCode="8966" connectionState="connected" onCommand={onCommand} onLeave={vi.fn()} />);
+
+    expect(screen.getByText('品类')).toBeInTheDocument();
+    expect(screen.getByText('车型')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '奔驰E级' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('轿车 · 奔驰E级')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '奔驰E级' }));
+    expect(onCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'room.chooseVehicleType',
+        playerId: 'player-1',
+        payload: { vehicleType: 'car', vehicleModel: 'mercedes-e' }
       })
     );
 
@@ -200,7 +242,7 @@ describe('RoomLobbyPanel', () => {
       expect.objectContaining({
         type: 'room.chooseVehicleType',
         playerId: 'player-1',
-        payload: { vehicleType: 'motorcycle' }
+        payload: { vehicleType: 'motorcycle', vehicleModel: null }
       })
     );
   });

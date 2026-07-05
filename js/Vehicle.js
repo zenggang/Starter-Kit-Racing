@@ -64,7 +64,7 @@ export class Vehicle {
 	init( model, options = {} ) {
 
 		const vehicleModel = model.clone();
-		if ( options.vehicleType === 'sedan' ) applyMercedesVehicleColor( vehicleModel, options.vehicleColor );
+		if ( ( options.vehicleType === 'car' || options.vehicleType === 'sedan' ) && ( ! options.vehicleModel || options.vehicleModel === 'mercedes-e' ) ) applyMercedesVehicleColor( vehicleModel, options.vehicleColor );
 		if ( options.vehicleType === 'motorcycle' ) applyMotorcycleColor( vehicleModel, options.vehicleColor );
 		if ( options.vehicleType === 'dog' ) applyDogVehicleColor( vehicleModel, options.vehicleColor );
 

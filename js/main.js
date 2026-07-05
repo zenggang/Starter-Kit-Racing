@@ -51,10 +51,18 @@ function createEmptyRuntimeSnapshot() {
 
 }
 
-function resolveVehicleModelName( vehicleType, vehicleColor ) {
+function normalizeRuntimeVehicleType( vehicleType ) {
+
+	if ( vehicleType === 'sedan' ) return 'car';
+	if ( [ 'car', 'motorcycle', 'dog' ].includes( vehicleType ) ) return vehicleType;
+	return 'truck';
+
+}
+
+function resolveVehicleModelName( vehicleType, vehicleColor, vehicleModel ) {
 
 	if ( vehicleType === 'truck' ) return `vehicle-truck-${ vehicleColor }`;
-	if ( vehicleType === 'sedan' ) return 'vehicle-mercedes-e';
+	if ( vehicleType === 'car' && ( ! vehicleModel || vehicleModel === 'mercedes-e' ) ) return 'vehicle-mercedes-e';
 	if ( vehicleType === 'motorcycle' ) return 'vehicle-motorcycle';
 	if ( vehicleType === 'dog' ) return 'dog-car';
 
@@ -104,7 +112,8 @@ export async function mountRacingRuntime( container, options = {} ) {
 		hasCustomTrack: typeof mapParam === 'string' && mapParam.length > 0,
 	} );
 	const vehicleColor = typeof options.vehicleColor === 'string' && options.vehicleColor.length > 0 ? options.vehicleColor : 'yellow';
-	const vehicleType = [ 'sedan', 'motorcycle', 'dog' ].includes( options.vehicleType ) ? options.vehicleType : 'truck';
+	const vehicleType = normalizeRuntimeVehicleType( options.vehicleType );
+	const vehicleModel = vehicleType === 'car' && typeof options.vehicleModel === 'string' ? options.vehicleModel : 'mercedes-e';
 	const { width, height } = measureRuntimeViewport( container );
 	let animationFrame = 0;
 	let destroyed = false;
@@ -291,9 +300,10 @@ export async function mountRacingRuntime( container, options = {} ) {
 
 	}
 
-	const vehicleModelName = resolveVehicleModelName( vehicleType, vehicleColor );
+	const vehicleModelName = resolveVehicleModelName( vehicleType, vehicleColor, vehicleModel );
 	const vehicleGroup = vehicle.init( models[ vehicleModelName ] || models[ 'vehicle-truck-yellow' ], {
 		vehicleType,
+		vehicleModel,
 		vehicleColor,
 	} );
 	scene.add( vehicleGroup );

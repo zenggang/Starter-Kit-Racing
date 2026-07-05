@@ -175,13 +175,15 @@ function createMatchPlayer(
   position: MatchState['players'][number]['position'],
   heading: number,
   presence: MatchState['players'][number]['presence'] = 'connected',
-  vehicleType: MatchState['players'][number]['vehicleType'] = 'truck'
+  vehicleType: MatchState['players'][number]['vehicleType'] = 'truck',
+  vehicleModel?: MatchState['players'][number]['vehicleModel']
 ): MatchState['players'][number] {
   return {
     playerId,
     nickname,
     color,
     vehicleType,
+    vehicleModel,
     isHost: playerId === 'player-1',
     presence,
     rank: Number(playerId.at(-1) ?? 1),
@@ -224,6 +226,8 @@ describe('RaceClient remote vehicle projection', () => {
   });
 
   it('passes only non-local match players into the racing runtime', async () => {
+    mockMatch.players[1] = createMatchPlayer('player-2', '远端绿车', 'green', { x: 3, y: 0.5, z: 4 }, 0.5, 'connected', 'car', 'mercedes-e');
+
     render(<RaceClient code="8966" />);
 
     expect(racingRuntimeHostProps?.remoteVehicles).toEqual([
@@ -231,7 +235,8 @@ describe('RaceClient remote vehicle projection', () => {
         playerId: 'player-2',
         nickname: '远端绿车',
         color: 'green',
-        vehicleType: 'motorcycle',
+        vehicleType: 'car',
+        vehicleModel: 'mercedes-e',
         presence: 'connected',
         position: { x: 3, y: 0.5, z: 4 },
         heading: 0.5,
@@ -250,6 +255,17 @@ describe('RaceClient remote vehicle projection', () => {
         lastReportAt: '2026-05-03T10:01:02.000Z'
       }
     ]);
+  });
+
+  it('passes the local car model into the runtime host', async () => {
+    mockMatch.players[0] = createMatchPlayer('player-1', '本地车手', 'yellow', { x: 1, y: 0.5, z: 2 }, 0, 'connected', 'car', 'mercedes-e');
+
+    render(<RaceClient code="8966" />);
+
+    expect(racingRuntimeHostProps).toMatchObject({
+      vehicleType: 'car',
+      vehicleModel: 'mercedes-e'
+    });
   });
 
   it('falls back to the room custom track when match track fields are missing', async () => {

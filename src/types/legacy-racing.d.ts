@@ -14,7 +14,8 @@ declare module '../../js/main.js' {
     playerId: string;
     nickname: string;
     color: 'yellow' | 'green' | 'purple' | 'red';
-    vehicleType: 'truck' | 'sedan' | 'motorcycle' | 'dog';
+    vehicleType: 'truck' | 'car' | 'motorcycle' | 'dog';
+    vehicleModel?: 'mercedes-e' | null;
     presence: 'pending' | 'connected' | 'disconnected' | 'finished';
     position: {
       x: number;
@@ -33,7 +34,8 @@ declare module '../../js/main.js' {
     trackMap?: string | null;
     useQueryMap?: boolean;
     vehicleColor?: 'yellow' | 'green' | 'purple' | 'red';
-    vehicleType?: 'truck' | 'sedan' | 'motorcycle' | 'dog';
+    vehicleType?: 'truck' | 'car' | 'motorcycle' | 'dog';
+    vehicleModel?: 'mercedes-e' | null;
     inputLocked?: boolean;
     abortSignal?: AbortSignal;
   }

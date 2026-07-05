@@ -100,11 +100,17 @@ function makeGhostModel( source ) {
 
 function resolveRemoteVehicleModelName( vehicle ) {
 
-	if ( vehicle.vehicleType === 'sedan' ) return 'vehicle-mercedes-e';
+	if ( ( vehicle.vehicleType === 'car' || vehicle.vehicleType === 'sedan' ) && ( ! vehicle.vehicleModel || vehicle.vehicleModel === 'mercedes-e' ) ) return 'vehicle-mercedes-e';
 	if ( vehicle.vehicleType === 'motorcycle' ) return 'vehicle-motorcycle';
 	if ( vehicle.vehicleType === 'dog' ) return 'dog-car';
 
 	return `vehicle-truck-${ vehicle.color }`;
+
+}
+
+function isMercedesVehicleSelection( vehicle ) {
+
+	return ( vehicle.vehicleType === 'car' || vehicle.vehicleType === 'sedan' ) && ( ! vehicle.vehicleModel || vehicle.vehicleModel === 'mercedes-e' );
 
 }
 
@@ -140,7 +146,7 @@ export class RemoteVehicles {
 				entry = this.createEntry( vehicle, now );
 				this.entries.set( vehicle.playerId, entry );
 
-			} else if ( entry.vehicleType !== ( vehicle.vehicleType || 'truck' ) ) {
+			} else if ( entry.vehicleType !== ( vehicle.vehicleType || 'truck' ) || entry.vehicleModel !== ( vehicle.vehicleModel || null ) ) {
 
 				this.removeEntry( entry );
 				entry = this.createEntry( vehicle, now );
@@ -156,7 +162,7 @@ export class RemoteVehicles {
 			if ( entry.nickname !== vehicle.nickname || entry.color !== vehicle.color ) {
 
 				this.refreshLabel( entry, vehicle );
-				if ( entry.vehicleType === 'sedan' ) applyMercedesVehicleColor( entry.model, vehicle.color );
+				if ( isMercedesVehicleSelection( entry ) ) applyMercedesVehicleColor( entry.model, vehicle.color );
 				if ( entry.vehicleType === 'motorcycle' ) applyMotorcycleColor( entry.model, vehicle.color );
 				if ( entry.vehicleType === 'dog' ) applyDogVehicleColor( entry.model, vehicle.color );
 
@@ -182,7 +188,7 @@ export class RemoteVehicles {
 		const group = new THREE.Group();
 		const modelName = resolveRemoteVehicleModelName( vehicle );
 		const model = makeGhostModel( this.models[ modelName ] || this.models[ 'vehicle-truck-yellow' ] );
-		if ( vehicle.vehicleType === 'sedan' ) applyMercedesVehicleColor( model, vehicle.color );
+		if ( isMercedesVehicleSelection( vehicle ) ) applyMercedesVehicleColor( model, vehicle.color );
 		if ( vehicle.vehicleType === 'motorcycle' ) applyMotorcycleColor( model, vehicle.color );
 		if ( vehicle.vehicleType === 'dog' ) applyDogVehicleColor( model, vehicle.color );
 		const targetPosition = new THREE.Vector3(
@@ -204,6 +210,7 @@ export class RemoteVehicles {
 			nickname: vehicle.nickname,
 			color: vehicle.color,
 			vehicleType: vehicle.vehicleType || 'truck',
+			vehicleModel: vehicle.vehicleModel || null,
 			presence: vehicle.presence,
 			group,
 			model,

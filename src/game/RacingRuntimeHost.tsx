@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { DEFAULT_VEHICLE_TYPE, type VehicleType } from '@/realtime/protocol';
+import { DEFAULT_VEHICLE_MODEL, DEFAULT_VEHICLE_TYPE, type VehicleModel, type VehicleType } from '@/realtime/protocol';
 
 interface RacingRuntimeModule {
   mountRacingRuntime(container: HTMLElement, options?: RuntimeMountOptions): Promise<RuntimeHandle>;
@@ -23,6 +23,7 @@ export interface RemoteVehicleTelemetry {
   nickname: string;
   color: NonNullable<RuntimeMountOptions['vehicleColor']>;
   vehicleType: VehicleType;
+  vehicleModel?: VehicleModel | null;
   presence: 'pending' | 'connected' | 'disconnected' | 'finished';
   position: {
     x: number;
@@ -47,6 +48,7 @@ interface RuntimeMountOptions {
   trackMap?: string | null;
   vehicleColor?: 'yellow' | 'green' | 'purple' | 'red';
   vehicleType?: VehicleType;
+  vehicleModel?: VehicleModel | null;
   inputLocked?: boolean;
   abortSignal?: AbortSignal;
 }
@@ -60,6 +62,7 @@ export function RacingRuntimeHost({
   trackMap,
   vehicleColor,
   vehicleType = DEFAULT_VEHICLE_TYPE,
+  vehicleModel = null,
   inputLocked = false,
   remoteVehicles,
   onRuntimeReady,
@@ -69,6 +72,7 @@ export function RacingRuntimeHost({
   trackMap: string | null;
   vehicleColor: RuntimeMountOptions['vehicleColor'];
   vehicleType?: RuntimeMountOptions['vehicleType'];
+  vehicleModel?: RuntimeMountOptions['vehicleModel'];
   inputLocked?: boolean;
   remoteVehicles?: RemoteVehicleTelemetry[];
   onRuntimeReady?: (runtime: RuntimeHandle | null) => void;
@@ -79,6 +83,7 @@ export function RacingRuntimeHost({
   const inputLockedRef = useRef(inputLocked);
   const remoteVehiclesRef = useRef<RemoteVehicleTelemetry[]>(remoteVehicles ?? []);
   const [error, setError] = useState<string | null>(null);
+  const resolvedVehicleModel = vehicleType === 'car' ? vehicleModel ?? DEFAULT_VEHICLE_MODEL : null;
 
   useEffect(() => {
     let runtime: RuntimeHandle | null = null;
@@ -98,6 +103,7 @@ export function RacingRuntimeHost({
           trackMap,
           vehicleColor,
           vehicleType,
+          vehicleModel: resolvedVehicleModel,
           abortSignal: abortController.signal
         });
 
@@ -127,7 +133,7 @@ export function RacingRuntimeHost({
       runtimeRef.current = null;
       runtime?.destroy();
     };
-  }, [onRuntimeReady, roomCode, trackMap, vehicleColor, vehicleType]);
+  }, [onRuntimeReady, resolvedVehicleModel, roomCode, trackMap, vehicleColor, vehicleType]);
 
   useEffect(() => {
     remoteVehiclesRef.current = remoteVehicles ?? [];

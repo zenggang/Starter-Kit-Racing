@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { createCommandResult, isPlayerColor, isVehicleType, validateLapTarget, validateMatchProgressPayload } from './protocol';
+import {
+  createCommandResult,
+  isPlayerColor,
+  isVehicleModel,
+  isVehicleType,
+  normalizeVehicleSelection,
+  validateLapTarget,
+  validateMatchProgressPayload
+} from './protocol';
 
 describe('Phase 1 realtime protocol', () => {
   it('accepts integer lap targets from 1 through 10', () => {
@@ -21,13 +29,44 @@ describe('Phase 1 realtime protocol', () => {
     expect(isPlayerColor('blue')).toBe(false);
   });
 
-  it('allows only supported vehicle body types', () => {
+  it('allows only supported vehicle categories and car models', () => {
     expect(isVehicleType('truck')).toBe(true);
-    expect(isVehicleType('sedan')).toBe(true);
+    expect(isVehicleType('car')).toBe(true);
     expect(isVehicleType('motorcycle')).toBe(true);
     expect(isVehicleType('dog')).toBe(true);
+    expect(isVehicleType('sedan')).toBe(false);
     expect(isVehicleType('kart')).toBe(false);
     expect(isVehicleType(null)).toBe(false);
+
+    expect(isVehicleModel('mercedes-e')).toBe(true);
+    expect(isVehicleModel('truck-red')).toBe(false);
+  });
+
+  it('normalizes car model selections and the legacy sedan value', () => {
+    expect(normalizeVehicleSelection({ vehicleType: 'car', vehicleModel: 'mercedes-e' })).toEqual({
+      ok: true,
+      vehicleType: 'car',
+      vehicleModel: 'mercedes-e'
+    });
+    expect(normalizeVehicleSelection({ vehicleType: 'car' })).toEqual({
+      ok: true,
+      vehicleType: 'car',
+      vehicleModel: 'mercedes-e'
+    });
+    expect(normalizeVehicleSelection({ vehicleType: 'sedan' })).toEqual({
+      ok: true,
+      vehicleType: 'car',
+      vehicleModel: 'mercedes-e'
+    });
+    expect(normalizeVehicleSelection({ vehicleType: 'truck', vehicleModel: 'mercedes-e' })).toEqual({
+      ok: true,
+      vehicleType: 'truck',
+      vehicleModel: null
+    });
+    expect(normalizeVehicleSelection({ vehicleType: 'car', vehicleModel: 'unknown' })).toEqual({
+      ok: false,
+      errorCode: 'VEHICLE_TYPE_INVALID'
+    });
   });
 
   it('creates command.result envelopes without leaking transport details', () => {
