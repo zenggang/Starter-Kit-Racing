@@ -2,6 +2,7 @@ import type express from 'express';
 import { matchMaker } from '@colyseus/core';
 import type { RowDataPacket } from 'mysql2/promise';
 import { getMysqlPool } from '../../db/mysql.js';
+import { listActiveRoomIds } from '../../lib/inMemoryRoomIndex.js';
 import type { TrackSummary } from '../../services/trackService.js';
 
 interface RoomListRow extends RowDataPacket {
@@ -14,24 +15,14 @@ interface RoomListRow extends RowDataPacket {
 
 export function registerRoomRoutes(app: express.Express): void {
   app.get('/api/rooms', async (_req, res) => {
-    const [rows] = await getMysqlPool()
-      .query<RoomListRow[]>(
-        `
-          select
-            r.code,
-            r.lap_target,
-            r.track_name,
-            date_format(r.expires_at, '%Y-%m-%dT%H:%i:%sZ') as expires_at,
-            count(rp.player_id) as player_count
-          from racing_rooms r
-          left join racing_room_players rp on rp.room_id = r.id
-          where r.status = 'waiting' and r.expires_at > utc_timestamp()
-          group by r.id, r.code, r.lap_target, r.track_name, r.expires_at
-          order by r.created_at desc
-          limit 20
-        `
-      )
-      .catch(() => [[] as RoomListRow[]]);
+    // The hall list must match Colyseus joinability; stale MySQL projection rows are not real rooms.
+    const query = buildWaitingRoomListQuery(listActiveRoomIds());
+    const rows = query
+      ? await getMysqlPool()
+          .query<RoomListRow[]>(query.sql, query.params)
+          .then(([nextRows]) => nextRows)
+          .catch(() => [] as RoomListRow[])
+      : [];
 
     const rooms = rows.map((room) => ({
       code: room.code,
@@ -103,6 +94,34 @@ export function registerRoomRoutes(app: express.Express): void {
       });
     }
   });
+}
+
+export function buildWaitingRoomListQuery(activeRoomIds: readonly string[]): { sql: string; params: string[] } | null {
+  const roomCodes = [...new Set(activeRoomIds.map((roomId) => roomId.trim()).filter(Boolean))];
+  if (roomCodes.length === 0) {
+    return null;
+  }
+
+  const placeholders = roomCodes.map(() => '?').join(', ');
+  return {
+    sql: `
+      select
+        r.code,
+        r.lap_target,
+        r.track_name,
+        date_format(r.expires_at, '%Y-%m-%dT%H:%i:%sZ') as expires_at,
+        count(rp.player_id) as player_count
+      from racing_rooms r
+      left join racing_room_players rp on rp.room_id = r.id
+      where r.status = 'waiting'
+        and r.expires_at > utc_timestamp()
+        and r.code in (${placeholders})
+      group by r.id, r.code, r.lap_target, r.track_name, r.expires_at
+      order by r.created_at desc
+      limit 20
+    `,
+    params: roomCodes
+  };
 }
 
 /**
