@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { applyDogVehicleColor, applyMotorcycleColor, vehicleColorToHex } from './VehicleAppearance.js';
+import { applyDogVehicleColor, applyMercedesVehicleColor, applyMotorcycleColor, vehicleColorToHex } from './VehicleAppearance.js';
 
 const STALE_AFTER_MS = 10_000;
 const BODY_OPACITY = 0.62;
@@ -140,7 +140,9 @@ export class RemoteVehicles {
 			if ( entry.nickname !== vehicle.nickname || entry.color !== vehicle.color ) {
 
 				this.refreshLabel( entry, vehicle );
+				if ( entry.vehicleType === 'truck' ) applyMercedesVehicleColor( entry.model, vehicle.color );
 				if ( entry.vehicleType === 'motorcycle' ) applyMotorcycleColor( entry.model, vehicle.color );
+				if ( entry.vehicleType === 'dog' ) applyDogVehicleColor( entry.model, vehicle.color );
 
 			}
 
@@ -162,8 +164,9 @@ export class RemoteVehicles {
 	createEntry( vehicle, now ) {
 
 		const group = new THREE.Group();
-		const modelName = vehicle.vehicleType === 'motorcycle' ? 'vehicle-motorcycle' : vehicle.vehicleType === 'dog' ? 'dog-car' : `vehicle-truck-${ vehicle.color }`;
+		const modelName = vehicle.vehicleType === 'motorcycle' ? 'vehicle-motorcycle' : vehicle.vehicleType === 'dog' ? 'dog-car' : 'vehicle-mercedes-e';
 		const model = makeGhostModel( this.models[ modelName ] || this.models[ 'vehicle-truck-yellow' ] );
+		if ( vehicle.vehicleType === 'truck' ) applyMercedesVehicleColor( model, vehicle.color );
 		if ( vehicle.vehicleType === 'motorcycle' ) applyMotorcycleColor( model, vehicle.color );
 		if ( vehicle.vehicleType === 'dog' ) applyDogVehicleColor( model, vehicle.color );
 		const targetPosition = new THREE.Vector3(

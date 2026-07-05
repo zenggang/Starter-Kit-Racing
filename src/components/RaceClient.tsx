@@ -61,8 +61,8 @@ export function RaceClient({
           nickname: player.nickname,
           color: player.color,
           // Older room snapshots created before vehicle selection existed do
-          // not carry a body type; keep those racers on the original truck so
-          // reconnect and bridge recovery stay backward-compatible.
+          // not carry a body type; keep those racers on the default four-wheel
+          // car so reconnect and bridge recovery stay backward-compatible.
           vehicleType: player.vehicleType ?? DEFAULT_VEHICLE_TYPE,
           presence: player.presence,
           position: player.position,

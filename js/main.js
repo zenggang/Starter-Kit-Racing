@@ -16,6 +16,7 @@ import { resolveRuntimeGraphicsProfile } from './runtimeProfile.js';
 import { prepareDogVehicleModel } from './VehicleAppearance.js';
 
 const modelNames = [
+	'vehicle-mercedes-e',
 	'vehicle-truck-yellow', 'vehicle-truck-green', 'vehicle-truck-purple', 'vehicle-truck-red',
 	'vehicle-motorcycle', 'dog-car',
 	'track-straight', 'track-corner', 'track-bump', 'track-finish',
@@ -47,6 +48,17 @@ function createEmptyRuntimeSnapshot() {
 		speed: 0,
 		driftIntensity: 0,
 	};
+
+}
+
+function resolveVehicleModelName( vehicleType ) {
+
+	if ( vehicleType === 'motorcycle' ) return 'vehicle-motorcycle';
+	if ( vehicleType === 'dog' ) return 'dog-car';
+
+	// The coordinator still sends the legacy `truck` key, but the four-wheel
+	// player car now ships as one tintable sedan GLB instead of four color files.
+	return 'vehicle-mercedes-e';
 
 }
 
@@ -279,7 +291,7 @@ export async function mountRacingRuntime( container, options = {} ) {
 
 	}
 
-	const vehicleModelName = vehicleType === 'motorcycle' ? 'vehicle-motorcycle' : vehicleType === 'dog' ? 'dog-car' : `vehicle-truck-${ vehicleColor }`;
+	const vehicleModelName = resolveVehicleModelName( vehicleType );
 	const vehicleGroup = vehicle.init( models[ vehicleModelName ] || models[ 'vehicle-truck-yellow' ], {
 		vehicleType,
 		vehicleColor,

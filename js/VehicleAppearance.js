@@ -3,6 +3,7 @@ import * as THREE from 'three';
 const DOG_FORWARD_FIX_Y = Math.PI / 2;
 const DOG_GROUND_LIFT = 0.74;
 const DOG_MODEL_SCALE = 2 / 3;
+const MERCEDES_BODY_MATERIAL = 'vehicle-body-paint';
 
 const _dogChestColor = new THREE.Color( '#f2e3c7' );
 
@@ -80,6 +81,36 @@ export function applyMotorcycleColor( model, color ) {
 
 }
 
+/**
+ * The default four-wheel protocol key is still `truck` for room/state
+ * compatibility, but the shipped runtime asset is now a single E-sedan GLB.
+ * Tint only the named body-paint material so glass, chrome, tires and lights
+ * keep their readability while the lobby color still changes the car body.
+ */
+export function applyMercedesVehicleColor( model, color ) {
+
+	if ( ! model ) return;
+
+	const tint = vehicleColorToHex( color );
+
+	model.traverse( ( child ) => {
+
+		if ( ! child.isMesh ) return;
+
+		if ( Array.isArray( child.material ) ) {
+
+			child.material = child.material.map( ( material ) => tintNamedMaterial( material, tint, MERCEDES_BODY_MATERIAL ) );
+
+		} else {
+
+			child.material = tintNamedMaterial( child.material, tint, MERCEDES_BODY_MATERIAL );
+
+		}
+
+	} );
+
+}
+
 function tintMaterial( material, tint ) {
 
 	if ( ! material || ! material.color ) return material;
@@ -88,6 +119,14 @@ function tintMaterial( material, tint ) {
 	next.color.set( tint );
 	next.needsUpdate = true;
 	return next;
+
+}
+
+function tintNamedMaterial( material, tint, materialName ) {
+
+	if ( ! material || material.name !== materialName || ! material.color ) return material;
+
+	return tintMaterial( material, tint );
 
 }
 
