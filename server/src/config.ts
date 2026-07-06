@@ -19,8 +19,16 @@ export interface ServerConfig {
   };
 }
 
+/**
+ * Production traffic can arrive from the fresh WeChat test domain, the previous
+ * race2 domain, or the default Vercel project domain. Keeping all three in the
+ * default list makes local and ad-hoc deployments tolerant while still requiring
+ * unrelated origins to be rejected by the CORS middleware.
+ */
+const DEFAULT_CORS_ORIGINS = 'https://race3.pigou.top,https://race2.pigou.top,https://race-online2.vercel.app';
+
 export function readServerConfig(env: Record<string, string | undefined> = process.env): ServerConfig {
-  const corsOrigins = (env.CORS_ORIGIN ?? 'https://race2.pigou.top')
+  const corsOrigins = (env.CORS_ORIGIN ?? DEFAULT_CORS_ORIGINS)
     .split(',')
     .map((value) => value.trim())
     .filter(Boolean);

@@ -41,7 +41,7 @@
 
 - 老 Vercel 项目 `race-online` 不动，继续由 `master` 自动部署
 - 新 Vercel 项目 `race-online2` 独立创建，生产分支先指向 `Ali-init`
-- `race2.pigou.top` 后续改指向 `race-online2`，不再指向大陆 ECS
+- `race3.pigou.top` 后续改指向 `race-online2`，不再指向大陆 ECS
 - ECS 只保留 `Colyseus + API + MySQL + Nginx + PM2`
 - 浏览器与 ECS 的运行时连接统一基于 `8.148.79.214` 的 `HTTPS/WSS`
 
@@ -64,7 +64,7 @@
 
 ### 3.2 ECS 不再依赖域名，运行时统一走 IP
 
-新链路中，ECS 不再要求 `game.pigou.top` 或 `race2.pigou.top` 指向它。
+新链路中，ECS 不再要求 `game.pigou.top`、`race2.pigou.top` 或 `race3.pigou.top` 指向它。
 
 运行时口径改为：
 
@@ -174,13 +174,13 @@ Vercel 项目不承接 WebSocket server 本体。
 
 推荐顺序：
 
-- 正式入口：`race2.pigou.top` 指向 `race-online2` 的 Vercel 项目
+- 正式入口：`race3.pigou.top` 指向 `race-online2` 的 Vercel 项目
 - 验证入口：`race-online2.vercel.app`
 
 这里和之前不同的是：
 
-- `race2.pigou.top` 不再指向阿里云 ECS
-- `race2.pigou.top` 改为指向 Vercel
+- `race3.pigou.top` 不再指向阿里云 ECS
+- `race3.pigou.top` 改为指向 Vercel
 
 因此：
 
@@ -239,7 +239,7 @@ ECS 只保留：
 
 ```text
 浏览器
-  -> https://race2.pigou.top                (Vercel: race-online2)
+  -> https://race3.pigou.top                (Vercel: race-online2)
   -> /api/*                                 (Vercel external rewrite -> ECS IP)
   -> wss://8.148.79.214/colyseus            (直连 ECS)
 
@@ -380,7 +380,7 @@ Nginx 作为唯一对外入口：
 
 现有仓库里凡是写着这些口径的文档，后续都需要更新：
 
-- `race2.pigou.top` 指向 ECS
+- `race2.pigou.top` 或 `race3.pigou.top` 指向 ECS
 - `game.pigou.top` 作为新链路实时入口
 - ECS 自托管前端
 
@@ -396,7 +396,7 @@ Nginx 作为唯一对外入口：
 2. `race-online` 仍绑定 `master`，不受影响
 3. `race-online2` 绑定同一 GitHub 仓库，但生产分支为 `Ali-init`
 4. `race-online2` 成功自动部署
-5. `race2.pigou.top` 或 `race-online2.vercel.app` 可访问前端
+5. `race3.pigou.top` 或 `race-online2.vercel.app` 可访问前端
 
 ### 12.2 ECS 侧
 

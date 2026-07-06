@@ -22,9 +22,10 @@ const app = express();
 app.use(
   cors({
     /**
-     * Browser API calls now hit the ECS HTTPS IP directly from both the custom
-     * Vercel domain and the Vercel default deployment domain. Accept either
-     * origin while still rejecting unrelated websites.
+     * Browser API calls can arrive from the active custom Vercel domain, the
+     * previous fallback domain, or the Vercel default deployment domain. The
+     * exact allowlist lives in config so deployment switches only need an env
+     * update, while unrelated websites still fail closed.
      */
     origin(origin, callback) {
       if (!origin || config.public.corsOrigins.includes(origin)) {

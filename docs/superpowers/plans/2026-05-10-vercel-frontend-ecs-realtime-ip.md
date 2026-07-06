@@ -76,7 +76,7 @@ Tasks:
 - [ ] 将前端公开配置统一收口到 `src/config/env.ts`
 - [ ] 把默认实时地址调整为 `wss://8.148.79.214/colyseus`
 - [ ] 把默认 API 地址调整为同源 `/api`
-- [ ] 清理仍残留的 `race2.pigou.top` / `game.pigou.top` 新链路硬编码
+- [ ] 清理仍残留的 `race2.pigou.top` / `game.pigou.top` 新链路硬编码，并把新的公开测试入口收口到 `race3.pigou.top`
 - [ ] 保留现有内部状态式导航，不改公开 URL 体验
 
 Expected config direction:
@@ -250,7 +250,7 @@ Exit criteria:
 ### Vercel preview / production
 
 - [ ] `race-online2.vercel.app`
-- [ ] `race2.pigou.top` 指向新 Vercel 项目后可访问
+- [ ] `race3.pigou.top` 指向新 Vercel 项目后可访问
 - [ ] `/api/*` 经 Vercel 代理后行为正常
 
 ### Browser game flow
@@ -288,7 +288,7 @@ Exit criteria:
 
 - Vercel 账号/Team 下创建 `race-online2` 的权限
 - GitHub 仓库已可被新 Vercel 项目导入
-- `race2.pigou.top` 切到 Vercel 时的 DNS 修改窗口
+- `race3.pigou.top` 切到 Vercel 时的 DNS 修改窗口
 - ECS 上 IP 证书自动续期方式确认
 
 ---

@@ -3,7 +3,7 @@
 ## 架构
 
 - 前端：`Vercel` 上的 `race-online2`
-- 固定公开入口：`https://race2.pigou.top`（切流后）
+- 固定公开入口：`https://race3.pigou.top`（切流后）
 - 预览入口：`https://race-online2.vercel.app`
 - 实时入口：`wss://8.148.79.214/colyseus`
 - 后端 API：`https://8.148.79.214/api/*`
@@ -82,7 +82,7 @@ MYSQL_USER=race_user
 MYSQL_PASSWORD=change_me
 
 COLYSEUS_PUBLIC_URL=wss://8.148.79.214/colyseus
-CORS_ORIGIN=https://race2.pigou.top,https://race-online2.vercel.app
+CORS_ORIGIN=https://race3.pigou.top,https://race2.pigou.top,https://race-online2.vercel.app
 ```
 
 ## ECS 后端部署
@@ -122,18 +122,36 @@ ECS 只保留 IP 入口：
 
 这轮不依赖 ECS 域名证书，改为依赖 `8.148.79.214` 的受信任 IP 证书。
 
-要求：
+当前实际机制：
 
-- 不能使用自签名证书
-- 需要可自动续期
-- 续期后自动 reload `nginx`
+- 证书由 `snap` 版 `certbot 5.5.0` 管理，`/etc/letsencrypt/renewal/8.148.79.214.conf` 使用 `preferred_profile = shortlived`。
+- IP 证书有效期约 6 天，续期由 `snap.certbot.renew.timer` 定时触发。
+- 旧的 apt `certbot.timer` 已停用，避免 `certbot 2.9.0` 与 `certbot 5.5.0` 同时续同一套证书。
+- 续期成功后会执行 `/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh`，先 `nginx -t`，再 `systemctl reload nginx`。
+
+常用核查命令：
+
+```bash
+systemctl list-timers --all | grep certbot
+/snap/bin/certbot renew --dry-run --cert-name 8.148.79.214 --run-deploy-hooks
+printf '' | openssl s_client -connect 8.148.79.214:443 -servername 8.148.79.214 -showcerts 2>/dev/null | openssl x509 -noout -dates -ext subjectAltName
+```
 
 ## DNS
 
 切流目标：
 
-- `race2.pigou.top` -> `race-online2` 所在的 Vercel 项目
+- `race3.pigou.top` -> `race-online2` 所在的 Vercel 项目
 - 不再指向 ECS
+
+当前 Cloudflare DNS 需要配置：
+
+```text
+Type: CNAME
+Name: race3
+Value: f756aeb27f8f9a0b.vercel-dns-017.com
+Proxy status: DNS only
+```
 
 ECS 本身不再要求新链路域名指向它。
 

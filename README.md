@@ -6,13 +6,13 @@
 
 ## 中文
 
-[在线试玩](https://race2.pigou.top)
+[在线试玩](https://race3.pigou.top)
 
 这是一个基于 [Kenney Starter Kit Racing](https://github.com/KenneyNL/Starter-Kit-Racing) 的浏览器联机赛车项目。原始 Godot 赛车素材和玩法被移植到 JavaScript、Three.js 和 crashcat physics，并在外层加入移动端优先的联机大厅、房间、倒计时比赛、幽灵车、结果页和自定义赛道编辑器。当前分支的运行时目标是 `Vercel 前端 + ECS Colyseus/API + MySQL`。
 
 ## 当前能力
 
-- 固定入口：线上主入口使用 `https://race2.pigou.top`，微信等内置浏览器全程保持同一个 URL。
+- 固定入口：线上主入口使用 `https://race3.pigou.top`，微信等内置浏览器全程保持同一个 URL。
 - 游戏内路由：大厅、房间、比赛、结果和赛道编辑器都由内部游戏状态切换，不依赖浏览器子路由。
 - 联机房间：支持创建房间、输入 4 位房间码加入、选择车身颜色、自动选色、自动准备、取消准备、设置圈数和房主发车。
 - 公平开赛：房主发车后进入 coordinator 权威倒计时，所有玩家在同一个正式开赛时间点解锁输入。
@@ -29,7 +29,7 @@
 
 这个项目当前按 `Vercel + ECS` 链路拆成更清晰的职责边界：
 
-- `race2.pigou.top` 承载固定公开入口，并保持内部状态式导航，不靠浏览器 URL 切页。
+- `race3.pigou.top` 承载固定公开入口，并保持内部状态式导航，不靠浏览器 URL 切页。
 - `race-online2` 负责前端页面构建与托管。
 - `8.148.79.214` 负责 `Colyseus / API / MySQL`。
 - `Colyseus` 负责房间真相、比赛真相、命令排序、超时推进、排名计算、完赛和胜者裁定。
@@ -105,13 +105,13 @@ npm run build
 
 ## English
 
-[Live Demo](https://race2.pigou.top)
+[Live Demo](https://race3.pigou.top)
 
 This is a browser-based online racing game built from [Kenney Starter Kit Racing](https://github.com/KenneyNL/Starter-Kit-Racing). The original Godot racing assets and gameplay have been ported to JavaScript, Three.js, and crashcat physics, then wrapped with a mobile-first online shell for the hall, rooms, authoritative countdown races, ghost cars, results, and custom track editing. The current branch targets a `Vercel frontend + ECS Colyseus/API + MySQL` runtime.
 
 ## Current Features
 
-- Fixed entry URL: the public production entry is `https://race2.pigou.top`, so embedded browsers such as WeChat keep one stable URL for the whole game.
+- Fixed entry URL: the public production entry is `https://race3.pigou.top`, so embedded browsers such as WeChat keep one stable URL for the whole game.
 - Internal game navigation: hall, room, race, result, and track editor screens switch through game state instead of browser sub-routes.
 - Online rooms: create a room, join with a 4-digit room code, choose vehicle color, auto-select color, auto-ready, cancel readiness, set lap count, and start as host.
 - Fair start: host start enters a coordinator-authoritative countdown, and all players unlock input at the same official start time.
@@ -128,7 +128,7 @@ This is a browser-based online racing game built from [Kenney Starter Kit Racing
 
 The current `Vercel + ECS` stack splits responsibilities as follows:
 
-- `race2.pigou.top` is the fixed public web entry.
+- `race3.pigou.top` is the fixed public web entry.
 - `race-online2` hosts the frontend.
 - `8.148.79.214` hosts the realtime/API/database backend.
 - `Colyseus` owns room truth, match truth, command ordering, timeout transitions, ranking, finish state, and winner decisions.

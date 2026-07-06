@@ -19,7 +19,7 @@
 1. `race-online2` 项目成功导入并部署
 2. `race-online` 仍保持原有 `master` 自动部署，不受影响
 3. `race-online2.vercel.app` 可访问
-4. `race2.pigou.top` 切到新项目后可访问
+4. `race3.pigou.top` 切到新项目后可访问
 5. 浏览器地址栏在大厅、房间、比赛、结果页、赛道编辑器全程保持固定入口
 
 ## 实时链路
@@ -45,5 +45,5 @@
 
 1. `2567` 未对公网开放
 2. `3306` 未对公网开放
-3. ECS 上已不再依赖 `race2.pigou.top` / `game.pigou.top` 作为新链路入口
+3. ECS 上已不再依赖 `race3.pigou.top` / `race2.pigou.top` / `game.pigou.top` 作为新链路入口
 4. ECS IP 证书在桌面浏览器下可信
